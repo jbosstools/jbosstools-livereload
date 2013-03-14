@@ -30,7 +30,6 @@ import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.databinding.dialog.DialogPageSupport;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
@@ -137,14 +136,6 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 		WizardPageSupport.create(this, dbc);
 	}
 
-	/**
-	 * Returns true if the page is valid (ie, the validation did not return any message).
-	 * @return true if the page is valid, false otherwise.
-	 */
-	public boolean isPageValid() {
-		return this.getErrorMessage() == null;
-	}
-	
 	private SelectionListener onBrowse() {
 		return new SelectionAdapter() {
 
