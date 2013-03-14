@@ -1,0 +1,4 @@
+# This file enables runtime tracing
+org.jboss.tools.web.pagereloader/info=true
+org.jboss.tools.web.pagereloader/debug=true
+org.jboss.tools.web.pagereloader/trace=false

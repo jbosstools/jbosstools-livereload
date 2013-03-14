@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.jboss.tools.web.pagereloader.liveReloadCommand"
+            name="LiveReload...">
+         <state
+               id="org.eclipse.ui.commands.toggleState">
+            <class
+                  class="org.eclipse.ui.handlers.RegistryToggleState">
+               <parameter
+                     name="default"
+                     value="false">
+               </parameter>
+               <parameter
+                     name="persisted"
+                     value="false">
+               </parameter>
+            </class>
+         </state>
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.wst.server.ui.ServersView">
+         <command
+               commandId="org.jboss.tools.web.pagereloader.liveReloadCommand"
+               style="toggle"
+               tooltip="Enable or Disable LiveReload to trigger Browser refresh after republish on server">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <and>
+                     <count
+                           value="1">
+                     </count>
+                     <iterate
+                           ifEmpty="false"
+                           operator="or">
+                        <instanceof
+                              value="org.eclipse.wst.server.core.IServer">
+                        </instanceof>
+                     </iterate>
+                  </and>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      
+   </extension>
+   
+   
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.jboss.tools.livereload.internal.command.LiveReloadCommandHandler"
+            commandId="org.jboss.tools.web.pagereloader.liveReloadCommand">
+          <enabledWhen>
+            <with variable="selection">
+	             <test
+	                   forcePluginActivation="true"
+	                   property="org.jboss.tools.web.pagereloader.serverStarted"
+	                   value="true">
+	             </test>
+               </with>
+          </enabledWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.jboss.tools.livereload.internal.command.LiveReloadPropertyTester"
+            id="org.jboss.tools.web.pagereloader.liveReloadPropertyTester"
+            namespace="org.jboss.tools.web.pagereloader"
+            properties="serverStarted"
+            type="org.eclipse.jface.viewers.ITreeSelection">
+      </propertyTester> 
+   </extension>
+   <extension
+         point="org.eclipse.wst.server.ui.editorPages">
+   </extension>
+
+</plugin>
