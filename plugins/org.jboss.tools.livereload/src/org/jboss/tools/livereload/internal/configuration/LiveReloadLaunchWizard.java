@@ -20,10 +20,12 @@ import org.eclipse.wst.server.core.IServer;
  */
 public class LiveReloadLaunchWizard extends Wizard {
 
-	private ILiveReloadWebServerConfiguration wizardModel;
+	private final ILiveReloadWebServerConfiguration wizardModel;
+	private final LiveReloadLaunchWizardPage configPage;
 
 	public LiveReloadLaunchWizard(IServer server) {
 		this.wizardModel = new LiveReloadLaunchWizardModel();
+		configPage = new LiveReloadLaunchWizardPage(wizardModel);
 	}
 
 	@Override
@@ -33,7 +35,7 @@ public class LiveReloadLaunchWizard extends Wizard {
 
 	@Override
 	public void addPages() {
-		addPage(new LiveReloadLaunchWizardPage(wizardModel));
+		addPage(configPage);
 	}
 
 	public ILiveReloadWebServerConfiguration getConfiguration() {

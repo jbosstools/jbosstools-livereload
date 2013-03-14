@@ -25,11 +25,15 @@ import java.net.URL;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.conversion.Converter;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.databinding.dialog.DialogPageSupport;
+import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
+import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.wizard.WizardPage;
@@ -89,7 +93,8 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 				websocketPortText);
 		final IObservableValue websocketPortModelObservable = BeanProperties.value(
 				LiveReloadLaunchWizardModel.PROPERTY_WEBSOCKET_SERVER_PORT).observe(wizardModel);
-		ValueBindingBuilder.bind(websocketPortTextObservable).to(websocketPortModelObservable).in(dbc);
+		ValueBindingBuilder.bind(websocketPortTextObservable).converting(new StringToIntegerConverter())
+				.to(websocketPortModelObservable).converting(new IntegerToStringConverter()).in(dbc);
 
 		// Proxy Server enablement
 		final Button useProxyServerBtn = new Button(container, SWT.CHECK);
@@ -107,12 +112,13 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).indent(10, 0).applyTo(proxyPortLabel);
 		final Text proxyPortText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(proxyPortText);
-		final IObservableValue proxyPortTextObservable = WidgetProperties.text(SWT.Modify).observe(proxyPortText);
 		final IObservableValue proxyPortModelObservable = BeanProperties.value(
 				LiveReloadLaunchWizardModel.PROPERTY_PROXY_SERVER_PORT).observe(wizardModel);
-		ValueBindingBuilder.bind(proxyPortTextObservable).to(proxyPortModelObservable).in(dbc);
+		final IObservableValue proxyPortTextObservable = WidgetProperties.text(SWT.Modify).observe(proxyPortText);
 		ValueBindingBuilder.bind(WidgetProperties.enabled().observe(proxyPortText))
 				.notUpdating(useProxyServerModelObservable).in(dbc);
+		ValueBindingBuilder.bind(proxyPortTextObservable).converting(new StringToIntegerConverter())
+				.to(proxyPortModelObservable).converting(new IntegerToStringConverter()).in(dbc);
 
 		// Proxy Server brief description
 		final Link proxyServerDescription = new Link(container, SWT.WRAP);
@@ -123,12 +129,22 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 		proxyServerDescription.addSelectionListener(onBrowse());
 
 		// validation
-		final ServerPortsValidator validationStatusProvider = new ServerPortsValidator(websocketPortTextObservable,
-				useProxyServerSelection, proxyPortTextObservable);
+		final ServerPortsValidator validationStatusProvider = new ServerPortsValidator(websocketPortModelObservable,
+				useProxyServerModelObservable, proxyPortModelObservable);
 		dbc.addValidationStatusProvider(validationStatusProvider);
-
+		ControlDecorationSupport.create(
+				validationStatusProvider, SWT.LEFT | SWT.TOP, null, new RequiredControlDecorationUpdater(false));
+		WizardPageSupport.create(this, dbc);
 	}
 
+	/**
+	 * Returns true if the page is valid (ie, the validation did not return any message).
+	 * @return true if the page is valid, false otherwise.
+	 */
+	public boolean isPageValid() {
+		return this.getErrorMessage() == null;
+	}
+	
 	private SelectionListener onBrowse() {
 		return new SelectionAdapter() {
 
@@ -160,9 +176,9 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 
 		@Override
 		protected IStatus validate() {
-			final int websocketPortValue = toInt((String) websocketPortObservable.getValue());
+			final int websocketPortValue = (Integer) websocketPortObservable.getValue();
 			final boolean useProxyServerValue = (Boolean) useProxyServerSelection.getValue();
-			final int proxyServerPortValue = toInt((String) proxyServerPortObservable.getValue());
+			final int proxyServerPortValue = (Integer) proxyServerPortObservable.getValue();
 			if (websocketPortValue == -1) {
 				return ValidationStatus.error(WEBSOCKET_SERVER_PORT_INVALID_VALUE);
 			}
@@ -175,13 +191,51 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 			return ValidationStatus.ok();
 		}
 
-		private static int toInt(String value) {
-			try {
-				return Integer.parseInt(value);
-			} catch (NumberFormatException e) {
+	}
 
+	/**
+	 * Converter from String to Integer
+	 * 
+	 * @author xcoulon
+	 * 
+	 */
+	static class StringToIntegerConverter extends Converter {
+
+		public StringToIntegerConverter() {
+			super(String.class, Integer.class);
+		}
+
+		@Override
+		public Object convert(Object fromObject) {
+			if (fromObject instanceof String) {
+				try {
+					return new Integer((String) fromObject);
+				} catch (NumberFormatException e) {
+
+				}
 			}
-			return -1;
+			return new Integer(-1);
+		}
+	}
+
+	/**
+	 * Converter from Integer to String
+	 * 
+	 * @author xcoulon
+	 * 
+	 */
+	static class IntegerToStringConverter extends Converter {
+
+		public IntegerToStringConverter() {
+			super(Integer.class, String.class);
+		}
+
+		@Override
+		public Object convert(Object fromObject) {
+			if (fromObject instanceof Integer) {
+				return fromObject.toString();
+			}
+			return "";
 		}
 
 	}
