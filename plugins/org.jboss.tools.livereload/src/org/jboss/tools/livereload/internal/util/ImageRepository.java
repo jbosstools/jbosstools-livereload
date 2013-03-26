@@ -40,6 +40,8 @@ public class ImageRepository {
 
 	public static final ImageDescriptor LIVE_RELOAD_SERVER_LAUNCH = repo.create("livereload_wiz.png"); //$NON-NLS-1$ 
 	
+	public static final ImageDescriptor LIVE_RELOAD_SERVER_ICON = repo.create("livereload_server.png"); //$NON-NLS-1$ 
+	
 	
 	public ImageRepository(String imageFolder, Plugin plugin, ImageRegistry imageRegistry) {
 		this.imageFolder = imageFolder;

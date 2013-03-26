@@ -9,7 +9,7 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.io;
+package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +35,7 @@ public class LiveReloadScriptFileFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
 			ServletException {
-		Logger.trace("Serving /livereload/livereload.js !");
+		Logger.trace("Serving /livereload/livereload.js");
 		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 		final InputStream scriptContent = LiveReloadActivator.getDefault().getResourceContent("/script/livereload.js");
 		httpServletResponse.getOutputStream().write(IOUtils.toByteArray(scriptContent));

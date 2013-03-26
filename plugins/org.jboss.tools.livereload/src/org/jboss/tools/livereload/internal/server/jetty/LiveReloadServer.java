@@ -9,21 +9,14 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.io;
+package org.jboss.tools.livereload.internal.server.jetty;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.wst.server.core.IServer;
-import org.jboss.tools.livereload.internal.command.ServerUtils;
-import org.jboss.tools.livereload.internal.configuration.ILiveReloadWebServerConfiguration;
 import org.jboss.tools.livereload.internal.util.Logger;
+import org.jboss.tools.livereload.internal.util.WTPUtils;
 
 /**
  * The LiveReload Server that implements the livereload protocol (based on
@@ -33,7 +26,7 @@ import org.jboss.tools.livereload.internal.util.Logger;
  * @author xcoulon
  * 
  */
-public class LiveReloadWebServer {
+public class LiveReloadServer {
 
 	private LiveReloadCommandBroadcaster broadcaster;
 
@@ -45,19 +38,19 @@ public class LiveReloadWebServer {
 	 * @param config
 	 *            the LiveReload configuration to use.
 	 * @throws UnknownHostException
-	 */
-	public LiveReloadWebServer(final IServer server, final ILiveReloadWebServerConfiguration config) throws UnknownHostException {
+	public LiveReloadServer(final IServer server, final LiveReloadCWebServerConfiguration config) throws UnknownHostException {
 		if (config.isUseProxyServer()) {
 			this.broadcaster = new LiveReloadCommandBroadcaster(config.getProxyServerPort());
 			this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(config.getProxyServerPort(),
 					config.getWebsocketServerPort(), broadcaster);
 		} else {
-			this.broadcaster = new LiveReloadCommandBroadcaster(ServerUtils.getPort(server));
+			this.broadcaster = new LiveReloadCommandBroadcaster(WTPUtils.getPort(server));
 			this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(config.getWebsocketServerPort(),
 					broadcaster);
 		}
 	}
-
+	 */
+	
 	/**
 	 * Starts the server
 	 */
@@ -139,36 +132,7 @@ public class LiveReloadWebServer {
 		@Override
 		public void run() {
 			try {
-				// connectors
-				final String hostAddress = InetAddress.getLocalHost().getHostAddress();
-				// TODO include SSL Connector
-				final SelectChannelConnector websocketConnector = new SelectChannelConnector();
-				websocketConnector.setPort(websocketConnectorPort);
-				websocketConnector.setMaxIdleTime(0);
-				server.addConnector(websocketConnector);
-				if (enableProxy) {
-					final SelectChannelConnector proxyConnector = new SelectChannelConnector();
-					proxyConnector.setPort(proxyConnectorPort);
-					proxyConnector.setMaxIdleTime(0);
-					server.addConnector(proxyConnector);
-
-					final HandlerCollection handlers = new HandlerCollection();
-					server.setHandler(handlers);
-
-					final ServletContextHandler liveReloadContext = new ServletContextHandler(handlers, "/",
-							ServletContextHandler.NO_SESSIONS);
-
-					// Livereload specific content
-					liveReloadContext.addServlet(new ServletHolder(new LiveReloadWebSocketServlet(
-							liveReloadCommandBroadcaster)), "/livereload");
-					liveReloadContext.addFilter(new FilterHolder(new LiveReloadScriptFileFilter()),
-							"/livereload/livereload.js", null);
-
-					// Handling all applications behind the proxy
-					liveReloadContext.addServlet(new ServletHolder(LiveReloadProxyServlet.class), "/");
-					liveReloadContext.addFilter(new FilterHolder(new LiveReloadScriptInjectionFilter(hostAddress,
-							this.websocketConnectorPort)), "/*", null);
-				}
+				
 				Logger.debug("Starting LiveReload Websocket Server...");
 				server.start();
 				server.join();

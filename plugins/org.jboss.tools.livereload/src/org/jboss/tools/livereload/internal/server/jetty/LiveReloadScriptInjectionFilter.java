@@ -9,8 +9,9 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.io;
+package org.jboss.tools.livereload.internal.server.jetty;
 
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
@@ -29,6 +30,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+
+import net.htmlparser.jericho.EndTag;
+import net.htmlparser.jericho.Segment;
+import net.htmlparser.jericho.StreamedSource;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -94,7 +99,6 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 							try {
 								terminate(httpRequest, responseWrapper);
 							} catch (IOException e) {
-								// TODO Auto-generated catch block
 								Logger.error("Failed to terminate the response", e);
 							}
 						}
@@ -124,7 +128,7 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 			Logger.debug("Injecting livereload.js <script> in response for {} ({})", httpRequest.getRequestURI(),
 					returnedContentType);
 			final InputStream responseStream = responseWrapper.getResponseAsStream();
-			final char[] modifiedResponseContent = LiveReloadScriptInjector.inject(responseStream, scriptContent);
+			final char[] modifiedResponseContent = injectContent(responseStream, scriptContent);
 			responseWrapper.terminate(modifiedResponseContent);
 		}
 		// finalize the responseWrapper by copying the wrapper's
@@ -137,6 +141,30 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 		}
 	}
 
+	
+	/**
+	 * Inject the given 'addition' into the gievne source, just before the
+	 * <code>&lt;/body&gt;</code> ent tag. If no such end tag is found, the
+	 * return value equals the given source.
+	 * 
+	 * @param source
+	 * @param addition
+	 * @return the modified source (or equal if not end tag was found in the source)
+	 * @throws IOException
+	 */
+	public static char[] injectContent(final InputStream source, final String addition) throws IOException {
+		final StreamedSource streamedSource = new StreamedSource(source);
+		CharArrayWriter writer = new CharArrayWriter();
+		for (Segment segment : streamedSource) {
+			if (segment instanceof EndTag && ((EndTag) segment).getName().equals("body")) {
+				writer.write(addition);
+			}
+			writer.write(segment.toString());
+		}
+		writer.close();
+		streamedSource.close();
+		return writer.toCharArray();
+	}
 	/**
 	 * <p>
 	 * Iterates over the given acceptedContentTypes, looking for one of those
@@ -191,17 +219,6 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 		public ModifiableHttpServletResponse(HttpServletResponse response) {
 			super(response);
 			this.responseOutputStream = new ByteArrayServletOutputStream();
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see javax.servlet.ServletResponseWrapper#getContentType()
-		 */
-		@Override
-		public String getContentType() {
-			// TODO Auto-generated method stub
-			return super.getContentType();
 		}
 
 		/**

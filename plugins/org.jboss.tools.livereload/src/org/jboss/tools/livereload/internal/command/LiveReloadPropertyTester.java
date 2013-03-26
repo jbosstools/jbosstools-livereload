@@ -28,7 +28,6 @@ public class LiveReloadPropertyTester extends PropertyTester {
 			if ("serverStarted".equals(property)) {
 				return server.getServerState() == IServer.STATE_STARTED;
 			}
-			return true;
 		}
 		return false;
 	}

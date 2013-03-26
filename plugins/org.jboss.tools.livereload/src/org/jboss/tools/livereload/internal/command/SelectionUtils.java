@@ -14,41 +14,30 @@ package org.jboss.tools.livereload.internal.command;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.wst.server.core.IServer;
 
 /**
  * Utility class
  * @author xcoulon
  *
  */
-public class ServerUtils {
+public class SelectionUtils {
 	
 	/** 
 	 * Utility class: no public constructor.
 	 */
-	private ServerUtils() {
+	private SelectionUtils() {
 		
 	}
 	
 	/**
-	 * @returns the Selected Server 
+	 * @returns the Selected Element 
 	 */
-	public static IServer getSelectedServer() {
+	public static Object getSelectedElement() {
 		IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 				.getActivePart();
 		IStructuredSelection selection = (IStructuredSelection) activePart.getSite().getSelectionProvider()
 				.getSelection();
-		final IServer server = (IServer) (selection.getFirstElement());
-		return server;
-	}
-
-	/**
-	 * Returns the HTTP port for the given {@link IServer}
-	 * @param server
-	 * @return
-	 */
-	public static int getPort(IServer server) {
-		return 0;
+		return selection.getFirstElement();
 	}
 
 }

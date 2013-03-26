@@ -10,7 +10,8 @@
  ******************************************************************************/
 
 /**
+ * This package contains classes that deal with Eclipse / Browsers communication (proxying request, sending livereload commands over websockets, etc.)
  * @author xcoulon
  *
  */
-package org.jboss.tools.livereload.internal.messages;
+package org.jboss.tools.livereload.internal.server.wst;

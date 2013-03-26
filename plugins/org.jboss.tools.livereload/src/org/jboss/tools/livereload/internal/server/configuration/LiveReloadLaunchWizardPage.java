@@ -9,17 +9,17 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.configuration;
+package org.jboss.tools.livereload.internal.server.configuration;
 
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.DESCRIPTION;
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_CHECKBOX;
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_DESCRIPTION;
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_PORT_DUPLICATE_VALUE;
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_PORT_INVALID_VALUE;
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_PORT_LABEL;
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.TITLE;
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.WEBSOCKET_SERVER_PORT_INVALID_VALUE;
-import static org.jboss.tools.livereload.internal.configuration.LiveReloadLaunchWizardMessages.WEBSOCKET_SERVER_PORT_LABEL;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.DESCRIPTION;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_CHECKBOX;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_DESCRIPTION;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_PORT_INVALID_VALUE;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_PORT_LABEL;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.SERVER_PORTS_DUPLICATE_VALUES;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.TITLE;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.WEBSOCKET_SERVER_PORT_INVALID_VALUE;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.WEBSOCKET_SERVER_PORT_LABEL;
 
 import java.net.URL;
 
@@ -57,7 +57,7 @@ import org.jboss.tools.livereload.internal.util.Logger;
  */
 public class LiveReloadLaunchWizardPage extends WizardPage {
 
-	private final ILiveReloadWebServerConfiguration wizardModel;
+	private final LiveReloadLaunchWizardModel wizardModel;
 
 	private DataBindingContext dbc = null;
 
@@ -66,7 +66,7 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 	 * 
 	 * @param wizardModel
 	 */
-	public LiveReloadLaunchWizardPage(final ILiveReloadWebServerConfiguration wizardModel) {
+	public LiveReloadLaunchWizardPage(final LiveReloadLaunchWizardModel wizardModel) {
 		super("LiveReload Configuration");
 		this.wizardModel = wizardModel;
 		setTitle(TITLE);
@@ -177,7 +177,7 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 				return ValidationStatus.error(PROXY_SERVER_PORT_INVALID_VALUE);
 			}
 			if (useProxyServerValue && proxyServerPortValue == websocketPortValue) {
-				return ValidationStatus.error(PROXY_SERVER_PORT_DUPLICATE_VALUE);
+				return ValidationStatus.error(SERVER_PORTS_DUPLICATE_VALUES);
 			}
 			return ValidationStatus.ok();
 		}

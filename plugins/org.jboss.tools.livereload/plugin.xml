@@ -4,8 +4,8 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            id="org.jboss.tools.web.pagereloader.liveReloadCommand"
-            name="LiveReload...">
+            id="org.jboss.tools.livereload.markForLiveReloadCommand"
+            name="Mark for LiveReload...">
          <state
                id="org.eclipse.ui.commands.toggleState">
             <class
@@ -26,63 +26,80 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="popup:org.eclipse.wst.server.ui.ServersView">
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?before=additions">
          <command
-               commandId="org.jboss.tools.web.pagereloader.liveReloadCommand"
-               style="toggle"
-               tooltip="Enable or Disable LiveReload to trigger Browser refresh after republish on server">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="activeMenuSelection">
-                  <and>
-                     <count
-                           value="1">
-                     </count>
-                     <iterate
-                           ifEmpty="false"
-                           operator="or">
-                        <instanceof
-                              value="org.eclipse.wst.server.core.IServer">
-                        </instanceof>
-                     </iterate>
-                  </and>
-               </with>
-            </visibleWhen>
+               commandId="org.jboss.tools.livereload.markForLiveReloadCommand"
+               icon="icons/livereload_server.png">
          </command>
       </menuContribution>
-      
    </extension>
    
    
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="org.jboss.tools.livereload.internal.command.LiveReloadCommandHandler"
-            commandId="org.jboss.tools.web.pagereloader.liveReloadCommand">
-          <enabledWhen>
+            class="org.jboss.tools.livereload.internal.command.LiveReloadFolderCommandHandler"
+            commandId="org.jboss.tools.livereload.markForLiveReloadCommand">
+          <activeWhen>
             <with variable="selection">
-	             <test
-	                   forcePluginActivation="true"
-	                   property="org.jboss.tools.web.pagereloader.serverStarted"
-	                   value="true">
-	             </test>
-               </with>
-          </enabledWhen>
+              <and>
+                 <count
+                       value="1">
+                 </count>
+                 <iterate
+                       ifEmpty="false"
+                       operator="or">
+                    <instanceof
+                          value="org.eclipse.core.resources.IFolder">
+                    </instanceof>
+                 </iterate>
+              </and>
+           </with>
+          </activeWhen>
       </handler>
    </extension>
-   <extension
+   <!--extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
             class="org.jboss.tools.livereload.internal.command.LiveReloadPropertyTester"
-            id="org.jboss.tools.web.pagereloader.liveReloadPropertyTester"
-            namespace="org.jboss.tools.web.pagereloader"
+            id="org.jboss.tools.livereload.liveReloadPropertyTester"
+            namespace="org.jboss.tools.livereload"
             properties="serverStarted"
             type="org.eclipse.jface.viewers.ITreeSelection">
       </propertyTester> 
+   </extension-->
+   <extension
+         point="org.eclipse.wst.server.core.serverTypes">
+      <serverType
+            behaviourClass="org.jboss.tools.livereload.internal.server.wst.LiveReloadServerBehaviour"
+            class="org.jboss.tools.livereload.internal.server.wst.LiveReloadServerDelegate"
+            description="LiveReload Server"
+            hasConfiguration="false"
+            id="org.jboss.tools.livereload.serverType"
+            initialState="stopped"
+            launchConfigId="org.jboss.tools.livereload.serverLaunchConfig"
+            launchModes="run"
+            name="LiveReload Server"
+            runtime="false"
+            runtimeTypeId="org.jboss.tools.livereload.serverTypeRuntime"
+            supportsRemoteHosts="false">
+      </serverType>
    </extension>
    <extension
-         point="org.eclipse.wst.server.ui.editorPages">
+         point="org.eclipse.wst.server.ui.serverImages">
+      <image
+            icon="icons/livereload_server.png"
+            id="org.jboss.tools.livereload.serverImage"
+            typeIds="org.jboss.tools.livereload.serverTypeRuntime, org.jboss.tools.livereload.serverType">
+      </image>
+   </extension>
+   <extension
+         point="org.eclipse.wst.server.core.runtimeTypes">
+      <runtimeType
+            description="LiveReload Server"
+            id="org.jboss.tools.livereload.serverTypeRuntime"
+            name="LiveReload Server">
+      </runtimeType>
    </extension>
 
 </plugin>

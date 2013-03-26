@@ -1,4 +1,4 @@
-package org.jboss.tools.livereload.internal.configuration;
+package org.jboss.tools.livereload.internal.server.configuration;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -13,21 +13,21 @@ import org.eclipse.swt.widgets.Shell;
 /**
  * @author Andre Dietisheim
  */
-public class StartCancelButtonWizardDialog extends WizardDialog {
+public class LiveReloadWizardDialog extends WizardDialog {
 
-	public StartCancelButtonWizardDialog(Shell parentShell, IWizard newWizard) {
+	public LiveReloadWizardDialog(Shell parentShell, IWizard newWizard) {
 		super(parentShell, newWizard);
 	}
 
 	@Override
 	protected Point getInitialSize() {
-		return new Point(400, 400);
+		return new Point(400, 450);
 	}
 
 	@Override
 	protected Control createButtonBar(Composite parent) {
 		Control control = super.createButtonBar(parent);
-		getButton(IDialogConstants.FINISH_ID).setText("Start");
+		getButton(IDialogConstants.FINISH_ID).setText("Finish");
 		return control;
 	}
 

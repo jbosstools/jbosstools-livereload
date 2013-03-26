@@ -30,7 +30,8 @@ Require-Bundle: org.eclipse.ui,
  org.apache.commons.io;bundle-version="2.0.1",
  org.eclipse.jetty.continuation;bundle-version="[8.1.0,9.0.0)",
  org.jboss.tools.common;bundle-version="3.4.0",
- org.jboss.tools.common.ui
+ org.jboss.tools.common.ui,
+ org.eclipse.debug.core;bundle-version="3.8.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
@@ -38,4 +39,5 @@ Bundle-ClassPath: .,
  lib/jackson-core-2.1.2.jar,
  lib/jackson-databind-2.1.2.jar,
  lib/jericho-html-3.3.jar
-Export-Package: org.jboss.tools.livereload.internal.io;x-friends:="org.jboss.tools.livereload.test"
+Export-Package: org.jboss.tools.livereload.internal.server.jetty;x-friends:="org.jboss.tools.livereload.test",
+ org.jboss.tools.livereload.internal.server.wst;x-friends:="org.jboss.tools.livereload.test"

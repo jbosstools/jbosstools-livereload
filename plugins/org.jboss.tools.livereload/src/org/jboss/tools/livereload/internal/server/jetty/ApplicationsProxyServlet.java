@@ -1,4 +1,4 @@
-package org.jboss.tools.livereload.internal.io;
+package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -9,10 +9,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.servlets.ProxyServlet;
 import org.jboss.tools.livereload.internal.util.Logger;
+import org.jboss.tools.livereload.internal.util.URIUtils;
 
-public class LiveReloadProxyServlet extends ProxyServlet {
+public class ApplicationsProxyServlet extends ProxyServlet {
 
-	public LiveReloadProxyServlet() {
+	public ApplicationsProxyServlet() {
 	}
 
 	@Override

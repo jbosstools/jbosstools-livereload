@@ -9,7 +9,7 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.io;
+package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.tools.livereload.internal.io.LiveReloadWebSocketServlet.LiveReloadSocket;
+import org.jboss.tools.livereload.internal.server.jetty.LiveReloadWebSocketServlet.LiveReloadSocket;
 import org.jboss.tools.livereload.internal.util.Logger;
+import org.jboss.tools.livereload.internal.util.URIUtils;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;

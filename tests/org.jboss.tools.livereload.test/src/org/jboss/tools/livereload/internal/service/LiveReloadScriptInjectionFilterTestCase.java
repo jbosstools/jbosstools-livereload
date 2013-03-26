@@ -15,14 +15,14 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.fest.assertions.Assertions;
-import org.jboss.tools.livereload.internal.io.LiveReloadScriptInjector;
+import org.jboss.tools.livereload.internal.server.jetty.LiveReloadScriptInjectionFilter;
 import org.junit.Test;
 
 /**
  * @author xcoulon
  *
  */
-public class LiveReloadScriptInjectorTestCase {
+public class LiveReloadScriptInjectionFilterTestCase {
 	
 	@Test
 	public void shouldInjectScriptAtEndOfBody() throws IOException {
@@ -30,7 +30,7 @@ public class LiveReloadScriptInjectorTestCase {
 		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("aerogear-index.txt");
 		final String addition = "<script src='foo!'/>";
 		// operation
-		final char[] modifiedContent = LiveReloadScriptInjector.inject(sourceStream, addition);
+		final char[] modifiedContent = LiveReloadScriptInjectionFilter.injectContent(sourceStream, addition);
 		// verifications
 		Assertions.assertThat(new String(modifiedContent)).contains(addition + "</body>");
 	}
@@ -41,7 +41,7 @@ public class LiveReloadScriptInjectorTestCase {
 		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("aerogear-members-template.txt");
 		final String addition = "<script src='foo!'/>";
 		// operation
-		final char[] modifiedContent = LiveReloadScriptInjector.inject(sourceStream, addition);
+		final char[] modifiedContent = LiveReloadScriptInjectionFilter.injectContent(sourceStream, addition);
 		// verifications
 		Assertions.assertThat(new String(modifiedContent)).doesNotContain(addition + "</body>");
 	}

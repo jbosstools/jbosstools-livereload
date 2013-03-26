@@ -9,23 +9,21 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.configuration;
+package org.jboss.tools.livereload.internal.server.configuration;
 
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.wst.server.core.IServer;
 
 /**
  * @author xcoulon
  *
  */
-public class LiveReloadLaunchWizard extends Wizard {
+public class LiveReloadConfigurationWizard extends Wizard {
+	
+	private final LiveReloadConfigurationWizardModel wizardModel = new LiveReloadConfigurationWizardModel();
 
-	private final ILiveReloadWebServerConfiguration wizardModel;
-	private final LiveReloadLaunchWizardPage configPage;
-
-	public LiveReloadLaunchWizard(IServer server) {
-		this.wizardModel = new LiveReloadLaunchWizardModel();
-		configPage = new LiveReloadLaunchWizardPage(wizardModel);
+	@Override
+	public void addPages() {
+		addPage(new LiveReloadConfigurationWizardPage(wizardModel));
 	}
 
 	@Override
@@ -33,12 +31,7 @@ public class LiveReloadLaunchWizard extends Wizard {
 		return true;
 	}
 
-	@Override
-	public void addPages() {
-		addPage(configPage);
-	}
-
-	public ILiveReloadWebServerConfiguration getConfiguration() {
+	public ILiveReloadConfiguration getConfiguration() {
 		return wizardModel;
 	}
 

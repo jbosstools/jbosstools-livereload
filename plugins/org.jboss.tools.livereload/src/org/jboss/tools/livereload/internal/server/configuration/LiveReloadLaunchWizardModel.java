@@ -9,7 +9,7 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.configuration;
+package org.jboss.tools.livereload.internal.server.configuration;
 
 import org.jboss.tools.common.databinding.ObservablePojo;
 
@@ -18,7 +18,7 @@ import org.jboss.tools.common.databinding.ObservablePojo;
  * @author xcoulon
  *
  */
-public class LiveReloadLaunchWizardModel extends ObservablePojo implements ILiveReloadWebServerConfiguration {
+public class LiveReloadLaunchWizardModel extends ObservablePojo {
 
 	public static final String PROPERTY_WEBSOCKET_SERVER_PORT = "websocketServerPort";
 
@@ -35,7 +35,6 @@ public class LiveReloadLaunchWizardModel extends ObservablePojo implements ILive
 	/* (non-Javadoc)
 	 * @see org.jboss.tools.web.pagereloader.internal.configuration.ILiveReloadConfiguration#getWebsocketServerPort()
 	 */
-	@Override
 	public int getWebsocketServerPort() {
 		return websocketServerPort;
 	}
@@ -50,7 +49,6 @@ public class LiveReloadLaunchWizardModel extends ObservablePojo implements ILive
 	/* (non-Javadoc)
 	 * @see org.jboss.tools.web.pagereloader.internal.configuration.ILiveReloadConfiguration#isUseProxyServer()
 	 */
-	@Override
 	public boolean isUseProxyServer() {
 		return useProxyServer;
 	}
@@ -65,7 +63,6 @@ public class LiveReloadLaunchWizardModel extends ObservablePojo implements ILive
 	/* (non-Javadoc)
 	 * @see org.jboss.tools.web.pagereloader.internal.configuration.ILiveReloadConfiguration#getProxyServerPort()
 	 */
-	@Override
 	public int getProxyServerPort() {
 		return proxyServerPort;
 	}

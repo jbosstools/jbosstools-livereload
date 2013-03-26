@@ -9,7 +9,7 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.io;
+package org.jboss.tools.livereload.internal.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,7 +28,7 @@ public class URIUtils {
 		return new URIConverter(uri);
 	}
 
-	static class URIConverter {
+	public static class URIConverter {
 
 		final URI originalURI;
 

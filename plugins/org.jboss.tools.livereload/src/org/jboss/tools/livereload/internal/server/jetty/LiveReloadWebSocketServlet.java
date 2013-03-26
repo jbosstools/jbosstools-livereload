@@ -9,7 +9,7 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.io;
+package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.io.IOException;
 
@@ -60,7 +60,8 @@ public class LiveReloadWebSocketServlet extends WebSocketServlet {
 		return new LiveReloadSocket((String) request.getHeader("User-Agent"));
 	}
 
-	class LiveReloadSocket implements WebSocket.OnTextMessage {
+	public class LiveReloadSocket implements WebSocket.OnTextMessage {
+		
 		private Connection connection;
 
 		private final String userAgent;
