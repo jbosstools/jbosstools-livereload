@@ -11,15 +11,16 @@
 
 package org.jboss.tools.livereload.internal.server.configuration;
 
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadConfigurationWizardModel.PROPERTY_NEW_SERVER_HTTP_PORT;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadConfigurationWizardModel.PROPERTY_NEW_SERVER_ENABLE_HTTP_PROXY;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadConfigurationWizardModel.PROPERTY_NEW_SERVER_HTTP_PROXY_PORT;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadConfigurationWizardModel.PROPERTY_NEW_SERVER_NAME;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadConfigurationWizardModel.PROPERTY_NEW_SERVER_WEBSOCKET_PORT;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.CREATE_NEW_SERVER;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.DESCRIPTION;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_SERVER_NAME_LABEL;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_SERVER_PORT_INVALID_VALUE;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_SERVER_PORT_LABEL;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_CHECKBOX;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_PORT_INVALID_VALUE;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_PORT_LABEL;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.SERVER_ALREADY_EXISTS;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.SERVER_NAME_LABEL;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.SERVER_PORTS_DUPLICATE_VALUES;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.TITLE;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.USE_EXISTING_SERVER;
@@ -82,7 +83,7 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 	private DataBindingContext dbc = null;
 
 	private final LiveReloadConfigurationWizardModel wizardModel;
-	
+
 	private final List<IServer> existingServers = WSTUtils.retrieveLiveReloadServers();
 
 	/**
@@ -106,8 +107,9 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 		GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).margins(10, 10).applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, true).applyTo(container);
 		createNewServerCreationPanel(container);
-		createExistingServerSelectionPanel(container);
-		// connects validation status from the databinding context to wizard page
+		// createExistingServerSelectionPanel(container);
+		// connects validation status from the databinding context to wizard
+		// page
 		WizardPageSupport.create(this, dbc);
 	}
 
@@ -119,22 +121,26 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 	 *            the parent container
 	 */
 	private void createNewServerCreationPanel(final Composite parentContainer) {
-		final Button createNewServerButton = new Button(parentContainer, SWT.RADIO);
-		createNewServerButton.setText(CREATE_NEW_SERVER);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(createNewServerButton);
-		final IObservableValue createNewServerButtonObservable = WidgetProperties.selection().observe(
-				createNewServerButton);
+		// final Button createNewServerButton = new Button(parentContainer,
+		// SWT.RADIO);
+		// createNewServerButton.setText(CREATE_NEW_SERVER);
+		// GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true,
+		// false).applyTo(createNewServerButton);
+		// final IObservableValue createNewServerButtonObservable =
+		// WidgetProperties.selection().observe(
+		// createNewServerButton);
 		final IObservableValue createNewServerModelObservable = BeanProperties.value(
 				LiveReloadConfigurationWizardModel.PROPERTY_CREATE_NEW_SERVER).observe(wizardModel);
-		ValueBindingBuilder.bind(createNewServerButtonObservable).to(createNewServerModelObservable).in(dbc);
+		// ValueBindingBuilder.bind(createNewServerButtonObservable).to(createNewServerModelObservable).in(dbc);
 
 		// Panel itself
 		final Composite newServerCreationPanel = new Composite(parentContainer, SWT.NONE);
-		GridLayoutFactory.fillDefaults().numColumns(2).equalWidth(false).margins(20, 0).applyTo(newServerCreationPanel);
+		GridLayoutFactory.fillDefaults().numColumns(2).equalWidth(false).margins(00, 0).applyTo(newServerCreationPanel);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(newServerCreationPanel);
+
 		// Server name
 		final Label serverNameLabel = new Label(newServerCreationPanel, SWT.NONE);
-		serverNameLabel.setText(HTTP_SERVER_NAME_LABEL);
+		serverNameLabel.setText(SERVER_NAME_LABEL);
 		GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.CENTER).grab(false, false).applyTo(serverNameLabel);
 		final Text serverNameText = new Text(newServerCreationPanel, SWT.BORDER);
 		wizardModel.setNewServerName(WSTUtils.generateDefaultServerName());
@@ -143,18 +149,6 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 		final IObservableValue serverNameModelObservable = BeanProperties.value(PROPERTY_NEW_SERVER_NAME).observe(
 				wizardModel);
 		ValueBindingBuilder.bind(serverNameTextObservable).to(serverNameModelObservable).in(dbc);
-
-		// HTTP port
-		final Label httpPortLabel = new Label(newServerCreationPanel, SWT.NONE);
-		httpPortLabel.setText(HTTP_SERVER_PORT_LABEL);
-		GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.CENTER).grab(false, false).applyTo(httpPortLabel);
-		final Text httpPortText = new Text(newServerCreationPanel, SWT.BORDER);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(httpPortText);
-		final IObservableValue httpPortTextObservable = WidgetProperties.text(SWT.Modify).observe(httpPortText);
-		final IObservableValue httpPortModelObservable = BeanProperties.value(PROPERTY_NEW_SERVER_HTTP_PORT).observe(
-				wizardModel);
-		ValueBindingBuilder.bind(httpPortTextObservable).converting(new StringToIntegerConverter())
-				.to(httpPortModelObservable).converting(new IntegerToStringConverter()).in(dbc);
 
 		// WebSockets port
 		final Label websocketPortLabel = new Label(newServerCreationPanel, SWT.NONE);
@@ -169,14 +163,42 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 		ValueBindingBuilder.bind(websocketPortTextObservable).converting(new StringToIntegerConverter())
 				.to(websocketPortModelObservable).converting(new IntegerToStringConverter()).in(dbc);
 
+		// HTTP Port Enablement
+		final Button createHttpProxyButton = new Button(newServerCreationPanel, SWT.CHECK);
+		createHttpProxyButton.setText(HTTP_PROXY_SERVER_CHECKBOX);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).span(2, 1)
+				.applyTo(createHttpProxyButton);
+		final IObservableValue createHttpProxyButtonObservable = WidgetProperties.selection().observe(
+				createHttpProxyButton);
+		final IObservableValue createHttpProxyModelObservable = BeanProperties.value(PROPERTY_NEW_SERVER_ENABLE_HTTP_PROXY)
+				.observe(wizardModel);
+		ValueBindingBuilder.bind(createHttpProxyButtonObservable).to(createHttpProxyModelObservable).in(dbc);
+
+		// HTTP Port Value
+		final Label httpPortLabel = new Label(newServerCreationPanel, SWT.NONE);
+		httpPortLabel.setText(HTTP_PROXY_SERVER_PORT_LABEL);
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).grab(false, false).indent(20, 0)
+				.applyTo(httpPortLabel);
+		final Text httpPortText = new Text(newServerCreationPanel, SWT.BORDER);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(httpPortText);
+		final IObservableValue httpPortTextObservable = WidgetProperties.text(SWT.Modify).observe(httpPortText);
+		final IObservableValue httpPortModelObservable = BeanProperties.value(PROPERTY_NEW_SERVER_HTTP_PROXY_PORT).observe(
+				wizardModel);
+		ValueBindingBuilder.bind(httpPortTextObservable).converting(new StringToIntegerConverter())
+				.to(httpPortModelObservable).converting(new IntegerToStringConverter()).in(dbc);
+		ValueBindingBuilder.bind(WidgetProperties.enabled().observe(httpPortText))
+				.notUpdating(createHttpProxyButtonObservable).in(dbc);
+
 		// react to button (de)selection
 		createNewServerModelObservable.addValueChangeListener(onValueChanged(newServerCreationPanel));
 
 		// panel validation
 		addValidator(new ServerNameValidator(createNewServerModelObservable, serverNameTextObservable));
-		addValidator(new ServerHttpPortValidator(createNewServerModelObservable, httpPortTextObservable));
+		addValidator(new ServerHttpProxyPortValidator(createNewServerModelObservable, httpPortTextObservable,
+				createHttpProxyModelObservable));
 		addValidator(new ServerWebSocketPortValidator(createNewServerModelObservable, websocketPortTextObservable));
-		addValidator(new ServerPortsValidator(createNewServerModelObservable, httpPortTextObservable, websocketPortTextObservable));
+		addValidator(new ServerPortsValidator(createNewServerModelObservable, httpPortTextObservable,
+				websocketPortTextObservable));
 
 		// initial state
 		if (!wizardModel.isCreateNewServer()) {
@@ -292,7 +314,7 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 			}
 		}
 	}
-	
+
 	/**
 	 * Adds the given {@link ValidationStatusProvider} to this Wizard Page's
 	 * {@link DataBindingContext}
@@ -304,9 +326,9 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 		dbc.addValidationStatusProvider(validator);
 		ControlDecorationSupport.create(validator, SWT.LEFT | SWT.TOP, null,
 				new RequiredControlDecorationUpdater(false));
-		
+
 	}
-	
+
 	/**
 	 * Validator to check that the given Server Name is not empty or null and
 	 * does not match an existing server.
@@ -337,36 +359,44 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 	}
 
 	/**
-	 * Validator to check that the HTTP Port of the Server to create is a number.
+	 * Validator to check that the HTTP Port of the Server to create is a
+	 * number.
+	 * 
 	 * @author xcoulon
-	 *
+	 * 
 	 */
-	static class ServerHttpPortValidator extends MultiValidator {
+	static class ServerHttpProxyPortValidator extends MultiValidator {
 
 		private final IObservableValue createNewServerModelObservable;
 		private final IObservableValue httpPortObservable;
+		private final IObservableValue createHttpProxyModelObservable;
 
-		public ServerHttpPortValidator(final IObservableValue createNewServerModelObservable,
-				final IObservableValue httpPortObservable) {
+		public ServerHttpProxyPortValidator(final IObservableValue createNewServerModelObservable,
+				final IObservableValue httpPortObservable, final IObservableValue createHttpProxyModelObservable) {
 			this.createNewServerModelObservable = createNewServerModelObservable;
 			this.httpPortObservable = httpPortObservable;
+			this.createHttpProxyModelObservable = createHttpProxyModelObservable;
 		}
 
 		@Override
 		protected IStatus validate() {
 			final boolean createNewServer = (Boolean) createNewServerModelObservable.getValue();
-			final int httpPortValue = toInt((String)httpPortObservable.getValue());
-			if (createNewServer && (httpPortValue < 0 || httpPortValue > 65535)) {
-				return ValidationStatus.error(HTTP_SERVER_PORT_INVALID_VALUE);
+			final boolean createHttpProxy = (Boolean) createHttpProxyModelObservable.getValue();
+			final int httpPortValue = toInt((String) httpPortObservable.getValue());
+			if (createNewServer && createHttpProxy && (httpPortValue < 0 || httpPortValue > 65535)) {
+				return ValidationStatus.error(HTTP_PROXY_SERVER_PORT_INVALID_VALUE);
 			}
 			return ValidationStatus.ok();
 		}
+
 	}
 
 	/**
-	 * Validator to check that the WebSocket Port of the Server to create is a number.
+	 * Validator to check that the WebSocket Port of the Server to create is a
+	 * number.
+	 * 
 	 * @author xcoulon
-	 *
+	 * 
 	 */
 	static class ServerWebSocketPortValidator extends MultiValidator {
 
@@ -382,7 +412,7 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 		@Override
 		protected IStatus validate() {
 			final boolean createNewServer = (Boolean) createNewServerModelObservable.getValue();
-			final int websocketPortValue = toInt((String)websocketPortObservable.getValue());
+			final int websocketPortValue = toInt((String) websocketPortObservable.getValue());
 			if (createNewServer && (websocketPortValue < 0 || websocketPortValue > 65535)) {
 				return ValidationStatus.error(WEBSOCKET_SERVER_PORT_INVALID_VALUE);
 			}
@@ -391,9 +421,11 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 	}
 
 	/**
-	 * Validator to check that the HTTP Port and the WebSocket Port of the Server to create are different.
+	 * Validator to check that the HTTP Port and the WebSocket Port of the
+	 * Server to create are different.
+	 * 
 	 * @author xcoulon
-	 *
+	 * 
 	 */
 	static class ServerPortsValidator extends MultiValidator {
 
@@ -437,7 +469,6 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 			return toInt((String) fromObject);
 		}
 
-		
 	}
 
 	/**
@@ -512,11 +543,13 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 		}
 
 	}
-	
+
 	/**
 	 * Converts the given value into an integer.
+	 * 
 	 * @param value
-	 * @return the Int value or <code>-1</code> if the given parameter cannot be converted into an integer
+	 * @return the Int value or <code>-1</code> if the given parameter cannot be
+	 *         converted into an integer
 	 */
 	private static int toInt(String value) {
 		if (value instanceof String) {

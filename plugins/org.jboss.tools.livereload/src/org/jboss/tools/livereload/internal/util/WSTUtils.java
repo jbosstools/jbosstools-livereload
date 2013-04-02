@@ -21,6 +21,7 @@ import org.eclipse.wst.server.core.IRuntimeType;
 import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerType;
+import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.ServerUtil;
 
@@ -84,13 +85,13 @@ public class WSTUtils {
 		final IServerType liveReloadServerType = ServerCore.findServerType(LIVERELOAD_SERVER_TYPE);
 		boolean valid = false;
 		int counter = 0;
-		while(!valid) {
+		while (!valid) {
 			StringBuilder serverNameBuilder = new StringBuilder(liveReloadServerType.getName()).append(" at localhost");
 			if (counter > 0) {
 				serverNameBuilder.append(" (").append(counter).append(")");
 			}
 			final String serverName = serverNameBuilder.toString();
-			if(serverExists(serverName)) {
+			if (serverExists(serverName)) {
 				counter++;
 				continue;
 			}
@@ -101,16 +102,31 @@ public class WSTUtils {
 
 	/**
 	 * Verifies if a server with the same name already exists in the workspace.
+	 * 
 	 * @param serverName
 	 * @return true if a server with the same name exists, false otherwise.
 	 */
 	public static boolean serverExists(final String serverName) {
-		for(IServer server : ServerCore.getServers()) {
-			if(server.getName().equals(serverName)) {
+		for (IServer server : ServerCore.getServers()) {
+			if (server.getName().equals(serverName)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
+	public static IServer createLiveReloadServerWorkingCopy(final String serverName) throws CoreException {
+		IRuntimeType rt = ServerCore.findRuntimeType(LIVERELOAD_RUNTIME_TYPE);
+		IRuntimeWorkingCopy wc = rt.createRuntime(null, null);
+		IRuntime runtime = wc.save(true, null);
+		IServerType st = ServerCore.findServerType(LIVERELOAD_SERVER_TYPE);
+		IServerWorkingCopy swc = (IServerWorkingCopy) st.createServer(serverName, null, null);
+		swc.setServerConfiguration(null);
+		swc.setName(serverName);
+		swc.setRuntime(runtime);
+		// swc.setAttribute(IDeployableServer.DEPLOY_DIRECTORY, deployLocation);
+		// swc.setAttribute(IDeployableServer.TEMP_DEPLOY_DIRECTORY,
+		// tempDeployLocation);
+		return swc.save(true, new NullProgressMonitor());
+	}
 }

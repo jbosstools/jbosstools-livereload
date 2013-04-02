@@ -12,18 +12,21 @@
 package org.jboss.tools.livereload.internal.server.configuration;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.wizard.Wizard;
+import org.jboss.tools.livereload.internal.util.Logger;
+import org.jboss.tools.livereload.internal.util.WSTUtils;
 
 /**
  * @author xcoulon
- *
+ * 
  */
 public class LiveReloadConfigurationWizard extends Wizard {
-	
+
 	private final LiveReloadConfigurationWizardModel wizardModel = new LiveReloadConfigurationWizardModel();
 
 	private final IFolder folder;
-	
+
 	public LiveReloadConfigurationWizard(final IFolder folder) {
 		this.folder = folder;
 	}
@@ -35,6 +38,14 @@ public class LiveReloadConfigurationWizard extends Wizard {
 
 	@Override
 	public boolean performFinish() {
+		if (wizardModel.isCreateNewServer()) {
+			try {
+				WSTUtils.createLiveReloadServerWorkingCopy(wizardModel.getNewServerName());
+			} catch (CoreException e) {
+				Logger.error("Failed to create a new LiveReload Server", e);
+				return false;
+			}
+		}
 		return true;
 	}
 

@@ -1,7 +1,5 @@
 package org.jboss.tools.livereload.internal.server.configuration;
 
-import java.util.List;
-
 import org.eclipse.wst.server.core.IServer;
 
 public interface ILiveReloadConfiguration {
@@ -16,6 +14,12 @@ public interface ILiveReloadConfiguration {
 	 */
 	public abstract String getNewServerName();
 
+
+	/**
+	 * @return tru if the proxy should be created/started
+	 */
+	public abstract boolean isEnableHttpProxyPort();
+	
 	/**
 	 * @return the newServerHttpPort
 	 */

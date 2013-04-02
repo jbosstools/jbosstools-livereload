@@ -11,6 +11,7 @@
 
 package org.jboss.tools.livereload.internal.server.wst;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -52,6 +53,17 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate {
 	@Override
 	public void dispose() {
 		super.dispose();
+	}
+
+	
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.wst.server.core.model.ServerBehaviourDelegate#restart(java.lang.String)
+	 */
+	@Override
+	public void restart(String launchMode) throws CoreException {
+		// TODO Auto-generated method stub
+		super.restart(launchMode);
 	}
 
 	@Override

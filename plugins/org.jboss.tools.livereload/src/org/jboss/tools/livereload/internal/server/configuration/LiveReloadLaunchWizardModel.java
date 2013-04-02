@@ -22,56 +22,44 @@ public class LiveReloadLaunchWizardModel extends ObservablePojo {
 
 	public static final String PROPERTY_WEBSOCKET_SERVER_PORT = "websocketServerPort";
 
-	public static final String PROPERTY_USE_PROXY_SERVER = "useProxyServer";
+	public static final String PROPERTY_USE_HTTP_PROXY_SERVER = "useHttpProxyServer";
 
-	public static final String PROPERTY_PROXY_SERVER_PORT = "proxyServerPort";
+	public static final String PROPERTY_HTTP_PROXY_SERVER_PORT = "httpProxyServerPort";
 	
 	private int websocketServerPort = 35729;
 
-	private boolean useProxyServer = true;
+	private boolean useHttpProxyServer = true;
 
-	private int proxyServerPort = 8081;
+	private int httpProxyServerPort = 8081;
 
-	/* (non-Javadoc)
-	 * @see org.jboss.tools.web.pagereloader.internal.configuration.ILiveReloadConfiguration#getWebsocketServerPort()
-	 */
 	public int getWebsocketServerPort() {
 		return websocketServerPort;
 	}
 
-	/**
-	 * @param websocketServerPort the websocketServerPort to set
-	 */
 	public void setWebsocketServerPort(int websocketServerPort) {
 		firePropertyChange(PROPERTY_WEBSOCKET_SERVER_PORT, this.websocketServerPort, this.websocketServerPort = websocketServerPort);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jboss.tools.web.pagereloader.internal.configuration.ILiveReloadConfiguration#isUseProxyServer()
-	 */
-	public boolean isUseProxyServer() {
-		return useProxyServer;
+	public boolean isUseHttpProxyServer() {
+		return useHttpProxyServer;
 	}
 
 	/**
 	 * @param useProxyServer the useProxyServer to set
 	 */
-	public void setUseProxyServer(boolean useProxyServer) {
-		firePropertyChange(PROPERTY_USE_PROXY_SERVER, this.useProxyServer, this.useProxyServer = useProxyServer);
+	public void setUseHttpProxyServer(boolean useHttpProxyServer) {
+		firePropertyChange(PROPERTY_USE_HTTP_PROXY_SERVER, this.useHttpProxyServer, this.useHttpProxyServer = useHttpProxyServer);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jboss.tools.web.pagereloader.internal.configuration.ILiveReloadConfiguration#getProxyServerPort()
-	 */
-	public int getProxyServerPort() {
-		return proxyServerPort;
+	public int getHttpProxyServerPort() {
+		return httpProxyServerPort;
 	}
 
 	/**
-	 * @param proxyServerPort the proxyServerPort to set
+	 * @param httpProxyServerPort the httpProxyServerPort to set
 	 */
-	public void setProxyServerPort(int proxyServerPort) {
-		firePropertyChange(PROPERTY_PROXY_SERVER_PORT, this.proxyServerPort, this.proxyServerPort = proxyServerPort);
+	public void setHttpProxyServerPort(int httpProxyServerPort) {
+		firePropertyChange(PROPERTY_HTTP_PROXY_SERVER_PORT, this.httpProxyServerPort, this.httpProxyServerPort = httpProxyServerPort);
 	}
 	
 	

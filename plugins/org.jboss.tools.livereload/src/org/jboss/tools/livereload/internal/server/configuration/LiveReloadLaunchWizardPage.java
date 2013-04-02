@@ -12,10 +12,10 @@
 package org.jboss.tools.livereload.internal.server.configuration;
 
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.DESCRIPTION;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_CHECKBOX;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_DESCRIPTION;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_PORT_INVALID_VALUE;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.PROXY_SERVER_PORT_LABEL;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_CHECKBOX;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_DESCRIPTION;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_PORT_INVALID_VALUE;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_PORT_LABEL;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.SERVER_PORTS_DUPLICATE_VALUES;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.TITLE;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.WEBSOCKET_SERVER_PORT_INVALID_VALUE;
@@ -97,22 +97,22 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 
 		// Proxy Server enablement
 		final Button useProxyServerBtn = new Button(container, SWT.CHECK);
-		useProxyServerBtn.setText(PROXY_SERVER_CHECKBOX);
+		useProxyServerBtn.setText(HTTP_PROXY_SERVER_CHECKBOX);
 		GridDataFactory.fillDefaults().span(2, 1).align(SWT.FILL, SWT.CENTER).grab(false, false)
 				.applyTo(useProxyServerBtn);
 		final IObservableValue useProxyServerModelObservable = BeanProperties.value(
-				LiveReloadLaunchWizardModel.PROPERTY_USE_PROXY_SERVER).observe(wizardModel);
+				LiveReloadLaunchWizardModel.PROPERTY_USE_HTTP_PROXY_SERVER).observe(wizardModel);
 		final IObservableValue useProxyServerSelection = WidgetProperties.selection().observe(useProxyServerBtn);
 		dbc.bindValue(useProxyServerSelection, useProxyServerModelObservable);
 
 		// Proxy Server port
 		final Label proxyPortLabel = new Label(container, SWT.NONE);
-		proxyPortLabel.setText(PROXY_SERVER_PORT_LABEL);
+		proxyPortLabel.setText(HTTP_PROXY_SERVER_PORT_LABEL);
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).indent(10, 0).applyTo(proxyPortLabel);
 		final Text proxyPortText = new Text(container, SWT.BORDER);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).applyTo(proxyPortText);
 		final IObservableValue proxyPortModelObservable = BeanProperties.value(
-				LiveReloadLaunchWizardModel.PROPERTY_PROXY_SERVER_PORT).observe(wizardModel);
+				LiveReloadLaunchWizardModel.PROPERTY_HTTP_PROXY_SERVER_PORT).observe(wizardModel);
 		final IObservableValue proxyPortTextObservable = WidgetProperties.text(SWT.Modify).observe(proxyPortText);
 		ValueBindingBuilder.bind(WidgetProperties.enabled().observe(proxyPortText))
 				.notUpdating(useProxyServerModelObservable).in(dbc);
@@ -121,7 +121,7 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 
 		// Proxy Server brief description
 		final Link proxyServerDescription = new Link(container, SWT.WRAP);
-		proxyServerDescription.setText(PROXY_SERVER_DESCRIPTION);
+		proxyServerDescription.setText(HTTP_PROXY_SERVER_DESCRIPTION);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).hint(100, SWT.DEFAULT).indent(00, 10).span(2, 1)
 				.applyTo(proxyServerDescription);
 		GridLayoutFactory.fillDefaults().numColumns(2).margins(6, 6).applyTo(container);
@@ -174,7 +174,7 @@ public class LiveReloadLaunchWizardPage extends WizardPage {
 				return ValidationStatus.error(WEBSOCKET_SERVER_PORT_INVALID_VALUE);
 			}
 			if (useProxyServerValue && proxyServerPortValue == -1) {
-				return ValidationStatus.error(PROXY_SERVER_PORT_INVALID_VALUE);
+				return ValidationStatus.error(HTTP_PROXY_SERVER_PORT_INVALID_VALUE);
 			}
 			if (useProxyServerValue && proxyServerPortValue == websocketPortValue) {
 				return ValidationStatus.error(SERVER_PORTS_DUPLICATE_VALUES);

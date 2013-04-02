@@ -21,7 +21,7 @@ public class LiveReloadWizardDialog extends WizardDialog {
 
 	@Override
 	protected Point getInitialSize() {
-		return new Point(400, 450);
+		return new Point(400, 350);
 	}
 
 	@Override

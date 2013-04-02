@@ -11,11 +11,8 @@
 
 package org.jboss.tools.livereload.internal.server.configuration;
 
-import java.util.List;
-
 import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.common.databinding.ObservablePojo;
-import org.jboss.tools.livereload.internal.util.WSTUtils;
 
 /**
  * @author xcoulon
@@ -27,8 +24,10 @@ public class LiveReloadConfigurationWizardModel extends ObservablePojo implement
 
 	public static final String PROPERTY_NEW_SERVER_NAME = "newServerName";
 
-	public static final String PROPERTY_NEW_SERVER_HTTP_PORT = "newServerHttpPort";
+	public static final String PROPERTY_NEW_SERVER_ENABLE_HTTP_PROXY = "enableHttpProxyPort";
 
+	public static final String PROPERTY_NEW_SERVER_HTTP_PROXY_PORT = "newServerHttpPort";
+	
 	public static final String PROPERTY_NEW_SERVER_WEBSOCKET_PORT = "newServerWebsocketPort";
 
 	public static final String PROPERTY_EXISTING_SERVERS = "existingServers";
@@ -41,6 +40,9 @@ public class LiveReloadConfigurationWizardModel extends ObservablePojo implement
 	/** Name of the new server to create. */
 	private String newServerName = null;
 
+	/** Flag to indicate if the HTTP Proxy should be created as well. */
+	private boolean enableHttpProxyPort = false;
+	
 	/** HTTP Port of the new server to create. */
 	private int newServerHttpPort = 8080;
 
@@ -75,6 +77,21 @@ public class LiveReloadConfigurationWizardModel extends ObservablePojo implement
 	public void setNewServerName(String newServerName) {
 		firePropertyChange(PROPERTY_NEW_SERVER_NAME, this.newServerName, this.newServerName = newServerName);
 	}
+	
+	/**
+	 * @return the enableHttpProxyPort
+	 */
+	public boolean isEnableHttpProxyPort() {
+		return enableHttpProxyPort;
+	}
+
+	/**
+	 * @param enableHttpProxyPort the enableHttpProxyPort to set
+	 */
+	public void setEnableHttpProxyPort(boolean enableHttpProxyPort) {
+		firePropertyChange(PROPERTY_NEW_SERVER_ENABLE_HTTP_PROXY, this.enableHttpProxyPort, this.enableHttpProxyPort = enableHttpProxyPort);
+		;
+	}
 
 	@Override
 	public int getNewServerHttpPort() {
@@ -86,7 +103,7 @@ public class LiveReloadConfigurationWizardModel extends ObservablePojo implement
 	 *            the newServerHttpPort to set
 	 */
 	public void setNewServerHttpPort(int newServerHttpPort) {
-		firePropertyChange(PROPERTY_NEW_SERVER_HTTP_PORT, this.newServerHttpPort,
+		firePropertyChange(PROPERTY_NEW_SERVER_HTTP_PROXY_PORT, this.newServerHttpPort,
 				this.newServerHttpPort = newServerHttpPort);
 	}
 

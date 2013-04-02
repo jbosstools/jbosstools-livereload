@@ -96,10 +96,19 @@
    <extension
          point="org.eclipse.wst.server.core.runtimeTypes">
       <runtimeType
+            class="org.jboss.tools.livereload.internal.server.wst.LiveReloadRuntime"
             description="LiveReload Server"
             id="org.jboss.tools.livereload.serverTypeRuntime"
             name="LiveReload Server">
       </runtimeType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfiguration"
+            id="org.jboss.tools.livereload.serverLaunchConfig"
+            name="name">
+      </launchConfigurationType>
    </extension>
 
 </plugin>
