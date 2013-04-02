@@ -66,7 +66,7 @@ public class LiveReloadFolderCommandHandler extends AbstractHandler {
 	 *         existing server) or null if the user cancelled the operation.
 	 */
 	private ILiveReloadConfiguration openWizardDialog(final IFolder folder) {
-		final LiveReloadConfigurationWizard liveReloadWizard = new LiveReloadConfigurationWizard();
+		final LiveReloadConfigurationWizard liveReloadWizard = new LiveReloadConfigurationWizard(folder);
 		final AtomicInteger state = new AtomicInteger(0);
 		Display.getDefault().syncExec(new Runnable() {
 			@Override

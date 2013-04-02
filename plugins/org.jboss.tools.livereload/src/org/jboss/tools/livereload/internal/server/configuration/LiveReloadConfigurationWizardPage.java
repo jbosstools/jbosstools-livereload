@@ -38,6 +38,7 @@ import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
@@ -50,6 +51,7 @@ import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -80,7 +82,7 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 	private DataBindingContext dbc = null;
 
 	private final LiveReloadConfigurationWizardModel wizardModel;
-
+	
 	private final List<IServer> existingServers = WSTUtils.retrieveLiveReloadServers();
 
 	/**
@@ -88,11 +90,11 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 	 * 
 	 * @param wizardModel
 	 */
-	public LiveReloadConfigurationWizardPage(final LiveReloadConfigurationWizardModel wizardModel) {
+	public LiveReloadConfigurationWizardPage(final LiveReloadConfigurationWizardModel wizardModel, final IFolder folder) {
 		super("LiveReload Configuration");
 		this.wizardModel = wizardModel;
 		setTitle(TITLE);
-		setDescription(DESCRIPTION);
+		setDescription(NLS.bind(DESCRIPTION, folder.getName()));
 		setImageDescriptor(ImageRepository.LIVE_RELOAD_SERVER_LAUNCH);
 	}
 

@@ -11,6 +11,7 @@
 
 package org.jboss.tools.livereload.internal.server.configuration;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.wizard.Wizard;
 
 /**
@@ -21,9 +22,15 @@ public class LiveReloadConfigurationWizard extends Wizard {
 	
 	private final LiveReloadConfigurationWizardModel wizardModel = new LiveReloadConfigurationWizardModel();
 
+	private final IFolder folder;
+	
+	public LiveReloadConfigurationWizard(final IFolder folder) {
+		this.folder = folder;
+	}
+
 	@Override
 	public void addPages() {
-		addPage(new LiveReloadConfigurationWizardPage(wizardModel));
+		addPage(new LiveReloadConfigurationWizardPage(wizardModel, folder));
 	}
 
 	@Override
