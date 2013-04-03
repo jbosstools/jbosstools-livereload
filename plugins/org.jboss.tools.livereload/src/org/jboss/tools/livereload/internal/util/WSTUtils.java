@@ -24,6 +24,9 @@ import org.eclipse.wst.server.core.IServerType;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.ServerUtil;
+import org.jboss.tools.livereload.internal.server.configuration.ILiveReloadConfiguration;
+import org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfiguration;
+import org.jboss.tools.livereload.internal.server.wst.LiveReloadServerBehaviour;
 
 /**
  * @author xcoulon
@@ -115,18 +118,27 @@ public class WSTUtils {
 		return false;
 	}
 
-	public static IServer createLiveReloadServerWorkingCopy(final String serverName) throws CoreException {
+	public static IServer createLiveReloadServerWorkingCopy(final ILiveReloadConfiguration configuration) throws CoreException {
 		IRuntimeType rt = ServerCore.findRuntimeType(LIVERELOAD_RUNTIME_TYPE);
 		IRuntimeWorkingCopy wc = rt.createRuntime(null, null);
 		IRuntime runtime = wc.save(true, null);
 		IServerType st = ServerCore.findServerType(LIVERELOAD_SERVER_TYPE);
-		IServerWorkingCopy swc = (IServerWorkingCopy) st.createServer(serverName, null, null);
+		IServerWorkingCopy swc = (IServerWorkingCopy) st.createServer(configuration.getNewServerName(), null, null);
 		swc.setServerConfiguration(null);
-		swc.setName(serverName);
+		swc.setName(configuration.getNewServerName());
 		swc.setRuntime(runtime);
-		// swc.setAttribute(IDeployableServer.DEPLOY_DIRECTORY, deployLocation);
-		// swc.setAttribute(IDeployableServer.TEMP_DEPLOY_DIRECTORY,
-		// tempDeployLocation);
+		//swc.setAttribute(IDeployableServer.SERVER_MODE, "yourNewMode");
+		// FIXME: also manage Proxy port
+		//swc.setAttribute(LiveReloadLaunchConfiguration.ROOT_FOLDER, configuration.getRootFolder().getFullPath().toString());
+		swc.setAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, configuration.getNewServerWebsocketPort());
 		return swc.save(true, new NullProgressMonitor());
+	}
+
+	public static LiveReloadServerBehaviour findServerBehaviour(final String serverId) {
+		final IServer server = ServerCore.findServer(serverId);
+		if (server != null) {
+			return (LiveReloadServerBehaviour) server.getAdapter(LiveReloadServerBehaviour.class);
+		}
+		return null;
 	}
 }

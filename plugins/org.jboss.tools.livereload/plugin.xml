@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
+   <!--extension
          point="org.eclipse.ui.commands">
       <command
             id="org.jboss.tools.livereload.markForLiveReloadCommand"
@@ -57,7 +57,7 @@
            </with>
           </activeWhen>
       </handler>
-   </extension>
+   </extension-->
    <!--extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
@@ -96,7 +96,6 @@
    <extension
          point="org.eclipse.wst.server.core.runtimeTypes">
       <runtimeType
-            class="org.jboss.tools.livereload.internal.server.wst.LiveReloadRuntime"
             description="LiveReload Server"
             id="org.jboss.tools.livereload.serverTypeRuntime"
             name="LiveReload Server">
@@ -107,7 +106,8 @@
       <launchConfigurationType
             delegate="org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfiguration"
             id="org.jboss.tools.livereload.serverLaunchConfig"
-            name="name">
+            modes="run"
+            name="LiveReload">
       </launchConfigurationType>
    </extension>
 

@@ -29,7 +29,7 @@ import org.eclipse.ui.handlers.RegistryToggleState;
 import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizard;
 import org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardModel;
-import org.jboss.tools.livereload.internal.server.wst.LiveReloadService;
+import org.jboss.tools.livereload.internal.service.LiveReloadService;
 import org.jboss.tools.livereload.internal.util.WSTUtils;
 
 /**

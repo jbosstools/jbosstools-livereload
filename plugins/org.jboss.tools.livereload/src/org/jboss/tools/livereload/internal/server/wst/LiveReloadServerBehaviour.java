@@ -14,9 +14,13 @@ package org.jboss.tools.livereload.internal.server.wst;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.wst.server.core.IServer;
+import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
+import org.jboss.tools.livereload.internal.service.LiveReloadService;
+import org.jboss.tools.livereload.internal.util.Logger;
 
 /**
  * @author xcoulon
@@ -24,6 +28,26 @@ import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
  */
 public class LiveReloadServerBehaviour extends ServerBehaviourDelegate {
 
+	/** The LiveReloadService that controls the underlying embedded jetty server. */
+	private LiveReloadService liveReloadService;
+
+	@Override
+	protected void initialize(IProgressMonitor monitor) {
+		super.initialize(monitor);
+		final IServerWorkingCopy swc = getServer().createWorkingCopy();
+		try {
+			swc.setAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT);
+			swc.saveAll(true, null);
+		} catch (CoreException e) {
+			Logger.error("Failed to save the new LiveReload server configuration", e);
+		}
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+	}
+	
 	public void setServerStarting() {
 		setServerState(IServer.STATE_STARTING);
 	}
@@ -39,6 +63,19 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate {
 	public void setServerStopped() {
 		setServerState(IServer.STATE_STOPPED);
 	}
+	
+	@Override
+	public IStatus canStart(String launchMode) {
+		return Status.OK_STATUS;
+	}
+
+	@Override
+	public IStatus canStop() {
+		if(getServer().getServerState() == IServer.STATE_STARTING || getServer().getServerState() == IServer.STATE_STARTED) {
+			return Status.OK_STATUS;
+		}
+		return Status.CANCEL_STATUS;
+	}
 
 	@Override
 	public IStatus canPublish() {
@@ -46,30 +83,24 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate {
 	}
 
 	@Override
-	protected void initialize(IProgressMonitor monitor) {
-		super.initialize(monitor);
-	}
-
-	@Override
-	public void dispose() {
-		super.dispose();
-	}
-
-	
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.wst.server.core.model.ServerBehaviourDelegate#restart(java.lang.String)
-	 */
-	@Override
-	public void restart(String launchMode) throws CoreException {
-		// TODO Auto-generated method stub
-		super.restart(launchMode);
-	}
-
-	@Override
 	public void stop(boolean force) {
 		setServerStopping();
+		if(this.liveReloadService != null) {
+			try {
+				liveReloadService.stopEmbeddedServer();
+			} catch (Exception e) {
+				Logger.error("Failed to stop LiveReload server", e);
+			}
+		}
 		setServerStopped();
+	}
+
+	/**
+	 * Binds the LiveReloadService that controls the underlying embedded jetty server.
+	 * @param liveReloadService
+	 */
+	public void setLiveReloadService(final LiveReloadService liveReloadService) {
+		this.liveReloadService = liveReloadService;
 	}
 
 }

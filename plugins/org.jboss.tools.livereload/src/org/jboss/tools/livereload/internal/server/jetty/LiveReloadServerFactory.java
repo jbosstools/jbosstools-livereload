@@ -9,7 +9,7 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.server.wst;
+package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,11 +20,6 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.wst.server.core.IServer;
-import org.jboss.tools.livereload.internal.server.jetty.ApplicationsProxyServlet;
-import org.jboss.tools.livereload.internal.server.jetty.LiveReloadScriptFileFilter;
-import org.jboss.tools.livereload.internal.server.jetty.LiveReloadScriptInjectionFilter;
-import org.jboss.tools.livereload.internal.server.jetty.LiveReloadWebSocketServlet;
 
 /**
  * Factory to initialize the WebServer with websocket support, optional script
@@ -33,31 +28,34 @@ import org.jboss.tools.livereload.internal.server.jetty.LiveReloadWebSocketServl
  * @author xcoulon
  * 
  */
-public class LiveReloadWebServerFactory {
+public class LiveReloadServerFactory {
 
-	public static ServerBuilder onServer(final IServer server, final int websocketPort) {
-		ServerBuilder builder = new ServerBuilder(server, websocketPort);
-		return builder;
+	public static ServerBuilder onServer(final AbstractCommandBroadcaster liveReloadCommandBroadcaster) {
+		return new ServerBuilder(liveReloadCommandBroadcaster);
 	}
 
 	
 	public static class ServerBuilder {
 
-		private final IServer server;
-
-		private final int websocketPort;
-
-		private boolean enableProxy = false;
+		private int websocketPort;
 
 		private int proxyPort = -1;
 		
-		public ServerBuilder(final IServer server, final int websocketPort) {
-			this.server = server;
+		private boolean enableProxy = false;
+		
+		private final AbstractCommandBroadcaster liveReloadCommandBroadcaster;
+		
+		public ServerBuilder(final AbstractCommandBroadcaster liveReloadCommandBroadcaster) {
+			this.liveReloadCommandBroadcaster = liveReloadCommandBroadcaster;
+		}
+
+		public ServerBuilder websocketPort(final int websocketPort) {
 			this.websocketPort = websocketPort;
+			return this;
 		}
 		
-		public ServerBuilder enableProxy(final boolean enableProxy, final int proxyPort) {
-			this.enableProxy = enableProxy;
+		public ServerBuilder proxyPort(final int proxyPort) {
+			this.enableProxy = true;
 			this.proxyPort = proxyPort;
 			return this;
 		}
@@ -71,25 +69,24 @@ public class LiveReloadWebServerFactory {
 			websocketConnector.setPort(websocketPort);
 			websocketConnector.setMaxIdleTime(0);
 			server.addConnector(websocketConnector);
+			final HandlerCollection handlers = new HandlerCollection();
+			server.setHandler(handlers);
+			final ServletContextHandler liveReloadContext = new ServletContextHandler(handlers, "/",
+					ServletContextHandler.NO_SESSIONS);
+			//liveReloadContext.addFilter(new FilterHolder(new LiveReloadScriptFileFilter()),
+			//		"/livereload.js", null);
+			liveReloadContext.addServlet(new ServletHolder(new LiveReloadWebSocketServlet(
+					liveReloadCommandBroadcaster)), "/livereload");
+			liveReloadContext.addServlet(new ServletHolder(new LiveReloadScriptFileServlet()), "/livereload.js");
 			if (enableProxy) {
 				final SelectChannelConnector proxyConnector = new SelectChannelConnector();
 				proxyConnector.setPort(proxyPort);
 				proxyConnector.setMaxIdleTime(0);
 				server.addConnector(proxyConnector);
 
-				final HandlerCollection handlers = new HandlerCollection();
-				server.setHandler(handlers);
-
-				final ServletContextHandler liveReloadContext = new ServletContextHandler(handlers, "/",
-						ServletContextHandler.NO_SESSIONS);
-
 				// Livereload specific content
 //				liveReloadContext.addServlet(new ServletHolder(new LiveReloadWebSocketServlet(
 //						liveReloadCommandBroadcaster)), "/livereload");
-				liveReloadContext.addServlet(new ServletHolder(new LiveReloadWebSocketServlet(
-						null)), "/livereload");
-				liveReloadContext.addFilter(new FilterHolder(new LiveReloadScriptFileFilter()),
-						"/livereload/livereload.js", null);
 
 				// Handling all applications behind the proxy
 				liveReloadContext.addServlet(new ServletHolder(ApplicationsProxyServlet.class), "/");

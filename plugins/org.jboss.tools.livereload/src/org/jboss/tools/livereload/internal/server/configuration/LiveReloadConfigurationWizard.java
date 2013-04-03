@@ -23,24 +23,22 @@ import org.jboss.tools.livereload.internal.util.WSTUtils;
  */
 public class LiveReloadConfigurationWizard extends Wizard {
 
-	private final LiveReloadConfigurationWizardModel wizardModel = new LiveReloadConfigurationWizardModel();
-
-	private final IFolder folder;
+	private final LiveReloadConfigurationWizardModel wizardModel;
 
 	public LiveReloadConfigurationWizard(final IFolder folder) {
-		this.folder = folder;
+		wizardModel = new LiveReloadConfigurationWizardModel(folder);
 	}
 
 	@Override
 	public void addPages() {
-		addPage(new LiveReloadConfigurationWizardPage(wizardModel, folder));
+		addPage(new LiveReloadConfigurationWizardPage(wizardModel));
 	}
 
 	@Override
 	public boolean performFinish() {
 		if (wizardModel.isCreateNewServer()) {
 			try {
-				WSTUtils.createLiveReloadServerWorkingCopy(wizardModel.getNewServerName());
+				WSTUtils.createLiveReloadServerWorkingCopy(getConfiguration());
 			} catch (CoreException e) {
 				Logger.error("Failed to create a new LiveReload Server", e);
 				return false;

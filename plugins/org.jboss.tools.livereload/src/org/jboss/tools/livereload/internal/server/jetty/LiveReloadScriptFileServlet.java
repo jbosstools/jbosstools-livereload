@@ -30,14 +30,16 @@ import org.jboss.tools.livereload.internal.util.Logger;
 
 /**
  * @author xcoulon
- * 
+ *
  */
-public class LiveReloadScriptFileFilter implements Filter {
+public class LiveReloadScriptFileServlet extends HttpServlet {
+
+	/** serialVersionUID */
+	private static final long serialVersionUID = 163695311668462503L;
 
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-			ServletException {
-		Logger.trace("Serving /livereload.js");
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		Logger.trace("Serving embedded /livereload.js");
 		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 		final InputStream scriptContent = LiveReloadActivator.getDefault().getResourceContent("/script/livereload.js");
 		httpServletResponse.getOutputStream().write(IOUtils.toByteArray(scriptContent));
@@ -45,13 +47,4 @@ public class LiveReloadScriptFileFilter implements Filter {
 		httpServletResponse.setContentType("text/javascript");
 	}
 
-	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
-	}
-
-	@Override
-	public void destroy() {
-	}
-
 }
-

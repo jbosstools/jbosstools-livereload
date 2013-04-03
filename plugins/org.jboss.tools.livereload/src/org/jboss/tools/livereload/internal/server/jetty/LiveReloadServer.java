@@ -13,10 +13,9 @@ package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.net.UnknownHostException;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.internal.util.Logger;
-import org.jboss.tools.livereload.internal.util.WTPUtils;
 
 /**
  * The LiveReload Server that implements the livereload protocol (based on
@@ -26,9 +25,9 @@ import org.jboss.tools.livereload.internal.util.WTPUtils;
  * @author xcoulon
  * 
  */
-public class LiveReloadServer {
+public class LiveReloadServer implements IWebResourceChangedListener {
 
-	private LiveReloadCommandBroadcaster broadcaster;
+	private AbstractCommandBroadcaster broadcaster;
 
 	private LiveReloadWebServerRunnable liveReloadWebServerRunnable;
 
@@ -38,18 +37,12 @@ public class LiveReloadServer {
 	 * @param config
 	 *            the LiveReload configuration to use.
 	 * @throws UnknownHostException
-	public LiveReloadServer(final IServer server, final LiveReloadCWebServerConfiguration config) throws UnknownHostException {
-		if (config.isUseProxyServer()) {
-			this.broadcaster = new LiveReloadCommandBroadcaster(config.getProxyServerPort());
-			this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(config.getProxyServerPort(),
-					config.getWebsocketServerPort(), broadcaster);
-		} else {
-			this.broadcaster = new LiveReloadCommandBroadcaster(WTPUtils.getPort(server));
-			this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(config.getWebsocketServerPort(),
-					broadcaster);
-		}
-	}
 	 */
+	public LiveReloadServer(final int websocketPort) throws UnknownHostException  {
+		this.broadcaster = new ResourceChangedBroadcaster();
+		this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(websocketPort,
+				broadcaster);
+	}
 	
 	/**
 	 * Starts the server
@@ -66,13 +59,11 @@ public class LiveReloadServer {
 		liveReloadWebServerRunnable.stop();
 	}
 
-	/**
-	 * Receives notification when some resource with the given path changed.
-	 * 
-	 * @param path
-	 *            the path of the resource that changed.
+	/* (non-Javadoc)
+	 * @see org.jboss.tools.livereload.internal.server.jetty.IWebResourceChangedListener#notifyResourceChange(java.lang.String)
 	 */
-	public void notifyResourceChange(final String path) {
+	@Override
+	public void notifyResourceChange(final IPath path) {
 		this.broadcaster.notifyResourceChange(path);
 	}
 
@@ -93,7 +84,7 @@ public class LiveReloadServer {
 
 		private final int websocketConnectorPort;
 
-		private final LiveReloadCommandBroadcaster liveReloadCommandBroadcaster;
+		private final AbstractCommandBroadcaster liveReloadCommandBroadcaster;
 
 		/**
 		 * Constructor to use when script injection proxy should be enabled
@@ -104,8 +95,8 @@ public class LiveReloadServer {
 		 * @throws UnknownHostException
 		 */
 		public LiveReloadWebServerRunnable(final int proxyConnectorPort, final int websocketConnectorPort,
-				final LiveReloadCommandBroadcaster liveReloadCommandBroadcaster) throws UnknownHostException {
-			this.server = new Server();
+				final AbstractCommandBroadcaster liveReloadCommandBroadcaster) throws UnknownHostException {
+			this.server = LiveReloadServerFactory.onServer(liveReloadCommandBroadcaster).websocketPort(websocketConnectorPort).proxyPort(proxyConnectorPort).build();
 			this.enableProxy = true;
 			this.proxyConnectorPort = proxyConnectorPort;
 			this.websocketConnectorPort = websocketConnectorPort;
@@ -121,8 +112,8 @@ public class LiveReloadServer {
 		 * @throws UnknownHostException
 		 */
 		public LiveReloadWebServerRunnable(final int websocketConnectorPort,
-				final LiveReloadCommandBroadcaster liveReloadCommandBroadcaster) throws UnknownHostException {
-			this.server = new Server();
+				final AbstractCommandBroadcaster liveReloadCommandBroadcaster) throws UnknownHostException {
+			this.server = LiveReloadServerFactory.onServer(liveReloadCommandBroadcaster).websocketPort(websocketConnectorPort).build();
 			this.enableProxy = false;
 			this.proxyConnectorPort = -1;
 			this.websocketConnectorPort = websocketConnectorPort;
@@ -132,7 +123,6 @@ public class LiveReloadServer {
 		@Override
 		public void run() {
 			try {
-				
 				Logger.debug("Starting LiveReload Websocket Server...");
 				server.start();
 				server.join();

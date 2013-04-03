@@ -11,8 +11,10 @@
 
 package org.jboss.tools.livereload.internal.server.configuration;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.common.databinding.ObservablePojo;
+import org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfiguration;
 
 /**
  * @author xcoulon
@@ -47,10 +49,26 @@ public class LiveReloadConfigurationWizardModel extends ObservablePojo implement
 	private int newServerHttpPort = 8080;
 
 	/** WebSocket Port of the new server to create. */
-	private int newServerWebsocketPort = 35729;
+	private int newServerWebsocketPort = LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT;
 
 	/** Selected server. */
 	private IServer selectedServer = null;
+	
+	/** The root folder that the server should manage (ie: watch and notify for changes). */
+	private final IFolder rootFolder;
+	
+	/**
+	 * Constructor
+	 * @param rootFolder the root folder that this server should manage
+	 */
+	public LiveReloadConfigurationWizardModel(final IFolder rootFolder) {
+		this.rootFolder = rootFolder;
+	}
+
+	@Override
+	public IFolder getRootFolder() {
+		return rootFolder;
+	}
 
 	@Override
 	public boolean isCreateNewServer() {

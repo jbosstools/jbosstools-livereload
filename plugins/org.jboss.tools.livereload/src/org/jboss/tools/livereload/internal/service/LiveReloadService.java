@@ -9,11 +9,11 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.server.wst;
+package org.jboss.tools.livereload.internal.service;
 
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.eclipse.core.resources.IFolder;
@@ -44,66 +44,71 @@ public class LiveReloadService implements IResourceChangeListener, IServerListen
 
 	private static final String LIVERELOAD_COMMAND_ID = "org.jboss.tools.livereload.liveReloadCommand";
 
-	public static final QualifiedName WEB_RESOURCE_CHANGE_LISTENER = new QualifiedName(
-			LiveReloadActivator.PLUGIN_ID, LiveReloadService.class.getName());
+	public static final QualifiedName WEB_RESOURCE_CHANGE_LISTENER = new QualifiedName(LiveReloadActivator.PLUGIN_ID,
+			LiveReloadService.class.getName());
 
-	private final IServer targetServer=null;
+	private final IServer targetServer = null;
 	private final Map<IFolder, IModule> webappFolders = new HashMap<IFolder, IModule>();
-	private final ArrayBlockingQueue<String> pendingChanges = new ArrayBlockingQueue<String>(1000);
-	private final LiveReloadServer liveReloadServer=null;
+	private final ArrayBlockingQueue<IPath> pendingChanges = new ArrayBlockingQueue<IPath>(1000);
+	private final LiveReloadServer liveReloadServer;
 
-	
-//	public static void enableLiveReload(final IServer server, final ILiveReloadWebServerConfiguration liveReloadConfiguration) {
-//		try {
-//			final LiveReloadService service = new LiveReloadService(server, liveReloadConfiguration);
-//			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-//			workspace.addResourceChangeListener(service, IResourceChangeEvent.POST_CHANGE);
-//			workspace.getRoot().setSessionProperty(WEB_RESOURCE_CHANGE_LISTENER, service);
-//			for (IModule module : server.getModules()) {
-//				final IProject project = module.getProject();
-//				final IFolder webappFolder = WTPUtils.getWebappFolder(project);
-//				service.watch(module, webappFolder);
-//			}
-//			service.start();
-//
-//		} catch (Exception e) {
-//			Logger.error("Failed to register observer for " + server, e);
-//		}
-//	}
-//
-//	public static void disableLiveReload(final IServer server) {
-//		try {
-//			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-//			final IWorkspaceRoot workspaceRoot = workspace.getRoot();
-//			final LiveReloadService webResourceChangeListener = (LiveReloadService) workspaceRoot
-//					.getSessionProperty(WEB_RESOURCE_CHANGE_LISTENER);
-//			if (webResourceChangeListener != null) {
-//				webResourceChangeListener.stopEmbeddedWebSocketServer();
-//				workspace.removeResourceChangeListener(webResourceChangeListener);
-//				workspaceRoot.setSessionProperty(WEB_RESOURCE_CHANGE_LISTENER, null);
-//				// make sure the command state is set to 'false' (unchecked)
-//				ICommandService service = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
-//				Command command = service.getCommand(LIVERELOAD_COMMAND_ID);
-//				State state = command.getState("org.eclipse.ui.commands.toggleState");
-//				state.setValue(false);
-//				Logger.debug("LiveReload Websocket Server stopped.");
-//			}
-//		} catch (Exception e) {
-//			Logger.error("Failed to register observer for " + server, e);
-//		}
-//	}
+	// public static void enableLiveReload(final IServer server, final
+	// ILiveReloadWebServerConfiguration liveReloadConfiguration) {
+	// try {
+	// final LiveReloadService service = new LiveReloadService(server,
+	// liveReloadConfiguration);
+	// final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+	// workspace.addResourceChangeListener(service,
+	// IResourceChangeEvent.POST_CHANGE);
+	// workspace.getRoot().setSessionProperty(WEB_RESOURCE_CHANGE_LISTENER,
+	// service);
+	// for (IModule module : server.getModules()) {
+	// final IProject project = module.getProject();
+	// final IFolder webappFolder = WTPUtils.getWebappFolder(project);
+	// service.watch(module, webappFolder);
+	// }
+	// service.start();
+	//
+	// } catch (Exception e) {
+	// Logger.error("Failed to register observer for " + server, e);
+	// }
+	// }
+	//
+	// public static void disableLiveReload(final IServer server) {
+	// try {
+	// final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+	// final IWorkspaceRoot workspaceRoot = workspace.getRoot();
+	// final LiveReloadService webResourceChangeListener = (LiveReloadService)
+	// workspaceRoot
+	// .getSessionProperty(WEB_RESOURCE_CHANGE_LISTENER);
+	// if (webResourceChangeListener != null) {
+	// webResourceChangeListener.stopEmbeddedWebSocketServer();
+	// workspace.removeResourceChangeListener(webResourceChangeListener);
+	// workspaceRoot.setSessionProperty(WEB_RESOURCE_CHANGE_LISTENER, null);
+	// // make sure the command state is set to 'false' (unchecked)
+	// ICommandService service = (ICommandService)
+	// PlatformUI.getWorkbench().getService(ICommandService.class);
+	// Command command = service.getCommand(LIVERELOAD_COMMAND_ID);
+	// State state = command.getState("org.eclipse.ui.commands.toggleState");
+	// state.setValue(false);
+	// Logger.debug("LiveReload Websocket Server stopped.");
+	// }
+	// } catch (Exception e) {
+	// Logger.error("Failed to register observer for " + server, e);
+	// }
+	// }
 
 	/**
 	 * Internal Constructor.
 	 * 
 	 * @param server
+	 * @throws UnknownHostException 
 	 * @throws Exception
 	 */
-//	private LiveReloadService(final IServer server, final ILiveReloadWebServerConfiguration configuration) throws Exception {
-//		this.targetServer = server;
-//		this.liveReloadServer = new LiveReloadServer(server, configuration);
-//		server.addPublishListener(new LiveReloadPublishAdapter());
-//	}
+	public LiveReloadService(final int websocketPort) throws UnknownHostException {
+		this.liveReloadServer = new LiveReloadServer(websocketPort);
+		// server.addPublishListener(new LiveReloadPublishAdapter());
+	}
 
 	/**
 	 * Adds the given webappFolder from the given module to the list of
@@ -116,14 +121,15 @@ public class LiveReloadService implements IResourceChangeListener, IServerListen
 		webappFolders.put(webappFolder, module);
 	}
 
-	private void start() throws Exception {
+	public void startEmbeddedServer() {
 		liveReloadServer.start();
-		this.targetServer.addServerListener(this);
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+		// this.targetServer.addServerListener(this);
 	}
 
-	private void stopEmbeddedWebSocketServer() throws Exception {
+	public void stopEmbeddedServer() throws Exception {
 		liveReloadServer.stop();
-		this.targetServer.removeServerListener(this);
+		// this.targetServer.removeServerListener(this);
 	}
 
 	/**
@@ -153,32 +159,30 @@ public class LiveReloadService implements IResourceChangeListener, IServerListen
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		final IResource resource = findChangedResource(event.getDelta());
-		for (Entry<IFolder, IModule> entry : webappFolders.entrySet()) {
-			final IFolder webappFolder = entry.getKey();
-			final IModule module = entry.getValue();
-			if (webappFolder.getFullPath().isPrefixOf(resource.getFullPath())) {
-				try {
-					final IPath changedPath = resource.getFullPath().makeRelativeTo(webappFolder.getFullPath());
-					final String path = "http://" + targetServer.getHost() + ":" + getServerPort() + "/" + module.getName()
-							+ "/" + changedPath.toString();
-					//System.out.println("Putting '" + path + "' on wait queue until server publish is done.");
-					pendingChanges.offer(path);
-				} catch (Exception e) {
-					Logger.error("Failed to send Page.Reload command over websocket", e);
-				}
-				break;
-			}
+		if (resource == null || resource.getType() != IResource.FILE) {
+			return;
 		}
+
+		// final IPath changedPath =
+		// resource.getFullPath().makeRelativeTo(webappFolder.getFullPath());
+		// final String path = "http://" + targetServer.getHost() + ":" +
+		// getServerPort() + "/"
+		// + module.getName() + "/" + changedPath.toString();
+		// System.out.println("Putting '" + path +
+		// "' on wait queue until server publish is done.");
+
+		//FIXME: should filter on file extension first
+		liveReloadServer.notifyResourceChange(resource.getLocation());
 	}
-	
+
 	/**
 	 * Stops the LiveReload WebSocket Server when the JEE Server is stopped
 	 */
 	@Override
 	public void serverChanged(ServerEvent event) {
-//		if(event.getState() == IServer.STATE_STOPPED) {
-//			disableLiveReload(event.getServer());
-//		}
+		// if(event.getState() == IServer.STATE_STOPPED) {
+		// disableLiveReload(event.getServer());
+		// }
 	}
 
 	/**
@@ -194,14 +198,13 @@ public class LiveReloadService implements IResourceChangeListener, IServerListen
 		}
 		return delta.getResource();
 	}
-	
+
 	class LiveReloadPublishAdapter extends PublishAdapter {
 
-
 		public LiveReloadPublishAdapter() {
-			
+
 		}
-		
+
 		@Override
 		public void publishFinished(IServer server, IStatus status) {
 			if (!status.isOK()) {
@@ -209,7 +212,7 @@ public class LiveReloadService implements IResourceChangeListener, IServerListen
 			}
 			try {
 				while (!pendingChanges.isEmpty()) {
-					String changedPath = pendingChanges.take();
+					IPath changedPath = pendingChanges.take();
 					liveReloadServer.notifyResourceChange(changedPath);
 				}
 			} catch (Exception e) {

@@ -9,21 +9,24 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.internal.server.wst;
+package org.jboss.tools.livereload.internal.service;
 
-import org.eclipse.wst.server.core.model.RuntimeDelegate;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 
 /**
  * @author xcoulon
  *
  */
-public class LiveReloadRuntime extends RuntimeDelegate {
+public class LocalFileChangedNotifier implements IResourceChangeListener {
 
-	/**
-	 * 
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
 	 */
-	public LiveReloadRuntime() {
-		// TODO Auto-generated constructor stub
+	@Override
+	public void resourceChanged(IResourceChangeEvent event) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

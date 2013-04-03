@@ -39,7 +39,6 @@ import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
@@ -91,11 +90,11 @@ public class LiveReloadConfigurationWizardPage extends WizardPage {
 	 * 
 	 * @param wizardModel
 	 */
-	public LiveReloadConfigurationWizardPage(final LiveReloadConfigurationWizardModel wizardModel, final IFolder folder) {
+	public LiveReloadConfigurationWizardPage(final LiveReloadConfigurationWizardModel wizardModel) {
 		super("LiveReload Configuration");
 		this.wizardModel = wizardModel;
 		setTitle(TITLE);
-		setDescription(NLS.bind(DESCRIPTION, folder.getName()));
+		setDescription(NLS.bind(DESCRIPTION, wizardModel.getRootFolder().getName()));
 		setImageDescriptor(ImageRepository.LIVE_RELOAD_SERVER_LAUNCH);
 	}
 
