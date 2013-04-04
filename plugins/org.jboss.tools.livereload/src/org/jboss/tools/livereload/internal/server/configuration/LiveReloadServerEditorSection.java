@@ -31,7 +31,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.ui.editor.ServerEditorSection;
 import org.eclipse.wst.server.ui.internal.command.ServerCommand;
-import org.jboss.tools.livereload.internal.LiveReloadActivator;
 import org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfiguration;
 
 /**
@@ -42,6 +41,7 @@ import org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfigurat
 public class LiveReloadServerEditorSection extends ServerEditorSection {
 
 	private Text websocketPortText;
+	private ControlDecoration websocketPortDecoration;
 
 	public void createSection(Composite parent) {
 		super.createSection(parent);
@@ -69,9 +69,14 @@ public class LiveReloadServerEditorSection extends ServerEditorSection {
 		d = new GridData();
 		d.grabExcessHorizontalSpace = true;
 		d.widthHint = 100;
-		d.horizontalIndent=10;
+		d.horizontalIndent = 10;
 		websocketPortText.setLayoutData(d);
-
+		websocketPortDecoration = new ControlDecoration(websocketPortText, SWT.LEFT | SWT.TOP);
+		FieldDecoration fieldDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(
+				FieldDecorationRegistry.DEC_ERROR);
+		websocketPortDecoration.hide();
+		websocketPortDecoration.setImage(fieldDecoration.getImage());
+		
 		ModifyListener websocketPortModifyListener = new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				execute(new SetWebSocketPortCommand(server));
@@ -86,19 +91,14 @@ public class LiveReloadServerEditorSection extends ServerEditorSection {
 	@Override
 	public IStatus[] getSaveStatus() {
 		return new IStatus[] { Status.OK_STATUS };
-		//return new IStatus[] { new Status(IStatus.ERROR, LiveReloadActivator.PLUGIN_ID, "Data is invalid") };
+		// return new IStatus[] { new Status(IStatus.ERROR,
+		// LiveReloadActivator.PLUGIN_ID, "Data is invalid") };
 	}
 
 	public class SetWebSocketPortCommand extends ServerCommand {
 
-		private ControlDecoration decoration;
-
 		public SetWebSocketPortCommand(IServerWorkingCopy server) {
 			super(server, LiveReloadServerConfigurationMessages.WEBSOCKET_SERVER_PORT_COMMAND);
-			decoration = new ControlDecoration(websocketPortText, SWT.LEFT | SWT.TOP);
-			FieldDecoration fieldDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(
-					FieldDecorationRegistry.DEC_ERROR);
-			decoration.setImage(fieldDecoration.getImage());
 		}
 
 		@Override
@@ -116,8 +116,18 @@ public class LiveReloadServerEditorSection extends ServerEditorSection {
 			validate();
 		}
 
+		/**
+		 * Shows an error decorator if the value cannot be parsed into an
+		 * Integer
+		 */
 		private void validate() {
-			//decoration.show();
+			try {
+				Integer.parseInt(websocketPortText.getText());
+				websocketPortDecoration.hide();
+			} catch (NumberFormatException e) {
+				websocketPortDecoration.show();
+			}
+
 		}
 
 	}
