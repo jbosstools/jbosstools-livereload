@@ -7,7 +7,7 @@ import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
 import org.eclipse.wst.server.core.IServer;
 
-public class WTPUtils {
+public class WtpUtils {
 
 	public static IFolder getWebappFolder(IProject project) {
 		IVirtualComponent component = ComponentCore.createComponent(project);

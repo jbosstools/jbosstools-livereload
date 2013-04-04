@@ -64,7 +64,7 @@ public class LiveReloadService implements IResourceChangeListener, IServerListen
 	// service);
 	// for (IModule module : server.getModules()) {
 	// final IProject project = module.getProject();
-	// final IFolder webappFolder = WTPUtils.getWebappFolder(project);
+	// final IFolder webappFolder = WtpUtils.getWebappFolder(project);
 	// service.watch(module, webappFolder);
 	// }
 	// service.start();
