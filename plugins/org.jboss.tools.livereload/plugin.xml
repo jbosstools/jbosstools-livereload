@@ -110,5 +110,15 @@
             name="LiveReload">
       </launchConfigurationType>
    </extension>
+   <extension
+         point="org.eclipse.wst.server.ui.editorPageSections">
+      <section
+            class="org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerEditorSection"
+            id="org.jboss.tools.livereload.serverConfigurationSection"
+            insertionId="org.eclipse.wst.server.editor.overview.left"
+            order="10"
+            typeIds="org.jboss.tools.livereload.serverType">
+      </section>
+   </extension>
 
 </plugin>

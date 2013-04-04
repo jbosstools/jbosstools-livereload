@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.jboss.tools.livereload</groupId>
+		<artifactId>tests</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<groupId>org.jboss.tools.livereload.tests</groupId>
+	<artifactId>org.jboss.tools.livereload.test</artifactId>
+	<packaging>eclipse-test-plugin</packaging>
+
+	<properties>
+		<coverage.filter>org.jboss.tools.livereload*</coverage.filter>
+		<emma.instrument.bundles>org.jboss.tools.livereload</emma.instrument.bundles>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-compiler-plugin</artifactId>
+				<version>${tychoVersion}</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+            <!-- to skip running tests (compile only) use commandline flag: -Dmaven.test.skip
+                  To allow all tests in a pom to pass/fail, use commandline flag: -fae (fail
+                  at end) -->
+            <plugin>
+              <groupId>org.eclipse.tycho</groupId>
+              <artifactId>tycho-surefire-plugin</artifactId>
+              <version>${tychoVersion}</version>
+              <configuration>
+                <useUIHarness>true</useUIHarness>
+                  <useUIThread>true</useUIThread>
+                  <!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
+                  <!-- tycho.testArgLine repeated to keep jacoco configuration for jacoco-maven-plugin -->
+                  <argLine>${tycho.testArgLine} ${memoryOptions1} ${memoryOptions2} ${applejdkProperties} ${platformSystemProperties} ${systemProperties} -Dusage_reporting_enabled=false -Dorg.jboss.tools.tests.skipPrivateRequirements=${skipPrivateRequirements}</argLine>
+                  <!-- https://docs.sonatype.org/display/TYCHO/How+to+run+SWTBot+tests+with+Tycho -->
+                  <!-- set useUIThread=true for regular ui tests -->
+                  <!-- set useUIThread=false for swtbot tests -->
+
+                  <!-- TODO: add new profile to permit running against JBDS product/application
+                          for JBDS tests, against Eclipse SDK for JBT -->
+                  <product>org.eclipse.platform.ide</product>
+                  <application>org.eclipse.ui.ide.workbench</application>
+                  <dependencies>
+                    <dependency>
+                            <type>p2-installable-unit</type>
+                            <artifactId>org.eclipse.platform.ide</artifactId>
+                            <version>0.0.0</version>
+                    </dependency>
+                    <!-- http://www.jmock.org/maven.html -->
+                    <dependency>
+                            <groupId>org.jmock</groupId>
+                            <artifactId>jmock-legacy</artifactId>
+                            <version>2.5.1</version>
+                    </dependency>
+                    <dependency>
+                            <groupId>org.jmock</groupId>
+                            <artifactId>jmock-junit4</artifactId>
+                            <version>2.5.1</version>
+                    </dependency>
+                  </dependencies>
+                  <includes>
+                    <include>**/*TestCase.class</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/Abstract*.class</exclude>
+                  </excludes>
+                </configuration>
+              </plugin>
+			
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<!-- Ignore optional deps to jdt.launching.macosx -->
+			<id>ignore-mac-deps-on-other-os</id>
+			<activation>
+				<os>
+					<family>!mac</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>target-platform-configuration</artifactId>
+						<version>${tychoVersion}</version>
+						<configuration>
+							<dependency-resolution>
+								<optionalDependencies>ignore</optionalDependencies>
+							</dependency-resolution>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-compiler-plugin</artifactId>
+						<version>${tychoVersion}</version>
+						<configuration>
+							<optionalDependencies>ignore</optionalDependencies>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>remove-other-platforms-from-query-on-mac</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>target-platform-configuration</artifactId>
+						<version>${tychoVersion}</version>
+						<configuration>
+							<environments>
+								<environment>
+									<os>macosx</os>
+									<ws>cocoa</ws>
+									<arch>x86_64</arch>
+								</environment>
+								<environment>
+									<os>macosx</os>
+									<ws>cocoa</ws>
+									<arch>x86</arch>
+								</environment>
+							</environments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>

@@ -2,15 +2,15 @@ package org.jboss.tools.livereload.internal.server.configuration;
 
 import org.eclipse.osgi.util.NLS;
 
-public class LiveReloadLaunchWizardMessages extends NLS {
+public class LiveReloadServerConfigurationMessages extends NLS {
 
-	private static final String BUNDLE_NAME = LiveReloadLaunchWizardMessages.class.getName();
+	private static final String BUNDLE_NAME = LiveReloadServerConfigurationMessages.class.getName();
 
 	static {
-		NLS.initializeMessages(BUNDLE_NAME, LiveReloadLaunchWizardMessages.class);
+		NLS.initializeMessages(BUNDLE_NAME, LiveReloadServerConfigurationMessages.class);
 	}
 
-	private LiveReloadLaunchWizardMessages() {
+	private LiveReloadServerConfigurationMessages() {
 		// Do not instantiate
 	}
 
@@ -29,6 +29,7 @@ public class LiveReloadLaunchWizardMessages extends NLS {
 	public static String HTTP_PROXY_SERVER_PORT_INVALID_VALUE;
 	public static String HTTP_PROXY_SERVER_DESCRIPTION;
 	public static String WEBSOCKET_SERVER_PORT_LABEL;
+	public static String WEBSOCKET_SERVER_PORT_COMMAND;
 	public static String WEBSOCKET_SERVER_PORT_DEFAULT_VALUE;
 	public static String WEBSOCKET_SERVER_PORT_INVALID_VALUE;
 	public static String SERVER_PORTS_DUPLICATE_VALUES;

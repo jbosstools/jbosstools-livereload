@@ -15,17 +15,17 @@ import static org.jboss.tools.livereload.internal.server.configuration.LiveReloa
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadConfigurationWizardModel.PROPERTY_NEW_SERVER_HTTP_PROXY_PORT;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadConfigurationWizardModel.PROPERTY_NEW_SERVER_NAME;
 import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadConfigurationWizardModel.PROPERTY_NEW_SERVER_WEBSOCKET_PORT;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.DESCRIPTION;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_CHECKBOX;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_PORT_INVALID_VALUE;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.HTTP_PROXY_SERVER_PORT_LABEL;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.SERVER_ALREADY_EXISTS;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.SERVER_NAME_LABEL;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.SERVER_PORTS_DUPLICATE_VALUES;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.TITLE;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.USE_EXISTING_SERVER;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.WEBSOCKET_SERVER_PORT_INVALID_VALUE;
-import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadLaunchWizardMessages.WEBSOCKET_SERVER_PORT_LABEL;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.DESCRIPTION;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.HTTP_PROXY_SERVER_CHECKBOX;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.HTTP_PROXY_SERVER_PORT_INVALID_VALUE;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.HTTP_PROXY_SERVER_PORT_LABEL;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.SERVER_ALREADY_EXISTS;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.SERVER_NAME_LABEL;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.SERVER_PORTS_DUPLICATE_VALUES;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.TITLE;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.USE_EXISTING_SERVER;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.WEBSOCKET_SERVER_PORT_INVALID_VALUE;
+import static org.jboss.tools.livereload.internal.server.configuration.LiveReloadServerConfigurationMessages.WEBSOCKET_SERVER_PORT_LABEL;
 
 import java.net.URL;
 import java.util.List;
