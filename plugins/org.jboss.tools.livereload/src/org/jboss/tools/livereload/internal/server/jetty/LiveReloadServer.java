@@ -12,10 +12,12 @@
 package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jetty.server.Server;
 import org.jboss.tools.livereload.internal.util.Logger;
+import org.jboss.tools.livereload.internal.util.TimeoutUtils;
+import org.jboss.tools.livereload.internal.util.TimeoutUtils.TaskMonitor;
 
 /**
  * The LiveReload Server that implements the livereload protocol (based on
@@ -25,9 +27,7 @@ import org.jboss.tools.livereload.internal.util.Logger;
  * @author xcoulon
  * 
  */
-public class LiveReloadServer implements IWebResourceChangedListener {
-
-	private AbstractCommandBroadcaster broadcaster;
+public class LiveReloadServer {
 
 	private LiveReloadWebServerRunnable liveReloadWebServerRunnable;
 
@@ -38,33 +38,43 @@ public class LiveReloadServer implements IWebResourceChangedListener {
 	 *            the LiveReload configuration to use.
 	 * @throws UnknownHostException
 	 */
-	public LiveReloadServer(final int websocketPort) throws UnknownHostException  {
-		this.broadcaster = new ResourceChangedBroadcaster();
-		this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(websocketPort,
-				broadcaster);
+	public LiveReloadServer(final int websocketPort) {
+		this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(websocketPort);
 	}
-	
+
 	/**
 	 * Starts the server
 	 */
 	public void start() {
-		Thread serverThread = new Thread(liveReloadWebServerRunnable, "jetty-livereload");
+		final Thread serverThread = new Thread(liveReloadWebServerRunnable, "jetty-livereload");
 		serverThread.start();
+		// wait until server is started
+		final TaskMonitor monitor = new TaskMonitor() {
+			@Override
+			public boolean isComplete() {
+				return liveReloadWebServerRunnable.isStarted();
+			}
+		};
+		if (TimeoutUtils.timeout(monitor, 5, TimeUnit.SECONDS)) {
+			Logger.error("Failed to start LiveReload Server within expected time");
+			// attempt to stop what can be stopped.
+			stop();
+		}
+	}
+
+	public boolean isStarted() {
+		return liveReloadWebServerRunnable.isStarted();
 	}
 
 	/**
 	 * Stops the server
 	 */
-	public void stop() throws Exception {
-		liveReloadWebServerRunnable.stop();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jboss.tools.livereload.internal.server.jetty.IWebResourceChangedListener#notifyResourceChange(java.lang.String)
-	 */
-	@Override
-	public void notifyResourceChange(final IPath path) {
-		this.broadcaster.notifyResourceChange(path);
+	public void stop() {
+		try {
+			liveReloadWebServerRunnable.stop();
+		} catch (Exception e) {
+			Logger.error("Failed to stop LiveReload Server");
+		}
 	}
 
 	/**
@@ -78,46 +88,16 @@ public class LiveReloadServer implements IWebResourceChangedListener {
 
 		private final Server server;
 
-		private final boolean enableProxy;
-
-		private final int proxyConnectorPort;
-
-		private final int websocketConnectorPort;
-
-		private final AbstractCommandBroadcaster liveReloadCommandBroadcaster;
-
-		/**
-		 * Constructor to use when script injection proxy should be enabled
-		 * 
-		 * @param proxyConnectorPort
-		 * @param websocketConnectorPort
-		 * @param liveReloadCommandBroadcaster
-		 * @throws UnknownHostException
-		 */
-		public LiveReloadWebServerRunnable(final int proxyConnectorPort, final int websocketConnectorPort,
-				final AbstractCommandBroadcaster liveReloadCommandBroadcaster) throws UnknownHostException {
-			this.server = LiveReloadServerFactory.onServer(liveReloadCommandBroadcaster).websocketPort(websocketConnectorPort).proxyPort(proxyConnectorPort).build();
-			this.enableProxy = true;
-			this.proxyConnectorPort = proxyConnectorPort;
-			this.websocketConnectorPort = websocketConnectorPort;
-			this.liveReloadCommandBroadcaster = liveReloadCommandBroadcaster;
-		}
+		private boolean isStarted = false;
 
 		/**
 		 * Constructor to use when script injection proxy should not be enabled
 		 * 
-		 * @param proxyConnectorPort
 		 * @param websocketConnectorPort
-		 * @param liveReloadCommandBroadcaster
 		 * @throws UnknownHostException
 		 */
-		public LiveReloadWebServerRunnable(final int websocketConnectorPort,
-				final AbstractCommandBroadcaster liveReloadCommandBroadcaster) throws UnknownHostException {
-			this.server = LiveReloadServerFactory.onServer(liveReloadCommandBroadcaster).websocketPort(websocketConnectorPort).build();
-			this.enableProxy = false;
-			this.proxyConnectorPort = -1;
-			this.websocketConnectorPort = websocketConnectorPort;
-			this.liveReloadCommandBroadcaster = liveReloadCommandBroadcaster;
+		public LiveReloadWebServerRunnable(final int websocketConnectorPort) {
+			this.server = LiveReloadServerConfigurator.initServer(websocketConnectorPort).build();
 		}
 
 		@Override
@@ -125,6 +105,7 @@ public class LiveReloadServer implements IWebResourceChangedListener {
 			try {
 				Logger.debug("Starting LiveReload Websocket Server...");
 				server.start();
+				isStarted = true;
 				server.join();
 			} catch (Exception e) {
 				Logger.error("Failed to start embedded jetty server to provide support for LiveReload", e);
@@ -134,7 +115,12 @@ public class LiveReloadServer implements IWebResourceChangedListener {
 		public void stop() throws Exception {
 			if (server != null) {
 				server.stop();
+				isStarted = false;
 			}
+		}
+
+		public boolean isStarted() {
+			return isStarted;
 		}
 	}
 

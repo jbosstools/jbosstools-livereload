@@ -16,10 +16,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
-import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.internal.LiveReloadActivator;
-import org.jboss.tools.livereload.internal.service.LiveReloadService;
-import org.jboss.tools.livereload.internal.util.Logger;
 import org.jboss.tools.livereload.internal.util.WSTUtils;
 
 /**
@@ -57,22 +54,7 @@ public class LiveReloadLaunchConfiguration implements ILaunchConfigurationDelega
 			// can't carry on if ServerBehaviour is not found
 			return;
 		}
-		// set the server status to "Starting"
-		serverBehaviour.setServerStarting();
-		try {
-			// now, let's init and start the embedded jetty server from the
-			// server attributes
-			final IServer server = serverBehaviour.getServer();
-			final int websocketPort = server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1);
-			LiveReloadService liveReloadService = new LiveReloadService(websocketPort);
-			serverBehaviour.setLiveReloadService(liveReloadService);
-			liveReloadService.startEmbeddedServer();
-			serverBehaviour.setServerStarted();
-		} catch (Exception e) {
-			Logger.error("Failed to launch the LiveReload server", e);
-			serverBehaviour.setServerStopped();
-		}
-		// set the server status to "Started"
+		serverBehaviour.startServer();
 	}
 
 }
