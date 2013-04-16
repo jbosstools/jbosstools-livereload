@@ -36,6 +36,10 @@ public class LiveReloadServerFactory {
 
 	
 	public static class ServerBuilder {
+		
+		private static final String MIN_WEB_SOCKET_PROTOCOL_VERSION = "minVersion";
+		
+		private static final String MIN_WEB_SOCKET_PROTOCOL_VERSION_VALUE = "-1";
 
 		private int websocketPort;
 
@@ -75,8 +79,11 @@ public class LiveReloadServerFactory {
 					ServletContextHandler.NO_SESSIONS);
 			//liveReloadContext.addFilter(new FilterHolder(new LiveReloadScriptFileFilter()),
 			//		"/livereload.js", null);
-			liveReloadContext.addServlet(new ServletHolder(new LiveReloadWebSocketServlet(
-					liveReloadCommandBroadcaster)), "/livereload");
+			
+			ServletHolder liveReloadServletHolder = new ServletHolder(new LiveReloadWebSocketServlet(liveReloadCommandBroadcaster));
+			liveReloadServletHolder.setInitParameter(MIN_WEB_SOCKET_PROTOCOL_VERSION, MIN_WEB_SOCKET_PROTOCOL_VERSION_VALUE); // Fix for BrowserSim (Safari) due to check in WebSocketFactory 
+			liveReloadContext.addServlet(liveReloadServletHolder, "/livereload");
+
 			liveReloadContext.addServlet(new ServletHolder(new LiveReloadScriptFileServlet()), "/livereload.js");
 			if (enableProxy) {
 				final SelectChannelConnector proxyConnector = new SelectChannelConnector();
