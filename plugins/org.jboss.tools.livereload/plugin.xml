@@ -103,12 +103,6 @@
    </extension>
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
-      <launchConfigurationType
-            delegate="org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfiguration"
-            id="org.jboss.tools.livereload.serverLaunchConfig"
-            modes="run"
-            name="LiveReload">
-      </launchConfigurationType>
    </extension>
    <extension
          point="org.eclipse.wst.server.ui.editorPageSections">
