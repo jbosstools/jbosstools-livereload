@@ -58,7 +58,8 @@ public class WorkspaceResourceChangedEventFilter implements EventFilter {
 		if (e instanceof WorkspaceResourceChangedEvent) {
 			WorkspaceResourceChangedEvent event = (WorkspaceResourceChangedEvent) e;
 			for (IResource resource : event.getChangedResources()) {
-				if (resource.getProject().equals(project) && acceptedFileTypes.contains(resource.getFileExtension())) {
+				final String fileExtension = resource.getFileExtension() != null ? resource.getFileExtension().toLowerCase() : null;
+				if (resource.getProject().equals(project) && fileExtension != null && acceptedFileTypes.contains(fileExtension)) {
 					return true;
 				}
 			}
