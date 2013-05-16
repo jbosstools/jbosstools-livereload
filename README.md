@@ -17,3 +17,8 @@ _JBoss Tools LiveReload_ is open source, and we welcome anybody that wants to
 participate and contribute!
 
 If you have any request or find any bug, please fill an issue on [JBoss JIRA](https://issues.jboss.org/browse/JBIDE/component/12317361)
+
+## License
+
+The JBoss Tools LiveReload plugins are distributed under the Eclipse Public License v1.0.
+The livereload.js script is distributed under the MIT License.
