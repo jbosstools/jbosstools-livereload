@@ -1,0 +1,7 @@
+eclipse.preferences.version=1
+org.jboss.tools.openshift.ApplicationId=20545623870a406bb9b5082cf39b0640
+org.jboss.tools.openshift.ApplicationName=html5eap6
+org.jboss.tools.openshift.Connection=https\://xcoulon%40redhat.com@
+org.jboss.tools.openshift.DeployFolder=deployments
+org.jboss.tools.openshift.Domain=xcoulon
+org.jboss.tools.openshift.RemoteName=origin
