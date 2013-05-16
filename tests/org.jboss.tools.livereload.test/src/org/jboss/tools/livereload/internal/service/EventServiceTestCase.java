@@ -67,10 +67,26 @@ public class EventServiceTestCase {
 	}
 
 	@Test
-	public void shouldNotifyLocalSubscribersAfterSingleRelevantFileChange() {
+	public void shouldNotifyLocalSubscribersAfterSingleRelevantFileChanged() {
 		// pre-condition
 		final IResource indexhtmlFile = mock(IResource.class);
 		when(indexhtmlFile.getFileExtension()).thenReturn("html");
+		when(indexhtmlFile.getProject()).thenReturn(project1);
+		// operation
+		final WorkspaceResourceChangedEvent event = new WorkspaceResourceChangedEvent(Arrays.asList(indexhtmlFile));
+		eventService.publish(event);
+		// validation
+		verify(localChangesSubscriber1).inform(event);
+		verify(localChangesSubscriber2, never()).inform(event);
+		verify(serverChangesSubscriber1, never()).inform(event);
+		verify(serverChangesSubscriber2, never()).inform(event);
+	}
+
+	@Test
+	public void shouldNotifyLocalSubscribersAfterSingleRelevantFileWithUppercaseExtensionChanged() {
+		// pre-condition
+		final IResource indexhtmlFile = mock(IResource.class);
+		when(indexhtmlFile.getFileExtension()).thenReturn("HTML");
 		when(indexhtmlFile.getProject()).thenReturn(project1);
 		// operation
 		final WorkspaceResourceChangedEvent event = new WorkspaceResourceChangedEvent(Arrays.asList(indexhtmlFile));
@@ -99,7 +115,7 @@ public class EventServiceTestCase {
 	}
 
 	@Test
-	public void shouldNotifyLocalSubscribersAfterMultipleRelevantFileChange() {
+	public void shouldNotifyLocalSubscribersAfterMultipleRelevantFileChanged() {
 		// pre-condition
 		final IResource indexhtmlFile = mock(IResource.class);
 		when(indexhtmlFile.getFileExtension()).thenReturn("html");
@@ -119,7 +135,7 @@ public class EventServiceTestCase {
 	}
 
 	@Test
-	public void shouldNotNotifyLocalSubscribersAfterMultipleIrrelevantFileChange() {
+	public void shouldNotNotifyLocalSubscribersAfterMultipleIrrelevantFileChanged() {
 		// pre-condition
 		final IResource pomxmlFile = mock(IResource.class);
 		when(pomxmlFile.getFileExtension()).thenReturn("xml");
