@@ -12,9 +12,9 @@ package org.jboss.tools.livereload.internal.service;
 
 import java.util.Collection;
 import java.util.EventObject;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.tools.livereload.internal.util.Logger;
 
@@ -27,7 +27,7 @@ public class EventService {
 
 	private static final EventService instance = new EventService();
 
-	private final Map<Subscriber, EventFilter> subscribers = new LinkedHashMap<Subscriber, EventFilter>();
+	private final Map<Subscriber, EventFilter> subscribers = new ConcurrentHashMap<Subscriber, EventFilter>();
 
 	/** Singleton constructor */
 	private EventService() {

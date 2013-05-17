@@ -27,6 +27,7 @@ import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.ServerUtil;
 import org.eclipse.wst.server.core.model.ServerDelegate;
 import org.jboss.ide.eclipse.as.core.server.internal.JBossServer;
+import org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.internal.server.wst.LiveReloadServerBehaviour;
 
 /**
@@ -120,10 +121,22 @@ public class WSTUtils {
 			JBossServer jBossServer = (JBossServer) server.getAdapter(ServerDelegate.class);
 			return jBossServer.getJBossWebPort();
 		}
-		if (TOMCAT_SERVER_TYPE.equals(serverType)) {
-			return server.getAttribute(TOMCAT_SERVER_PORT, -1);
+		if (serverType.equals(LIVERELOAD_SERVER_TYPE)) {
+			return server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1);
 		}
-		Logger.warn("Unsupported server type: " + server.getServerType().getName());
+//		if (TOMCAT_SERVER_TYPE.equals(serverType)) {
+//			return server.getAttribute(TOMCAT_SERVER_PORT, -1);
+//		}
+		//Logger.warn("Unsupported server type: " + server.getServerType().getName());
 		return -1;
+	}
+
+	/**
+	 * Returns true if the given server type is LiveReload
+	 * @param server
+	 * @return
+	 */
+	public static boolean isLiveReloadServer(final IServer server) {
+		return server != null && server.getServerType().getId().equals(LIVERELOAD_SERVER_TYPE);
 	}
 }

@@ -32,7 +32,7 @@ public class ServerResourcePublishedListener extends PublishAdapter {
 		if (server.getServerState() == IServer.STATE_STARTED && status.isOK()) {
 			EventService.getInstance().publish(new ServerResourcePublishedEvent(server));
 		} else {
-			Logger.info("Ignoring this publish notification..");
+			Logger.debug("Ignoring this publish notification..");
 		}
 
 	}

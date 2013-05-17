@@ -18,6 +18,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 
 /**
  * Utility class
@@ -47,6 +49,35 @@ public class ProjectUtils {
 			}
 		} catch (URISyntaxException e) {
 			Logger.error("Failed to convert given file location into an URI:" + fileLocation, e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the {@link IProject} containing the given file or null if none matches.
+	 * @param file
+	 * @return the surrounding project or null.
+	 */
+	public static IProject findProjectFromAbsolutePath(final IPath file) {
+		for(IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+			if(project.getLocation().isPrefixOf(file)) {
+				return project;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the {@link IProject} containing the given file or null if none matches.
+	 * @param file
+	 * @return the surrounding project or null.
+	 */
+	public static IProject findProjectFromResourceLocation(final IPath file) {
+		final IPath relativePath = file.makeRelative();
+		for(IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+			if(new Path(project.getName()).isPrefixOf(relativePath)) {
+				return project;
+			}
 		}
 		return null;
 	}
