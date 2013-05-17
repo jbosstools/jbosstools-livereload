@@ -13,6 +13,11 @@ package org.jboss.tools.livereload.internal.server.wst;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.io.IOException;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.wst.server.core.IServer;
@@ -46,7 +51,7 @@ public class LiveReloadServerBehaviourTestCase extends AbstractCommonTestCase {
 	}
 	
 	@Test(timeout=10000)
-	public void shouldStartLiveReloadServer() throws InterruptedException {
+	public void shouldStartLiveReloadServer() throws InterruptedException, IOException {
 		// pre-condition
 		// calling the Server#canStart(int) creates the underlying ServerBehaviour
 		assertThat(liveReloadServer.canStart(ILaunchManager.RUN_MODE).isOK()).isTrue();
@@ -57,7 +62,10 @@ public class LiveReloadServerBehaviourTestCase extends AbstractCommonTestCase {
 		liveReloadServerBehaviour.startServer();
 		// verification
 		// give a few millis to the server to actually start
-		assertThat(SocketUtil.isPortInUse(websocketPort)).isTrue();
+		HttpClient client = new HttpClient();
+		HttpMethod method = new GetMethod("http://localhost:" + websocketPort + "/livereload.js");
+		final int statusCode = client.executeMethod(method);
+		assertThat(statusCode).isEqualTo(200);
 	}
 	
 }

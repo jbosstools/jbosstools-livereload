@@ -105,7 +105,9 @@ public class WSTUtils {
 			final String host = url.getHost();
 			final int port = url.getPort();
 			for (IServer server : servers) {
-				if (host.equals(server.getHost()) && port == getPort(server)) {
+				// removed the host.equals(server.getHost()) comparison
+				// FIXME support comparison between IP address and 'localhost' ?
+				if (port == getPort(server)) {
 					return server;
 				}
 			}
