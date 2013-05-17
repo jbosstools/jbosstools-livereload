@@ -34,7 +34,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.debug.core;bundle-version="3.8.0",
  org.slf4j.api;bundle-version="1.6.4";visibility:=reexport,
  org.apache.log4j;bundle-version="1.2.15";visibility:=reexport,
- org.jboss.ide.eclipse.as.core;bundle-version="2.4.100"
+ org.jboss.ide.eclipse.as.core;bundle-version="2.4.100",
+ org.eclipse.ui.browser;bundle-version="3.4.100"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,

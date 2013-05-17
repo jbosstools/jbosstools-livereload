@@ -60,7 +60,7 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 	 * @param livereloadPort
 	 * @throws UnknownHostException
 	 */
-	public LiveReloadScriptInjectionFilter(final String hostAddress, final int livereloadPort) throws UnknownHostException {
+	public LiveReloadScriptInjectionFilter(final String hostAddress, final int livereloadPort) {
 		scriptContent = new StringBuilder("<script src=\"http://").append(hostAddress).append(":").append(livereloadPort)
 				.append("/livereload/livereload.js?snipver=1&host=").append(hostAddress).append("\"></script>").toString();
 	}

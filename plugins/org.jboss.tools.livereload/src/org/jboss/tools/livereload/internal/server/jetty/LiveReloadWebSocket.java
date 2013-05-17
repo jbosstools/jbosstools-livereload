@@ -3,6 +3,7 @@ package org.jboss.tools.livereload.internal.server.jetty;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.EventObject;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.internal.service.EventService;
@@ -97,10 +99,16 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 					final IProject project = ProjectUtils.extractProject(browserLocation);
 					EventService.getInstance().subscribe(this, new WorkspaceResourceChangedEventFilter(project));
 				} 
-				//TODO: see what's needed to support https://
+				// register with a ServerResourcePublishedFilter unless the target server is the LiveReload server,
+				// in which case, the 
 				else if(browserLocation.startsWith("http://")) {
 					final IServer server = WSTUtils.extractServer(browserLocation);
-					EventService.getInstance().subscribe(this, new ServerResourcePublishedFilter(server));
+					if(server != null && WSTUtils.isLiveReloadServer(server)) {
+						final IProject project = ProjectUtils.findProjectFromResourceLocation(new Path(new URL(browserLocation).getFile()));
+						EventService.getInstance().subscribe(this, new WorkspaceResourceChangedEventFilter(project));
+					} else {
+						EventService.getInstance().subscribe(this, new ServerResourcePublishedFilter(server));
+					}
 				}
 				
 				

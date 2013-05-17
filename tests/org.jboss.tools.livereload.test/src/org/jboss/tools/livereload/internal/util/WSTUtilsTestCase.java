@@ -23,6 +23,7 @@ import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.model.ServerDelegate;
 import org.jboss.ide.eclipse.as.core.server.internal.JBossServer;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -62,6 +63,7 @@ public class WSTUtilsTestCase {
 		assertThat(server).isEqualTo(jbossasServer);
 	}
 
+	@Ignore("Tomcat is not  supported yet.")
 	@Test
 	public void shouldRetrieveTomcat7ServerFromBrowserLocation() {
 		// pre-conditions

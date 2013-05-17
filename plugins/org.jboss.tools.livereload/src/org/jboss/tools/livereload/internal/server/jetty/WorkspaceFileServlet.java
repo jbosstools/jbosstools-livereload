@@ -13,6 +13,7 @@ package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,26 +21,45 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.jboss.tools.livereload.internal.LiveReloadActivator;
 import org.jboss.tools.livereload.internal.util.Logger;
+import org.jboss.tools.livereload.internal.util.ResourceUtils;
 
 /**
  * @author xcoulon
- *
+ * 
  */
-public class LiveReloadScriptFileServlet extends HttpServlet {
+public class WorkspaceFileServlet extends HttpServlet {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = 163695311668462503L;
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Logger.info("Serving embedded /livereload.js");
-		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-		final InputStream scriptContent = LiveReloadActivator.getDefault().getResourceContent("/script/livereload.js");
-		httpServletResponse.getOutputStream().write(IOUtils.toByteArray(scriptContent));
-		httpServletResponse.setStatus(200);
-		httpServletResponse.setContentType("text/javascript");
+		final HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+		final String requestURI = request.getRequestURI();
+		Logger.info("Serving " + requestURI);
+		if (requestURI == null) {
+			httpServletResponse.setStatus(400);
+		} else {
+			final IResource resource = ResourceUtils.locateResource(requestURI);
+			if (resource != null && resource.getType() == IResource.FILE) {
+				try {
+					final InputStream scriptContent = ((IFile) resource).getContents();
+					httpServletResponse.getOutputStream().write(IOUtils.toByteArray(scriptContent));
+					httpServletResponse.setStatus(200);
+					httpServletResponse.setContentType(URLConnection.guessContentTypeFromName(resource.getName()));
+					// httpServletResponse.setContentType("text/javascript");
+				} catch (CoreException e) {
+					httpServletResponse.setStatus(500);
+				}
+			} else {
+				httpServletResponse.setStatus(400);
+			}
+		}
 	}
 
 }

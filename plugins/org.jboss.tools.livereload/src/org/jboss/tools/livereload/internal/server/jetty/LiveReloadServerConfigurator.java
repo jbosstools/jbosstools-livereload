@@ -14,6 +14,7 @@ package org.jboss.tools.livereload.internal.server.jetty;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
@@ -63,11 +64,13 @@ public class LiveReloadServerConfigurator {
 			// // "/livereload.js", null);
 
 			ServletHolder liveReloadServletHolder = new ServletHolder(new LiveReloadWebSocketServlet());
-			// Fix for BrowserSi (Safari) due to check in WebSocketFactory
+			// Fix for BrowserSim (Safari) due to check in WebSocketFactory
 			liveReloadServletHolder.setInitParameter(MIN_WEB_SOCKET_PROTOCOL_VERSION,
 					MIN_WEB_SOCKET_PROTOCOL_VERSION_VALUE); 
 			liveReloadContext.addServlet(liveReloadServletHolder, "/livereload");
-			liveReloadContext.addServlet(new ServletHolder(new LiveReloadScriptFileServlet()), "/livereload.js");
+			liveReloadContext.addServlet(new ServletHolder(new LiveReloadScriptFileServlet()), "/livereload/livereload.js");
+			liveReloadContext.addFilter(new FilterHolder(new LiveReloadScriptInjectionFilter("localhost", websocketPort)), "/*", null);
+			liveReloadContext.addServlet(new ServletHolder(new WorkspaceFileServlet()), "/*");
 			// if (enableProxy) {
 			// final SelectChannelConnector proxyConnector = new
 			// SelectChannelConnector();
