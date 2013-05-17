@@ -47,6 +47,7 @@ public class LiveReloadServer {
 	 * Starts the server
 	 */
 	public void start() {
+		Logger.debug("Starting LiveReload server on port {}", liveReloadWebServerRunnable.getPort());
 		final Thread serverThread = new Thread(liveReloadWebServerRunnable, "jetty-livereload");
 		serverThread.start();
 		// wait until server is started
@@ -122,6 +123,10 @@ public class LiveReloadServer {
 
 		public boolean isStarted() {
 			return isStarted;
+		}
+		
+		public int getPort() {
+			return server.getConnectors()[0].getPort();
 		}
 	}
 
