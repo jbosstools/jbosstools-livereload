@@ -14,25 +14,20 @@ public class LiveReloadServerConfigurationMessages extends NLS {
 		// Do not instantiate
 	}
 
-	public static String TITLE;
-	public static String DESCRIPTION;
-	public static String USE_EXISTING_SERVER;
-	public static String CREATE_NEW_SERVER;
-	public static String SELECT_SERVER;
-	public static String NO_SELECTED_SERVER;
+	public static String WEBSOCKET_SERVER_CONFIGURATION_TITLE;
+	public static String WEBSOCKET_SERVER_CONFIGURATION_DESCRIPTION;
 
-	public static String SERVER_NAME_LABEL;
-	public static String SERVER_ALREADY_EXISTS;
-	public static String HTTP_PROXY_SERVER_CHECKBOX;
-	public static String HTTP_PROXY_SERVER_PORT_LABEL;
-	public static String HTTP_PROXY_SERVER_PORT_DEFAULT_VALUE;
-	public static String HTTP_PROXY_SERVER_PORT_INVALID_VALUE;
-	public static String HTTP_PROXY_SERVER_DESCRIPTION;
 	public static String WEBSOCKET_SERVER_PORT_LABEL;
 	public static String WEBSOCKET_SERVER_PORT_COMMAND;
-	public static String WEBSOCKET_SERVER_PORT_DEFAULT_VALUE;
-	public static String WEBSOCKET_SERVER_PORT_INVALID_VALUE;
-	public static String SERVER_PORTS_DUPLICATE_VALUES;
 	
+	public static String PROXY_SERVER_CONFIGURATION_TITLE;
+	public static String PROXY_CONFIGURATION_DESCRIPTION;
+	
+	public static String ENABLE_PROXY_SERVER_LABEL;
+	public static String ENABLE_PROXY_SERVER_COMMAND;
+	public static String ALLOW_REMOTE_CONNECTIONS_LABEL;
+	public static String ALLOW_REMOTE_CONNECTIONS_COMMAND;
+	public static String ENABLE_SCRIPT_INJECTION_LABEL;
+	public static String ENABLE_SCRIPT_INJECTION_COMMAND;
 
 }

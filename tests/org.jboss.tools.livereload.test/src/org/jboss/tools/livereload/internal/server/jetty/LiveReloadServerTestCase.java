@@ -54,7 +54,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Before
 	public void startServer() throws IOException {
 		websocketPort = SocketUtil.findUnusedPort(50000, 55000);
-		liveReloadServer = new LiveReloadServer(websocketPort);
+		liveReloadServer = new LiveReloadServer(websocketPort, false, false, false);
 		liveReloadServer.start();
 	}
 

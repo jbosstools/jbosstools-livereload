@@ -38,7 +38,7 @@ import org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfigurat
  * 
  */
 @SuppressWarnings("restriction")
-public class LiveReloadServerEditorSection extends ServerEditorSection {
+public class LiveReloadServerConfigurationSection extends ServerEditorSection {
 
 	private Text websocketPortText;
 	private ControlDecoration websocketPortDecoration;
@@ -46,24 +46,22 @@ public class LiveReloadServerEditorSection extends ServerEditorSection {
 	public void createSection(Composite parent) {
 		super.createSection(parent);
 		FormToolkit toolkit = new FormToolkit(parent.getDisplay());
-
 		Section section = toolkit.createSection(parent, ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED
 				| ExpandableComposite.TITLE_BAR);
-		section.setText(LiveReloadServerConfigurationMessages.TITLE);
+		section.setText(LiveReloadServerConfigurationMessages.WEBSOCKET_SERVER_CONFIGURATION_TITLE);
 		section.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL));
-
 		Composite composite = toolkit.createComposite(section);
-
 		composite.setLayout(new GridLayout(2, false));
-		Label explanation = toolkit.createLabel(composite, LiveReloadServerConfigurationMessages.DESCRIPTION);
+		Label explanation = toolkit.createLabel(composite,
+				LiveReloadServerConfigurationMessages.WEBSOCKET_SERVER_CONFIGURATION_DESCRIPTION, SWT.WRAP);
 		GridData d = new GridData();
 		d.horizontalSpan = 2;
+		d.grabExcessHorizontalSpace = true;
 		explanation.setLayoutData(d);
-
+		// Websocket port
 		Label websocketPortLabel = toolkit.createLabel(composite,
 				LiveReloadServerConfigurationMessages.WEBSOCKET_SERVER_PORT_LABEL);
 		websocketPortLabel.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
-
 		websocketPortText = toolkit.createText(composite,
 				server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, ""));
 		d = new GridData();
@@ -76,14 +74,13 @@ public class LiveReloadServerEditorSection extends ServerEditorSection {
 				FieldDecorationRegistry.DEC_ERROR);
 		websocketPortDecoration.hide();
 		websocketPortDecoration.setImage(fieldDecoration.getImage());
-		
 		ModifyListener websocketPortModifyListener = new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				execute(new SetWebSocketPortCommand(server));
 			}
 		};
-
 		websocketPortText.addModifyListener(websocketPortModifyListener);
+		
 		toolkit.paintBordersFor(composite);
 		section.setClient(composite);
 	}
