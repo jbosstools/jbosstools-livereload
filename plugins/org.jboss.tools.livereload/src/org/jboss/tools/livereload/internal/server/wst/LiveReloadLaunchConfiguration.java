@@ -29,21 +29,14 @@ public class LiveReloadLaunchConfiguration implements ILaunchConfigurationDelega
 
 	public static final String WEBSOCKET_PORT = LiveReloadActivator.PLUGIN_ID + ".websocket_port";
 
+	public static final String ENABLE_PROXY_SERVER = LiveReloadActivator.PLUGIN_ID + ".enable_proxy_server";
+	
+	public static final String ALLOW_REMOTE_CONNECTIONS = LiveReloadActivator.PLUGIN_ID + ".allow_remote_connections";
+
+	public static final String ENABLE_SCRIPT_INJECTION = LiveReloadActivator.PLUGIN_ID + ".enable_script_injection";
+	
 	public static final int DEFAULT_WEBSOCKET_PORT = 35729;
 
-	public static final String PROXY_PORT = LiveReloadActivator.PLUGIN_ID + ".proxy_port";
-
-	public static final String ROOT_FOLDER = LiveReloadActivator.PLUGIN_ID + ".root_folder";
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.debug.core.model.ILaunchConfigurationDelegate#launch(org.
-	 * eclipse.debug.core.ILaunchConfiguration, java.lang.String,
-	 * org.eclipse.debug.core.ILaunch,
-	 * org.eclipse.core.runtime.IProgressMonitor)
-	 */
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
 			throws CoreException {

@@ -70,7 +70,10 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate {
 		// server attributes
 		final IServer server = getServer();
 		final int websocketPort = server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1);
-		this.liveReloadServer = new LiveReloadServer(websocketPort);
+		final boolean enableProxyServer = server.getAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, false);
+		final boolean allowRemoteConnections = server.getAttribute(LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, false);
+		final boolean enableScriptInjection = server.getAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, false);
+		this.liveReloadServer = new LiveReloadServer(websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
 		liveReloadServer.start();
 		// set the server status to "Started"
 		setServerStarted();

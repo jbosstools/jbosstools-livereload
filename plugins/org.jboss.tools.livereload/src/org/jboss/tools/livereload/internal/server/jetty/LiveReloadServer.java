@@ -38,8 +38,9 @@ public class LiveReloadServer {
 	 *            the LiveReload configuration to use.
 	 * @throws UnknownHostException
 	 */
-	public LiveReloadServer(final int websocketPort) {
-		this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(websocketPort);
+	public LiveReloadServer(final int websocketPort, final boolean enableProxyServer, final boolean allowRemoteConnections, final boolean enableScriptInjection) {
+		final Server server = LiveReloadServerFactory.createServer(websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
+		this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(server);
 	}
 
 	/**
@@ -96,8 +97,8 @@ public class LiveReloadServer {
 		 * @param websocketConnectorPort
 		 * @throws UnknownHostException
 		 */
-		public LiveReloadWebServerRunnable(final int websocketConnectorPort) {
-			this.server = LiveReloadServerConfigurator.initServer(websocketConnectorPort).build();
+		public LiveReloadWebServerRunnable(final Server server) {
+			this.server = server;
 		}
 
 		@Override
