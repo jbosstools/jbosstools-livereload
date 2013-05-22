@@ -13,11 +13,9 @@ package org.jboss.tools.livereload.internal.service;
 
 import java.util.List;
 
-import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.jboss.tools.livereload.internal.util.Logger;
 import org.jboss.tools.livereload.internal.util.ResourceChangeEventVisitor;
 
@@ -28,25 +26,13 @@ import org.jboss.tools.livereload.internal.util.ResourceChangeEventVisitor;
  * @author xcoulon
  * 
  */
-@SuppressWarnings("restriction")
 public class WorkspaceResourceChangedListener implements IResourceChangeListener {
-
-	/** Id of the last build. */
-	private long lastChangeId = -1L;
-
-	/** The workspace. */
-	private final Workspace workspace = (Workspace) ResourcesPlugin.getWorkspace();
 
 	@Override
 	public void resourceChanged(final IResourceChangeEvent e) {
-		long currentChangeId = workspace.getMarkerManager().getChangeId();
-		if (lastChangeId != currentChangeId) {
-			final List<IResource> changedResources = ResourceChangeEventVisitor.getAffectedFiles(e);
-			Logger.trace("Received event of type {} and kind {}", e.getType(), e.getBuildKind());
-			EventService.getInstance().publish(new WorkspaceResourceChangedEvent(changedResources));
-			lastChangeId = currentChangeId;
-		}
-
+		final List<IResource> changedResources = ResourceChangeEventVisitor.getAffectedFiles(e);
+		Logger.trace("Received event of type {} and kind {}", e.getType(), e.getBuildKind());
+		EventService.getInstance().publish(new WorkspaceResourceChangedEvent(changedResources));
 	}
 
 }
