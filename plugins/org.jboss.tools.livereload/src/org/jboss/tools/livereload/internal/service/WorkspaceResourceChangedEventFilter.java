@@ -28,7 +28,7 @@ public class WorkspaceResourceChangedEventFilter implements EventFilter {
 	 * The list of file extensions that are allowed. Typically, these correspond
 	 * to files that are part of HTML pages (HTML, CSS, JS, Images).
 	 */
-	private static final List<String> acceptedFileTypes = Arrays.asList("html", "htm", "css", "js", "gif", "png",
+	private static final List<String> acceptedFileTypes = Arrays.asList("html", "xhtml", "htm", "css", "js", "gif", "png",
 			"jpg", "jpeg", "bmp", "ico");
 
 	/**

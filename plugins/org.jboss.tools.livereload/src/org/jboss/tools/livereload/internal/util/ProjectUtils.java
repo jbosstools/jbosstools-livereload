@@ -50,6 +50,7 @@ public class ProjectUtils {
 		} catch (URISyntaxException e) {
 			Logger.error("Failed to convert given file location into an URI:" + fileLocation, e);
 		}
+		Logger.warn("Unable to retrieve project from file location:" + fileLocation);
 		return null;
 	}
 	
