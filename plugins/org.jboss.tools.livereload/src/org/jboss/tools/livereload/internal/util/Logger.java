@@ -125,6 +125,17 @@ public final class Logger {
 	}
 
 	/**
+	 * Outputs a 'info' level message in the .log file (not the error view of the runtime workbench). Traces must be
+	 * activated for this plugin in order to see the output messages.
+	 * 
+	 * @param message
+	 *            the message to trace.
+	 */
+	public static void info(final String message, Object... items) {
+		log(INFO, message, items);
+	}
+	
+	/**
 	 * Outputs a debug message in the trace file (not the error view of the runtime workbench). Traces must be activated
 	 * for this plugin in order to see the output messages.
 	 * 

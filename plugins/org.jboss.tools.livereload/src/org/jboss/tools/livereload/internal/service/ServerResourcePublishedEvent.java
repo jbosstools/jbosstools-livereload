@@ -38,7 +38,7 @@ public class ServerResourcePublishedEvent extends EventObject {
 	
 	@Override
 	public String toString() {
-		return ServerResourcePublishedEvent.class.getName() + ": " + getSource(); 
+		return ServerResourcePublishedEvent.class.getSimpleName() + ": " + getSource(); 
 	}
 
 

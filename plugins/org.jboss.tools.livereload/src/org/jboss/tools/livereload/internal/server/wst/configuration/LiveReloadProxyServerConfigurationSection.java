@@ -13,6 +13,8 @@ package org.jboss.tools.livereload.internal.server.wst.configuration;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -49,7 +51,17 @@ public class LiveReloadProxyServerConfigurationSection extends ServerEditorSecti
 				| ExpandableComposite.TITLE_BAR);
 		section.setText(LiveReloadServerConfigurationMessages.PROXY_SERVER_CONFIGURATION_TITLE);
 		section.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL));
-
+		
+//		ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
+//	    ToolBar toolbar = toolBarManager.createControl(section);
+//	    toolbar.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));
+//	    // Add refresh action to the tool bar
+//	    final RefreshNetworkInterfacesAction refreshAction = new RefreshNetworkInterfacesAction();
+//	    toolBarManager.add(refreshAction);
+//	    toolBarManager.update(true);
+//	    section.setTextClient(toolbar);
+		
+		
 		Composite composite = toolkit.createComposite(section);
 
 		composite.setLayout(new GridLayout(2, false));
@@ -63,7 +75,8 @@ public class LiveReloadProxyServerConfigurationSection extends ServerEditorSecti
 		// Proxy Server enablement
 		proxyEnablementButton = toolkit.createButton(composite,
 				LiveReloadServerConfigurationMessages.ENABLE_PROXY_SERVER_LABEL, SWT.CHECK);
-		proxyEnablementButton.setSelection(server.getAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, false));
+		proxyEnablementButton.setSelection(server
+				.getAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, false));
 		proxyEnablementButton.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
 		d = new GridData();
 		d.grabExcessHorizontalSpace = true;
@@ -75,26 +88,11 @@ public class LiveReloadProxyServerConfigurationSection extends ServerEditorSecti
 
 			}
 		});
-		// Remote connections enablement
-		remoteConnectionsEnablementButton = toolkit.createButton(composite,
-				LiveReloadServerConfigurationMessages.ALLOW_REMOTE_CONNECTIONS_LABEL, SWT.CHECK);
-		remoteConnectionsEnablementButton.setSelection(server.getAttribute(LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, false));
-		remoteConnectionsEnablementButton.setEnabled(proxyEnablementButton.getSelection());
-		remoteConnectionsEnablementButton.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
-		d = new GridData();
-		d.grabExcessHorizontalSpace = true;
-		d.horizontalIndent = 20;
-		d.horizontalSpan = 2;
-		remoteConnectionsEnablementButton.setLayoutData(d);
-		remoteConnectionsEnablementButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				execute(new SetRemoteConnectionsEnablementCommand(server));
-			}
-		});
 		// livereload.js script injection enablement
 		scriptInjectionEnablementButton = toolkit.createButton(composite,
 				LiveReloadServerConfigurationMessages.ENABLE_SCRIPT_INJECTION_LABEL, SWT.CHECK);
-		scriptInjectionEnablementButton.setSelection(server.getAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, false));
+		scriptInjectionEnablementButton.setSelection(server.getAttribute(
+				LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, false));
 		scriptInjectionEnablementButton.setEnabled(proxyEnablementButton.getSelection());
 		scriptInjectionEnablementButton.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
 		d = new GridData();
@@ -107,11 +105,27 @@ public class LiveReloadProxyServerConfigurationSection extends ServerEditorSecti
 				execute(new SetScriptInjectionEnablementButtonCommand(server));
 			}
 		});
+
+		// Remote connections enablement
+		remoteConnectionsEnablementButton = toolkit.createButton(composite,
+				LiveReloadServerConfigurationMessages.ALLOW_REMOTE_CONNECTIONS_LABEL, SWT.CHECK);
+		remoteConnectionsEnablementButton.setSelection(server.getAttribute(
+				LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, false));
+		remoteConnectionsEnablementButton.setEnabled(proxyEnablementButton.getSelection());
+		remoteConnectionsEnablementButton.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
+		d = new GridData();
+		d.grabExcessHorizontalSpace = true;
+		d.horizontalIndent = 20;
+		d.horizontalSpan = 2;
+		remoteConnectionsEnablementButton.setLayoutData(d);
+		remoteConnectionsEnablementButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				execute(new SetRemoteConnectionsEnablementCommand(server));
+			}
+		});
 		toolkit.paintBordersFor(composite);
 		section.setClient(composite);
-		
-		
-		
+
 	}
 
 	@Override
@@ -174,7 +188,8 @@ public class LiveReloadProxyServerConfigurationSection extends ServerEditorSecti
 
 		@Override
 		public void execute() {
-			server.setAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, scriptInjectionEnablementButton.getSelection());
+			server.setAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION,
+					scriptInjectionEnablementButton.getSelection());
 		}
 
 		@Override
@@ -183,6 +198,25 @@ public class LiveReloadProxyServerConfigurationSection extends ServerEditorSecti
 					LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, false);
 			server.setAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, originalValue);
 			scriptInjectionEnablementButton.setSelection(originalValue);
+		}
+
+	}
+	
+	class RefreshNetworkInterfacesAction extends Action {
+
+		@Override
+		public ImageDescriptor getImageDescriptor() {
+			return super.getImageDescriptor();
+		}
+
+		@Override
+		public String getToolTipText() {
+			return super.getToolTipText();
+		}
+
+		@Override
+		public void run() {
+			super.run();
 		}
 
 	}

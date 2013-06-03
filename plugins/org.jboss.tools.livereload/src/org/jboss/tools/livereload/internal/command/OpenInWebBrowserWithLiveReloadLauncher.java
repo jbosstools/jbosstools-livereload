@@ -37,7 +37,6 @@ public class OpenInWebBrowserWithLiveReloadLauncher implements IEditorLauncher {
 	}
 
 	public void open(IPath file) {
-		IWorkbenchBrowserSupport support = PlatformUI.getWorkbench().getBrowserSupport();
 		final List<IServer> liveReloadServers = WSTUtils.retrieveLiveReloadServers();
 		if (liveReloadServers.isEmpty()) {
 			Logger.warn("No LiveReload server available");
@@ -52,7 +51,7 @@ public class OpenInWebBrowserWithLiveReloadLauncher implements IEditorLauncher {
 			final IPath location = new Path("/").append(project.getName()).append(file.makeRelativeTo(project.getLocation()));
 			
 			URL fileUrl = new URL("http", host, port, location.toString());
-			support.createBrowser(IWorkbenchBrowserSupport.LOCATION_BAR | IWorkbenchBrowserSupport.NAVIGATION_BAR,
+			PlatformUI.getWorkbench().getBrowserSupport().createBrowser(IWorkbenchBrowserSupport.LOCATION_BAR | IWorkbenchBrowserSupport.NAVIGATION_BAR,
 					"org.eclipse.ui.browser", null, null).openURL(fileUrl);
 		} catch (Exception e) {
 			Logger.error("Failed to open file in Web Browser with LiveReload support", e);

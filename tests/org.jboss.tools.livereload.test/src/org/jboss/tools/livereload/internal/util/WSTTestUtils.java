@@ -16,7 +16,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.wst.server.core.IRuntime;
 import org.eclipse.wst.server.core.IRuntimeType;
 import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
-import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerType;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
@@ -35,11 +34,12 @@ public class WSTTestUtils {
 	 * 
 	 * @param serverName
 	 * @param websocketPort
-	 * @return
+	 * @return the server id
 	 * @throws CoreException
 	 */
-	public static IServer createLiveReloadServer(final String serverName, final int websocketPort)
+	public static String createLiveReloadServer(final int websocketPort, final boolean enableProxy, final boolean injectScript)
 			throws CoreException {
+		final String serverName = "LiveReload test server";
 		IRuntimeType rt = ServerCore.findRuntimeType(WSTUtils.LIVERELOAD_RUNTIME_TYPE);
 		IRuntimeWorkingCopy rwc = rt.createRuntime(null, null);
 		IRuntime runtime = rwc.save(true, null);
@@ -49,6 +49,8 @@ public class WSTTestUtils {
 		swc.setName(serverName);
 		swc.setRuntime(runtime);
 		swc.setAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, websocketPort);
-		return swc.save(true, new NullProgressMonitor());
+		swc.setAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, enableProxy);
+		swc.setAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, injectScript);
+		return swc.save(true, new NullProgressMonitor()).getId();
 	}
 }

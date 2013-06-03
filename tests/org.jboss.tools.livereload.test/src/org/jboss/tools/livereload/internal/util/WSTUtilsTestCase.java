@@ -19,7 +19,9 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.wst.server.core.IServer;
+import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.model.ServerDelegate;
 import org.jboss.ide.eclipse.as.core.server.internal.JBossServer;
 import org.junit.Before;
@@ -36,9 +38,8 @@ public class WSTUtilsTestCase {
 	private IServer tomcatServer = null;
 	private List<IServer> servers = null;
 
-	
 	@Before
-	public void setup() {
+	public void setup() throws CoreException {
 		jbossasServer = mock(IServer.class, RETURNS_DEEP_STUBS);
 		JBossServer jbossServer = mock(JBossServer.class);
 		when(jbossServer.getJBossWebPort()).thenReturn(8080);
@@ -51,6 +52,10 @@ public class WSTUtilsTestCase {
 		when(tomcatServer.getHost()).thenReturn("localhost");
 		when(tomcatServer.getAttribute(WSTUtils.TOMCAT_SERVER_PORT, -1)).thenReturn(8081);
 		servers = Arrays.asList(jbossasServer, tomcatServer);
+		// remove all existing servers in the workspace
+		for (IServer server : ServerCore.getServers()) {
+			server.delete();
+		}
 	}
 
 	@Test
@@ -82,6 +87,26 @@ public class WSTUtilsTestCase {
 		final IServer server = WSTUtils.extractServer(browserLocation, servers);
 		// verifications
 		assertThat(server).isNull();
+	}
+
+	@Test
+	public void shouldRetrieveOneLiveReloadServer() throws CoreException {
+		// pre-condition
+		WSTTestUtils.createLiveReloadServer(50000, false, false);
+		// operation
+		final List<IServer> liveReloadServers = WSTUtils.retrieveLiveReloadServers();
+		// verification
+		assertThat(liveReloadServers).hasSize(1);
+
+	}
+
+	@Test
+	public void shouldNotRetrieveAnyLiveReloadServer() {
+		// pre-condition (none)
+		// operation
+		final List<IServer> liveReloadServers = WSTUtils.retrieveLiveReloadServers();
+		// verification
+		assertThat(liveReloadServers).hasSize(0);
 	}
 
 }

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test for PageReload plugin
-Bundle-SymbolicName: org.jboss.tools.livereload.test
+Bundle-SymbolicName: org.jboss.tools.livereload.test;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.jboss.tools.livereload.internal.LiveReloadTestActivator
 Bundle-Vendor: JBoss by Red Hat
@@ -19,7 +19,15 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jetty.util;bundle-version="8.1.9",
  ch.qos.logback.classic;bundle-version="1.0.0",
  org.jboss.ide.eclipse.as.core;bundle-version="2.4.100",
- org.apache.commons.httpclient;bundle-version="3.1.0"
+ org.apache.commons.httpclient;bundle-version="3.1.0",
+ org.apache.commons.io;bundle-version="2.0.1",
+ org.eclipse.jetty.server;bundle-version="8.1.9",
+ org.eclipse.wst.server.preview;bundle-version="1.1.102",
+ org.eclipse.wst.server.preview.adapter;bundle-version="1.1.101",
+ org.eclipse.wst.common.project.facet.core;bundle-version="1.4.300",
+ org.eclipse.wst.common.modulecore;bundle-version="1.2.300",
+ ch.qos.logback.core;bundle-version="1.0.0",
+ javax.servlet;bundle-version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
@@ -27,3 +35,4 @@ Bundle-ClassPath: .,
  lib/fest-util-1.1.6.jar,
  lib/com.springsource.org.objenesis-1.0.0.jar,
  lib/mockito-core-1.9.5.jar
+Import-Package: org.eclipse.wst.web.internal.deployables

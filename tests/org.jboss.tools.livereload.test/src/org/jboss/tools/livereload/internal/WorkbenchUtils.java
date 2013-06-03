@@ -3,12 +3,18 @@
  */
 package org.jboss.tools.livereload.internal;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -229,11 +235,12 @@ public class WorkbenchUtils {
 			project.delete(true, monitor);
 		} else if (project.exists() && !project.isOpen()) {
 			project.open(monitor);
-		}
+		} else  
 		if (!project.exists()) {
 			createProject(monitor, description, projectName, targetWorkspace,
 					project);
 		}
+		
 		return project;
 	}
 
@@ -276,4 +283,35 @@ public class WorkbenchUtils {
 			monitor.done();
 		}
 	}
+	
+	/**
+	 * Replace the first occurrence of the given old content with the new content. Fails if the old content is not found
+	 * (avoids weird side effects in the rest of the test).
+	 * 
+	 * @param compilationUnit
+	 * @param oldContent
+	 * @param newContent
+	 * @param useWorkingCopy
+	 * @return 
+	 * @throws CoreException 
+	 * @throws IOException 
+	 */
+	public static IFile replaceAllOccurrencesOfCode(final String fileName, final IProject project, final String oldContent,
+			final String newContent) throws IOException, CoreException {
+		final IResource resource = project.findMember(fileName);
+		if(resource.getType() == IResource.FILE) {
+			final IFile file = (IFile) resource;
+			final String buffer = IOUtils.toString(file.getContents());
+			int offset = buffer.indexOf(oldContent);
+			assertTrue("Old content '" + oldContent + "' not found", offset != -1);
+			file.setContents(IOUtils.toInputStream(buffer.replace(oldContent, newContent)), IResource.FORCE, null);
+			project.build(IncrementalProjectBuilder.AUTO_BUILD, null);
+			return file;
+		} else {
+			fail("Resource location '" + fileName + "' does not match an existing file in project '" + project.getName() + "'");
+			return null;
+		}
+	}
+	
+
 }

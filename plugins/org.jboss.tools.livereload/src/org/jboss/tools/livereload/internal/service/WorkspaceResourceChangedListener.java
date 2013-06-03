@@ -31,7 +31,7 @@ public class WorkspaceResourceChangedListener implements IResourceChangeListener
 	@Override
 	public void resourceChanged(final IResourceChangeEvent e) {
 		final List<IResource> changedResources = ResourceChangeEventVisitor.getAffectedFiles(e);
-		Logger.trace("Received event of type {} and kind {}", e.getType(), e.getBuildKind());
+		Logger.trace("Received event of type {} and kind {} on changed files {}", e.getType(), e.getBuildKind(), changedResources);
 		EventService.getInstance().publish(new WorkspaceResourceChangedEvent(changedResources));
 	}
 

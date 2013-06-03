@@ -47,7 +47,7 @@ public class WorkspaceResourceChangedEvent extends EventObject {
 	
 	@Override
 	public String toString() {
-		return WorkspaceResourceChangedEvent.class.getName() + ": " + getSource(); 
+		return WorkspaceResourceChangedEvent.class.getSimpleName() + ": " + getSource(); 
 	}
 	
 

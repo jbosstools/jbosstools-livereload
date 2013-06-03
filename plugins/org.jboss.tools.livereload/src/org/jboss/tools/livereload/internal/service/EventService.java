@@ -53,7 +53,7 @@ public class EventService {
 					Logger.debug("Informing subscriber '{}' of {}", subscriber.getId(), event.getSource());
 					subscriber.inform(event);
 				} else {
-					Logger.debug("Ignored event {} by subscriber ", event, subscriber);
+					Logger.debug("Ignored event {} by subscriber {}", event, subscriber.getId());
 				}
 			}
 		} else {

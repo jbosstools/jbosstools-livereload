@@ -12,7 +12,6 @@
 package org.jboss.tools.livereload.internal.service;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -23,16 +22,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
-import org.jboss.tools.livereload.internal.server.jetty.ReloadCommandGenerator;
-import org.junit.Ignore;
+import org.jboss.tools.livereload.internal.util.ReloadCommandGenerator;
 import org.junit.Test;
 
 /**
  * @author xcoulon
- *
+ * 
  */
 public class LiveReloadCommandGeneratorTestCase {
-	
+
 	@Test
 	public void shouldGenerateCommandForHtmlFileChangeOnly() throws IOException, URISyntaxException {
 		// pre-condition
@@ -44,7 +42,8 @@ public class LiveReloadCommandGeneratorTestCase {
 		final List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 		// verification
 		assertThat(commands).hasSize(1);
-		assertThat(commands.get(0)).isEqualTo("{\"command\":\"reload\",\"path\":\"file://index.html\",\"liveCSS\":true}");
+		assertThat(commands.get(0)).isEqualTo(
+				"{\"command\":\"reload\",\"path\":\"file://index.html\",\"liveCSS\":true}");
 	}
 
 	@Test
@@ -61,9 +60,10 @@ public class LiveReloadCommandGeneratorTestCase {
 		final List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 		// verification
 		assertThat(commands).hasSize(1);
-		assertThat(commands.get(0)).isEqualTo("{\"command\":\"reload\",\"path\":\"file://index.html\",\"liveCSS\":true}");
+		assertThat(commands.get(0)).isEqualTo(
+				"{\"command\":\"reload\",\"path\":\"file://index.html\",\"liveCSS\":true}");
 	}
-	
+
 	@Test
 	public void shouldGenerateCommandForHtmlFileAfterOtherChanges() throws IOException, URISyntaxException {
 		// pre-condition
@@ -78,10 +78,12 @@ public class LiveReloadCommandGeneratorTestCase {
 		final List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 		// verification
 		assertThat(commands).hasSize(2);
-		assertThat(commands.get(0)).isEqualTo("{\"command\":\"reload\",\"path\":\"file://image.png\",\"liveCSS\":true}");
-		assertThat(commands.get(1)).isEqualTo("{\"command\":\"reload\",\"path\":\"file://image.jpg\",\"liveCSS\":true}");
+		assertThat(commands.get(0))
+				.isEqualTo("{\"command\":\"reload\",\"path\":\"file://image.png\",\"liveCSS\":true}");
+		assertThat(commands.get(1))
+				.isEqualTo("{\"command\":\"reload\",\"path\":\"file://image.jpg\",\"liveCSS\":true}");
 	}
-	
+
 	@Test
 	public void shouldGenerateCommandForCssFileChangeOnly() throws IOException, URISyntaxException {
 		// pre-condition
@@ -96,8 +98,10 @@ public class LiveReloadCommandGeneratorTestCase {
 		final List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 		// verification
 		assertThat(commands).hasSize(2);
-		assertThat(commands.get(0)).isEqualTo("{\"command\":\"reload\",\"path\":\"file://styles.css\",\"liveCSS\":true}");
-		assertThat(commands.get(1)).isEqualTo("{\"command\":\"reload\",\"path\":\"file://otherstyles.css\",\"liveCSS\":true}");
+		assertThat(commands.get(0)).isEqualTo(
+				"{\"command\":\"reload\",\"path\":\"file://styles.css\",\"liveCSS\":true}");
+		assertThat(commands.get(1)).isEqualTo(
+				"{\"command\":\"reload\",\"path\":\"file://otherstyles.css\",\"liveCSS\":true}");
 	}
 
 	@Test
@@ -111,69 +115,35 @@ public class LiveReloadCommandGeneratorTestCase {
 		final List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 		// verification
 		assertThat(commands).hasSize(1);
-		assertThat(commands.get(0)).isEqualTo("{\"command\":\"reload\",\"path\":\"file://styles.css\",\"liveCSS\":true}");
+		assertThat(commands.get(0)).isEqualTo(
+				"{\"command\":\"reload\",\"path\":\"file://styles.css\",\"liveCSS\":true}");
 	}
 
 	@Test
 	public void shouldGenerateCommandForJsFileOnly() throws IOException, URISyntaxException {
 		// pre-condition
-		final IResource cssFile = mock(IResource.class, RETURNS_DEEP_STUBS);
-		when(cssFile.getFileExtension()).thenReturn("css");
-		when(cssFile.getLocation().toOSString()).thenReturn("file://application.js");
-		WorkspaceResourceChangedEvent event = new WorkspaceResourceChangedEvent(Arrays.asList(cssFile));
+		final IResource jsFile = mock(IResource.class, RETURNS_DEEP_STUBS);
+		when(jsFile.getFileExtension()).thenReturn("js");
+		when(jsFile.getLocation().toOSString()).thenReturn("file://application.js");
+		WorkspaceResourceChangedEvent event = new WorkspaceResourceChangedEvent(Arrays.asList(jsFile));
 		// operation
 		final List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 		// verification
 		assertThat(commands).hasSize(1);
-		assertThat(commands.get(0)).isEqualTo("{\"command\":\"reload\",\"path\":\"file://application.js\",\"liveCSS\":true}");
+		assertThat(commands.get(0)).isEqualTo(
+				"{\"command\":\"reload\",\"path\":\"file://application.js\",\"liveCSS\":true}");
 	}
-	
-	@Ignore
+
 	@Test
-	public void shouldGenerateCommandForHtmlServerResourceAfterSingleChange() {
-		fail("Not implemented yet");
+	public void shouldGenerateCommandForHtmlServerResourceAfterSingleChange() throws IOException, URISyntaxException {
 		// pre-condition
-		
+		final String location = "http://localhost:8080/index.html";
 		// operation
-		
+		final String command = ReloadCommandGenerator.generateReloadCommand(location);
 		// verification
-		
+		assertThat(command).isEqualTo(
+				"{\"command\":\"reload\",\"path\":\"" + location + "\",\"liveCSS\":false}");
+
 	}
-	
-	@Ignore
-	@Test
-	public void shouldGenerateCommandForHtmlServerResourceAfterMultipleChanges() {
-		fail("Not implemented yet");
-		// pre-condition
-		
-		// operation
-		
-		// verification
-		
-	}
-	
-	@Ignore
-	@Test
-	public void shouldGenerateCommandForCssServerResourceOnly() {
-		fail("Not implemented yet");
-		// pre-condition
-		
-		// operation
-		
-		// verification
-		
-	}
-	
-	@Ignore
-	@Test
-	public void shouldGenerateCommandForJsServerResourceOnly() {
-		fail("Not implemented yet");
-		// pre-condition
-		
-		// operation
-		
-		// verification
-		
-	}
-	
+
 }

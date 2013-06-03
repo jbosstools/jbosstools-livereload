@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.wst.server.core.serverTypes">
+      <serverType
+            behaviourClass="org.jboss.tools.livereload.test.previewserver.PreviewServerBehaviour"
+            class="org.jboss.tools.livereload.test.previewserver.PreviewServerDelegate"
+            description="description"
+            hasConfiguration="false"
+            id="org.jboss.tools.livereload.test.previewServerType"
+            initialState="stopped"
+            launchConfigId="org.jboss.tools.livereload.test.launchConfigurationType"
+            launchModes="run"
+            name="Test Preview Server Type"
+            runtime="false"
+            runtimeTypeId="org.jboss.tools.livereload.test.previewRuntimeType"
+            supportsRemoteHosts="false">
+      </serverType>
+   </extension>
+   
+   <extension
+         point="org.eclipse.wst.server.core.runtimeTypes">
+      <runtimeType
+            description="description"
+            id="org.jboss.tools.livereload.test.previewRuntimeType"
+            name="name">
+      </runtimeType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.jboss.tools.livereload.test.previewserver.PreviewServerLaunchConfiguration"
+            id="org.jboss.tools.livereload.test.launchConfigurationType"
+            name="Test Preview Server"
+            modes="run"
+            public="false">
+      </launchConfigurationType>
+   </extension>
+   
+
+</plugin>

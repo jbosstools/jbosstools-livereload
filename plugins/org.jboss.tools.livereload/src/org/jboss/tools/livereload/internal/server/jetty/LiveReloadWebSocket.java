@@ -1,20 +1,17 @@
 package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.EventObject;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.internal.service.EventService;
+import org.jboss.tools.livereload.internal.service.LiveReloadClientConnectedEvent;
+import org.jboss.tools.livereload.internal.service.LiveReloadClientDisconnectedEvent;
 import org.jboss.tools.livereload.internal.service.ServerResourcePublishedEvent;
 import org.jboss.tools.livereload.internal.service.ServerResourcePublishedFilter;
 import org.jboss.tools.livereload.internal.service.Subscriber;
@@ -22,16 +19,15 @@ import org.jboss.tools.livereload.internal.service.WorkspaceResourceChangedEvent
 import org.jboss.tools.livereload.internal.service.WorkspaceResourceChangedEventFilter;
 import org.jboss.tools.livereload.internal.util.Logger;
 import org.jboss.tools.livereload.internal.util.ProjectUtils;
+import org.jboss.tools.livereload.internal.util.ReloadCommandGenerator;
 import org.jboss.tools.livereload.internal.util.WSTUtils;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Wrapper around a WebSocket connection established with a Browser that wants
- * to talk about LiveReload ;-) Also, a subscriber to resource change events
+ * to talk about LiveReload ;-) Also, a subscriber to workspace resource change events and server publish events
  * 
  * @author xcoulon
  * 
@@ -41,6 +37,8 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	private static final String helloServerToClientHandShakeMessage = "{\"command\":\"hello\",\"protocols\":[\"http://livereload.com/protocols/official-7\"]}";
 
 	private static final ObjectMapper mapper = new ObjectMapper();
+
+	private static EventService eventService = EventService.getInstance();
 
 	private final String id;
 
@@ -61,13 +59,14 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 
 	@Override
 	public void onClose(int closeCode, String message) {
-		EventService.getInstance().unsubscribe(this);
+		eventService.unsubscribe(this);
+		eventService.publish(new LiveReloadClientDisconnectedEvent(connection));
 	}
 
 	public void sendMessage(String data) throws IOException {
 		if(!connection.isOpen()) {
 			Logger.debug("Removing pending closed connection {}", getId());
-			EventService.getInstance().unsubscribe(this);
+			eventService.unsubscribe(this);
 			return;
 		} 
 		Logger.debug("Sending message '{}'", data);
@@ -97,7 +96,8 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 				}
 				if(browserLocation.startsWith("file:///")) {
 					final IProject project = ProjectUtils.extractProject(browserLocation);
-					EventService.getInstance().subscribe(this, new WorkspaceResourceChangedEventFilter(project));
+					eventService.subscribe(this, new WorkspaceResourceChangedEventFilter(project));
+					eventService.publish(new LiveReloadClientConnectedEvent(project));
 				} 
 				// register with a ServerResourcePublishedFilter unless the target server is the LiveReload server,
 				// in which case, the 
@@ -105,12 +105,19 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 					final IServer server = WSTUtils.extractServer(browserLocation);
 					if(server != null && WSTUtils.isLiveReloadServer(server)) {
 						final IProject project = ProjectUtils.findProjectFromResourceLocation(new Path(new URL(browserLocation).getFile()));
-						EventService.getInstance().subscribe(this, new WorkspaceResourceChangedEventFilter(project));
+						eventService.subscribe(this, new WorkspaceResourceChangedEventFilter(project));
+						eventService.publish(new LiveReloadClientConnectedEvent(project));
+					} else if(server != null) {
+						eventService.subscribe(this, new ServerResourcePublishedFilter(server));
+						eventService.publish(new LiveReloadClientConnectedEvent(server));
 					} else {
-						EventService.getInstance().subscribe(this, new ServerResourcePublishedFilter(server));
+						Logger.warn("Unable to determine the server associated to following browser location: " + browserLocation);
 					}
 				}
-				
+				// close connection from this client
+				else {
+					connection.close();
+				}
 				
 			}
 		} catch (IOException e) {
@@ -131,24 +138,11 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 				final String command = ReloadCommandGenerator.generateReloadCommand(browserLocation);
 				sendMessage(command);
 			} else {
-				Logger.warn("Ignoring event " + e);
+				Logger.debug("Ignoring event " + e);
 			}
 		} catch (Exception ex) {
 			Logger.error("Failed to send reload command to browser", ex);
 		}
-	}
-
-	private static final ObjectMapper objectMapper = new ObjectMapper();
-
-	String buildRefreshCommand(final IPath path) throws JsonGenerationException, JsonMappingException, IOException,
-			URISyntaxException {
-		final Map<String, Object> reloadArgs = new LinkedHashMap<String, Object>();
-		reloadArgs.put("command", "reload");
-		reloadArgs.put("path", path.toOSString());
-		reloadArgs.put("liveCSS", true);
-		final StringWriter commandWriter = new StringWriter();
-		objectMapper.writeValue(commandWriter, reloadArgs);
-		return commandWriter.toString();
 	}
 
 	@Override

@@ -12,7 +12,6 @@
 package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URLConnection;
 
 import javax.servlet.ServletException;
@@ -24,7 +23,6 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.jboss.tools.livereload.internal.LiveReloadActivator;
 import org.jboss.tools.livereload.internal.util.Logger;
 import org.jboss.tools.livereload.internal.util.ResourceUtils;
 
@@ -45,19 +43,24 @@ public class WorkspaceFileServlet extends HttpServlet {
 		if (requestURI == null) {
 			httpServletResponse.setStatus(400);
 		} else {
-			final IResource resource = ResourceUtils.locateResource(requestURI);
+			final IResource resource = ResourceUtils.retrieveResource(requestURI);
 			if (resource != null && resource.getType() == IResource.FILE) {
 				try {
-					final InputStream scriptContent = ((IFile) resource).getContents();
-					httpServletResponse.getOutputStream().write(IOUtils.toByteArray(scriptContent));
+					final byte[] scriptContent = IOUtils.toByteArray(((IFile) resource).getContents());
+					httpServletResponse.getOutputStream().write(scriptContent);
 					httpServletResponse.setStatus(200);
 					httpServletResponse.setContentType(URLConnection.guessContentTypeFromName(resource.getName()));
 					// httpServletResponse.setContentType("text/javascript");
 				} catch (CoreException e) {
+					Logger.error("Error occurred while returning content at location: " + requestURI, e);
 					httpServletResponse.setStatus(500);
 				}
+			} else if (resource != null && resource.getType() == IResource.FOLDER) {
+				Logger.debug("Forbidden location: {} is a folder", requestURI);
+				httpServletResponse.setStatus(403);
 			} else {
-				httpServletResponse.setStatus(400);
+				Logger.debug("Unknown location: {} ", requestURI);
+				httpServletResponse.setStatus(404);
 			}
 		}
 	}
