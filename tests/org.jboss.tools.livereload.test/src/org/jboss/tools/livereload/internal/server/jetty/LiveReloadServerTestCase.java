@@ -12,7 +12,6 @@
 package org.jboss.tools.livereload.internal.server.jetty;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +41,8 @@ import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehav
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.ServerLifeCycleListener;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils;
-import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils.TaskMonitor;
+import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.jboss.tools.livereload.internal.AbstractCommonTestCase;
 import org.jboss.tools.livereload.internal.WorkbenchUtils;
 import org.jboss.tools.livereload.internal.util.WSTTestUtils;
