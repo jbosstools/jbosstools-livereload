@@ -22,7 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
-import org.jboss.tools.livereload.internal.util.ReloadCommandGenerator;
+import org.jboss.tools.livereload.core.internal.service.WorkspaceResourceChangedEvent;
+import org.jboss.tools.livereload.core.internal.util.ReloadCommandGenerator;
 import org.junit.Test;
 
 /**

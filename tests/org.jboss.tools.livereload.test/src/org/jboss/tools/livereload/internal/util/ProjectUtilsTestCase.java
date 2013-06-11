@@ -18,6 +18,7 @@ import java.io.File;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.jboss.tools.livereload.core.internal.util.ProjectUtils;
 import org.jboss.tools.livereload.internal.AbstractCommonTestCase;
 import org.junit.Test;
 

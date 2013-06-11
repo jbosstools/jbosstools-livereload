@@ -18,6 +18,7 @@ import java.net.SocketException;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.tools.livereload.core.internal.util.NetworkUtils;
 import org.junit.Test;
 
 /**

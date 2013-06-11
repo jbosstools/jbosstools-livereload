@@ -13,7 +13,8 @@
 	<name>livereload.plugins</name>	
 	<packaging>pom</packaging>
 	<modules>
-		<module>org.jboss.tools.livereload</module>
+		<module>org.jboss.tools.livereload.core</module>
+		<module>org.jboss.tools.livereload.ui</module>
 	</modules>
 </project>
 	

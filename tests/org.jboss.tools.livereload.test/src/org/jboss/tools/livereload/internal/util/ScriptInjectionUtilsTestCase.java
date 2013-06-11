@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.fest.assertions.Assertions;
+import org.jboss.tools.livereload.core.internal.util.ScriptInjectionUtils;
 import org.junit.Test;
 
 /**

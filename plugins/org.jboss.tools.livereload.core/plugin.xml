@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.wst.server.core.serverTypes">
+      <serverType
+            behaviourClass="org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour"
+            class="org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerDelegate"
+            description="LiveReload Server"
+            hasConfiguration="false"
+            id="org.jboss.tools.livereload.serverType"
+            initialState="stopped"
+            launchConfigId="org.jboss.tools.livereload.serverLaunchConfig"
+            launchModes="run"
+            name="LiveReload Server"
+            runtime="false"
+            runtimeTypeId="org.jboss.tools.livereload.serverTypeRuntime"
+            supportsRemoteHosts="false">
+      </serverType>
+   </extension>
+   <extension
+         point="org.eclipse.wst.server.ui.serverImages">
+      <image
+            icon="icons/livereload_server.png"
+            id="org.jboss.tools.livereload.serverImage"
+            typeIds="org.jboss.tools.livereload.serverTypeRuntime, org.jboss.tools.livereload.serverType">
+      </image>
+   </extension>
+   <extension
+         point="org.eclipse.wst.server.core.runtimeTypes">
+      <runtimeType
+            description="LiveReload Server"
+            id="org.jboss.tools.livereload.serverTypeRuntime"
+            name="LiveReload Server">
+      </runtimeType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration"
+            id="org.jboss.tools.livereload.serverLaunchConfig"
+            modes="run"
+            name="LiveReload"
+            public="false">
+      </launchConfigurationType>
+   </extension>
+
+</plugin>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+     <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.jboss.tools.livereload.openInWebBrowserViaLiveReloadProxy"
+            name="%open_in_webbrowser_via_proxy">
+         <!--state
+               id="org.eclipse.ui.commands.toggleState">
+            <class
+                  class="org.eclipse.ui.handlers.RegistryToggleState">
+               <parameter
+                     name="default"
+                     value="false">
+               </parameter>
+               <parameter
+                     name="persisted"
+                     value="false">
+               </parameter>
+            </class>
+         </state-->
+      </command>
+   </extension>
+   <!--extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?before=additions">
+         <command
+               commandId="org.jboss.tools.livereload.openInWebBrowserViaLiveReloadProxy"
+               icon="icons/livereload_server.png">
+         </command>
+      </menuContribution>
+   </extension-->
+   <extension point="org.eclipse.ui.menus">
+     <menuContribution
+       locationURI="popup:org.eclipse.ui.navigate.showInQuickMenu?after=additions">
+		<command
+			commandId="org.jboss.tools.livereload.openInWebBrowserViaLiveReloadProxy"
+			icon="icons/livereload_editor_launcher.png"
+			label="%open_in_webbrowser_via_proxy"
+			style="push">
+			<visibleWhen checkEnabled="false">
+				<with variable="selection">
+					<iterate
+					ifEmpty="false"
+					operator="or">
+						<adapt
+						type="org.eclipse.wst.server.ui.IServerModule">
+						</adapt>
+					</iterate>
+				</with>
+			</visibleWhen>
+		</command>
+       </menuContribution>
+    </extension>
+   
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserViaLiveReloadProxyCommandHandler"
+            commandId="org.jboss.tools.livereload.openInWebBrowserViaLiveReloadProxy">
+          <activeWhen>
+            <with variable="selection">
+              <and>
+                 <count
+                       value="1">
+                 </count>
+                 <iterate
+                       ifEmpty="false"
+                       operator="or">
+                    <instanceof
+                          value="org.eclipse.wst.server.ui.IServerModule">
+                    </instanceof>
+                 </iterate>
+                 <test
+                       forcePluginActivation="true"
+                       property="org.jboss.tools.livereload.serverStarted">
+                 </test>
+              </and>
+           </with>
+          </activeWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserViaLiveReloadProxyEnablementTester"
+            id="org.jboss.tools.livereload.liveReloadPropertyTester"
+            namespace="org.jboss.tools.livereload"
+            properties="serverStarted"
+            type="org.eclipse.jface.viewers.ITreeSelection">
+      </propertyTester> 
+   </extension>
+   
+   <extension point="org.eclipse.ui.editors">
+      <!--editor
+         class="org.eclipse.ui.internal.browser.WebBrowserEditor"
+         contributorClass="org.eclipse.ui.internal.browser.WebBrowserEditorActionBarContributor"
+         icon="$nl$/icons/obj16/internal_browser.gif"
+         id="org.eclipse.ui.browser.editor"
+         name="%viewWebBrowserTitle"/-->
+      <editor
+         extensions="htm,html,shtml"
+         icon="$nl$/icons/livereload_editor_launcher.png"
+         id="org.jboss.tools.livereload.openFileInBrowserWithLiveReload"
+         launcher="org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserWithLiveReloadLauncher"
+         name="Web Browser via LiveReload Proxy"/>
+  </extension>
+  
+  <extension
+         point="org.eclipse.wst.server.ui.editorPageSections">
+      <section
+            class="org.jboss.tools.livereload.ui.internal.configuration.LiveReloadServerConfigurationSection"
+            id="org.jboss.tools.livereload.serverConfigurationSection"
+            insertionId="org.eclipse.wst.server.editor.overview.left"
+            order="10"
+            typeIds="org.jboss.tools.livereload.serverType">
+      </section>
+      <section
+            class="org.jboss.tools.livereload.ui.internal.configuration.LiveReloadProxyServerConfigurationSection"
+            id="org.jboss.tools.livereload.proxyConfigurationSection"
+            insertionId="org.eclipse.wst.server.editor.overview.left"
+            order="10"
+            typeIds="org.jboss.tools.livereload.serverType">
+      </section>
+   </extension>
+
+</plugin>
