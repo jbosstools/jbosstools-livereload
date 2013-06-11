@@ -6,33 +6,12 @@
       <command
             id="org.jboss.tools.livereload.openInWebBrowserViaLiveReloadProxy"
             name="%open_in_webbrowser_via_proxy">
-         <!--state
-               id="org.eclipse.ui.commands.toggleState">
-            <class
-                  class="org.eclipse.ui.handlers.RegistryToggleState">
-               <parameter
-                     name="default"
-                     value="false">
-               </parameter>
-               <parameter
-                     name="persisted"
-                     value="false">
-               </parameter>
-            </class>
-         </state-->
+      </command>
+      <command
+            id="org.jboss.tools.livereload.openInExternalDeviceWebBrowserViaQRCode"
+            name="%open_in_devicebrowser_via_qrcode">
       </command>
    </extension>
-   <!--extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?before=additions">
-         <command
-               commandId="org.jboss.tools.livereload.openInWebBrowserViaLiveReloadProxy"
-               icon="icons/livereload_server.png">
-         </command>
-      </menuContribution>
-   </extension-->
    <extension point="org.eclipse.ui.menus">
      <menuContribution
        locationURI="popup:org.eclipse.ui.navigate.showInQuickMenu?after=additions">
@@ -40,6 +19,23 @@
 			commandId="org.jboss.tools.livereload.openInWebBrowserViaLiveReloadProxy"
 			icon="icons/livereload_editor_launcher.png"
 			label="%open_in_webbrowser_via_proxy"
+			style="push">
+			<visibleWhen checkEnabled="false">
+				<with variable="selection">
+					<iterate
+					ifEmpty="false"
+					operator="or">
+						<adapt
+						type="org.eclipse.wst.server.ui.IServerModule">
+						</adapt>
+					</iterate>
+				</with>
+			</visibleWhen>
+		</command>
+		<command
+			commandId="org.jboss.tools.livereload.openInExternalDeviceWebBrowserViaQRCode"
+			icon="icons/livereload_editor_launcher.png"
+			label="%open_in_devicebrowser_via_qrcode"
 			style="push">
 			<visibleWhen checkEnabled="false">
 				<with variable="selection">
@@ -82,6 +78,30 @@
            </with>
           </activeWhen>
       </handler>
+      <handler
+            class="org.jboss.tools.livereload.ui.internal.command.OpenInExternalDeviceWebBrowserViaQRCodeCommandHandler"
+            commandId="org.jboss.tools.livereload.openInExternalDeviceWebBrowserViaQRCode">
+          <activeWhen>
+            <with variable="selection">
+              <and>
+                 <count
+                       value="1">
+                 </count>
+                 <iterate
+                       ifEmpty="false"
+                       operator="or">
+                    <instanceof
+                          value="org.eclipse.wst.server.ui.IServerModule">
+                    </instanceof>
+                 </iterate>
+                 <test
+                       forcePluginActivation="true"
+                       property="org.jboss.tools.livereload.serverStarted">
+                 </test>
+              </and>
+           </with>
+          </activeWhen>
+      </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
@@ -95,12 +115,6 @@
    </extension>
    
    <extension point="org.eclipse.ui.editors">
-      <!--editor
-         class="org.eclipse.ui.internal.browser.WebBrowserEditor"
-         contributorClass="org.eclipse.ui.internal.browser.WebBrowserEditorActionBarContributor"
-         icon="$nl$/icons/obj16/internal_browser.gif"
-         id="org.eclipse.ui.browser.editor"
-         name="%viewWebBrowserTitle"/-->
       <editor
          extensions="htm,html,xhtml,shtml"
          icon="$nl$/icons/livereload_editor_launcher.png"

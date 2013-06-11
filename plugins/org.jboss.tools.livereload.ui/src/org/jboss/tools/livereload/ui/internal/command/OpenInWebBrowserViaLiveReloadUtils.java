@@ -11,7 +11,11 @@
 
 package org.jboss.tools.livereload.ui.internal.command;
 
+import java.net.URL;
+
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.eclipse.wst.server.ui.IServerModule;
@@ -114,6 +118,15 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	 */
 	public static boolean checkAppServerStarted(final IServer appServer) {
 		return appServer.getServerState() == IServer.STATE_STARTED;
+	}
+
+	/**
+	 * Opens the given URL in an external browser
+	 * @param url
+	 * @throws PartInitException 
+	 */
+	public static void openInBrowser(final URL url) throws PartInitException {
+		PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);	
 	}
 
 }
