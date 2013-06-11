@@ -111,7 +111,12 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@After
 	public void destroyServer() throws CoreException {
 		if (liveReloadServer != null) {
+			liveReloadServer.stop(true);
 			liveReloadServer.delete();
+		}
+		if(httpPreviewServer != null) {
+			httpPreviewServer.stop(true);
+			httpPreviewServer.delete();
 		}
 	}
 
@@ -610,7 +615,6 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		((Server) httpPreviewServer).setServerState(IServer.STATE_STARTED);
 		// verification
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).isEmpty();
-		;
 	}
 
 	@Test
