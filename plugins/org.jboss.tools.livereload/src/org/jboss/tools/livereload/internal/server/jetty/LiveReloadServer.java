@@ -12,12 +12,19 @@
 package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
+import java.util.EventObject;
 
 import org.eclipse.jetty.server.Server;
-import org.jboss.tools.livereload.internal.util.Logger;
-import org.jboss.tools.livereload.internal.util.TimeoutUtils;
-import org.jboss.tools.livereload.internal.util.TimeoutUtils.TaskMonitor;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.jboss.tools.livereload.internal.service.EventService;
+import org.jboss.tools.livereload.internal.service.LiveReloadClientConnectedEvent;
+import org.jboss.tools.livereload.internal.service.LiveReloadClientConnectionFilter;
+import org.jboss.tools.livereload.internal.service.LiveReloadClientDisconnectedEvent;
+import org.jboss.tools.livereload.internal.service.Subscriber;
 
 /**
  * The LiveReload Server that implements the livereload protocol (based on
@@ -27,9 +34,18 @@ import org.jboss.tools.livereload.internal.util.TimeoutUtils.TaskMonitor;
  * @author xcoulon
  * 
  */
-public class LiveReloadServer {
+@SuppressWarnings("unchecked")
+public class LiveReloadServer extends Server implements Subscriber {
 
-	private LiveReloadWebServerRunnable liveReloadWebServerRunnable;
+	private static final String MIN_WEB_SOCKET_PROTOCOL_VERSION = "minVersion";
+
+	private static final String MIN_WEB_SOCKET_PROTOCOL_VERSION_VALUE = "-1";
+
+	private SelectChannelConnector websocketConnector;
+
+	private final int websocketPort;
+
+	private int connectedClients = 0;
 
 	/**
 	 * Constructor
@@ -38,96 +54,77 @@ public class LiveReloadServer {
 	 *            the LiveReload configuration to use.
 	 * @throws UnknownHostException
 	 */
-	public LiveReloadServer(final int websocketPort, final boolean enableProxyServer, final boolean allowRemoteConnections, final boolean enableScriptInjection) {
-		final Server server = LiveReloadServerFactory.createServer(websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
-		this.liveReloadWebServerRunnable = new LiveReloadWebServerRunnable(server);
+	public LiveReloadServer(final int websocketPort, final boolean enableProxyServer,
+			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
+		super();
+		this.websocketPort = websocketPort;
+		configure(websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
 	}
 
-	/**
-	 * Starts the server
-	 */
-	public void start() {
-		Logger.debug("Starting LiveReload server on port {}", liveReloadWebServerRunnable.getPort());
-		final Thread serverThread = new Thread(liveReloadWebServerRunnable, "jetty-livereload");
-		serverThread.start();
-		// wait until server is started
-		final TaskMonitor monitor = new TaskMonitor() {
-			@Override
-			public boolean isComplete() {
-				return liveReloadWebServerRunnable.isStarted();
+	private void configure(final int websocketPort, final boolean enableProxyServer,
+			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
+		setAttribute(JettyServerRunner.NAME, "LiveReload-Server");
+		websocketConnector = new SelectChannelConnector();
+		if (!allowRemoteConnections) {
+			websocketConnector.setHost("localhost");
+		}
+		websocketConnector.setStatsOn(true);
+		websocketConnector.setPort(websocketPort);
+		websocketConnector.setMaxIdleTime(0);
+		addConnector(websocketConnector);
+		final HandlerCollection handlers = new HandlerCollection();
+		setHandler(handlers);
+		final ServletContextHandler context = new ServletContextHandler(handlers, "/",
+				ServletContextHandler.NO_SESSIONS);
+		context.setConnectorNames(new String[] { websocketConnector.getName() });
+		ServletHolder liveReloadServletHolder = new ServletHolder(new LiveReloadWebSocketServlet());
+		// Fix for BrowserSim (Safari) due to check in WebSocketFactory
+		liveReloadServletHolder
+				.setInitParameter(MIN_WEB_SOCKET_PROTOCOL_VERSION, MIN_WEB_SOCKET_PROTOCOL_VERSION_VALUE);
+		context.addServlet(liveReloadServletHolder, "/livereload");
+		context.addServlet(new ServletHolder(new LiveReloadScriptFileServlet()), "/livereload.js");
+		if (enableProxyServer) {
+			context.addServlet(new ServletHolder(new WorkspaceFileServlet()), "/*");
+			if (enableScriptInjection) {
+				context.addFilter(new FilterHolder(new LiveReloadScriptInjectionFilter(websocketPort)), "/*", null);
 			}
-		};
-		if (TimeoutUtils.timeout(monitor, 5, TimeUnit.SECONDS)) {
-			Logger.error("Failed to start LiveReload Server within expected time");
-			// attempt to stop what can be stopped.
-			stop();
 		}
-	}
-
-	public boolean isStarted() {
-		return liveReloadWebServerRunnable.isStarted();
+		EventService.getInstance().subscribe(this, new LiveReloadClientConnectionFilter());
 	}
 
 	/**
-	 * Stops the server
-	 */
-	public void stop() {
-		try {
-			liveReloadWebServerRunnable.stop();
-		} catch (Exception e) {
-			Logger.error("Failed to stop LiveReload Server");
-		}
-	}
-
-	/**
-	 * The Jetty-based server running in a separate thread (to avoid blocking
-	 * the UI)
+	 * Returns the number of connections on the websocket connector.
 	 * 
-	 * @author xcoulon
-	 * 
+	 * @return the number of connections on the websocket connector.
 	 */
-	class LiveReloadWebServerRunnable implements Runnable {
-
-		private final Server server;
-
-		private boolean isStarted = false;
-
-		/**
-		 * Constructor to use when script injection proxy should not be enabled
-		 * 
-		 * @param websocketConnectorPort
-		 * @throws UnknownHostException
-		 */
-		public LiveReloadWebServerRunnable(final Server server) {
-			this.server = server;
-		}
-
-		@Override
-		public void run() {
-			try {
-				Logger.debug("Starting LiveReload Websocket Server...");
-				server.start();
-				isStarted = true;
-				server.join();
-			} catch (Exception e) {
-				Logger.error("Failed to start embedded jetty server to provide support for LiveReload", e);
-			}
-		}
-
-		public void stop() throws Exception {
-			if (server != null) {
-				server.stop();
-				isStarted = false;
-			}
-		}
-
-		public boolean isStarted() {
-			return isStarted;
-		}
-		
-		public int getPort() {
-			return server.getConnectors()[0].getPort();
-		}
+	public int getNumberOfConnectedClients() {
+		return connectedClients;
 	}
 
+	public int getPort() {
+		return websocketPort;
+	}
+
+	@Override
+	public String toString() {
+		return "LiveReload Server";
+	}
+
+	@Override
+	public void inform(EventObject event) {
+		if(event instanceof LiveReloadClientConnectedEvent) {
+			this.connectedClients++;
+		} else if(event instanceof LiveReloadClientDisconnectedEvent) {
+			this.connectedClients--;
+			if(connectedClients < 0) {
+				connectedClients = 0;
+			}
+		}
+
+	}
+
+	@Override
+	public String getId() {
+		return toString();
+	}
 }

@@ -11,13 +11,9 @@
 
 package org.jboss.tools.livereload.internal.server.jetty;
 
-import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
-import java.text.MessageFormat;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import javax.servlet.Filter;
@@ -31,16 +27,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import net.htmlparser.jericho.EndTag;
-import net.htmlparser.jericho.Segment;
-import net.htmlparser.jericho.StreamedSource;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationListener;
 import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.jboss.tools.livereload.internal.util.Logger;
+import org.jboss.tools.livereload.internal.util.ScriptInjectionUtils;
 
 /**
  * Filter that injects the link to the Livereload script at the bottom of the
@@ -128,7 +121,7 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 			Logger.debug("Injecting livereload.js <script> in response for {} ({})", httpRequest.getRequestURI(),
 					returnedContentType);
 			final InputStream responseStream = responseWrapper.getResponseAsStream();
-			final char[] modifiedResponseContent = injectContent(responseStream, scriptContent);
+			final char[] modifiedResponseContent = ScriptInjectionUtils.injectContent(responseStream, scriptContent);
 			responseWrapper.terminate(modifiedResponseContent);
 		}
 		// finalize the responseWrapper by copying the wrapper's
@@ -142,29 +135,6 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 	}
 
 	
-	/**
-	 * Inject the given 'addition' into the gievne source, just before the
-	 * <code>&lt;/body&gt;</code> ent tag. If no such end tag is found, the
-	 * return value equals the given source.
-	 * 
-	 * @param source
-	 * @param addition
-	 * @return the modified source (or equal if not end tag was found in the source)
-	 * @throws IOException
-	 */
-	public static char[] injectContent(final InputStream source, final String addition) throws IOException {
-		final StreamedSource streamedSource = new StreamedSource(source);
-		CharArrayWriter writer = new CharArrayWriter();
-		for (Segment segment : streamedSource) {
-			if (segment instanceof EndTag && ((EndTag) segment).getName().equals("body")) {
-				writer.write(addition);
-			}
-			writer.write(segment.toString());
-		}
-		writer.close();
-		streamedSource.close();
-		return writer.toCharArray();
-	}
 	/**
 	 * <p>
 	 * Iterates over the given acceptedContentTypes, looking for one of those
@@ -305,27 +275,6 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 			return this.outputStream.toByteArray();
 		}
 
-		public void replaceOutputStreamContent(char[] modifiedContent) throws IOException {
-			this.outputStream = new ByteArrayOutputStream();
-			IOUtils.write(modifiedContent, outputStream);
-		}
-	}
-
-	static class Messages {
-		// property file is: package/name/messages.properties
-		private static final String BUNDLE_NAME = "script.properties";
-		private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
-
-		private Messages() {
-		}
-
-		public static String getString(String key, Object... params) {
-			try {
-				return MessageFormat.format(RESOURCE_BUNDLE.getString(key), params);
-			} catch (MissingResourceException e) {
-				return '!' + key + '!';
-			}
-		}
 	}
 
 }

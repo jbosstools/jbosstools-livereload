@@ -30,11 +30,11 @@ public class LiveReloadLaunchConfiguration implements ILaunchConfigurationDelega
 	public static final String WEBSOCKET_PORT = LiveReloadActivator.PLUGIN_ID + ".websocket_port";
 
 	public static final String ENABLE_PROXY_SERVER = LiveReloadActivator.PLUGIN_ID + ".enable_proxy_server";
-	
+
 	public static final String ALLOW_REMOTE_CONNECTIONS = LiveReloadActivator.PLUGIN_ID + ".allow_remote_connections";
 
 	public static final String ENABLE_SCRIPT_INJECTION = LiveReloadActivator.PLUGIN_ID + ".enable_script_injection";
-	
+
 	public static final int DEFAULT_WEBSOCKET_PORT = 35729;
 
 	@Override
@@ -42,7 +42,7 @@ public class LiveReloadLaunchConfiguration implements ILaunchConfigurationDelega
 			throws CoreException {
 
 		final String serverId = configuration.getAttribute(SERVER_ID, (String) null);
-		LiveReloadServerBehaviour serverBehaviour = WSTUtils.findServerBehaviour(serverId);
+		LiveReloadServerBehaviour serverBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(serverId);
 		if (serverBehaviour == null) {
 			// can't carry on if ServerBehaviour is not found
 			return;

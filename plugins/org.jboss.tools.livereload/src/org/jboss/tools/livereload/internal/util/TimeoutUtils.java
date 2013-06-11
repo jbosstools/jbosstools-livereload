@@ -54,7 +54,7 @@ public class TimeoutUtils {
 			Logger.error("Operation failed to complete within expected time", e);
 			return true;
 		} finally {
-			future.cancel(true); // may or may not desire this
+			future.cancel(true); 
 		} 
 	}
 

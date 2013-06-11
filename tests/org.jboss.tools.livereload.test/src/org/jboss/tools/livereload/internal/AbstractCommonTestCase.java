@@ -33,7 +33,7 @@ import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@RunWithProject("sample-project")
+@RunWithProject("sample-static-site")
 public abstract class AbstractCommonTestCase {
 
 	public static final Logger LOGGER = LoggerFactory
