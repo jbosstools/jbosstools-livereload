@@ -19,7 +19,8 @@ import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
 import org.eclipse.wst.server.core.IServerType;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
-import org.jboss.tools.livereload.internal.server.wst.LiveReloadLaunchConfiguration;
+import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
+import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 
 /**
  * Utility class to create a new LiveReload Server during tests

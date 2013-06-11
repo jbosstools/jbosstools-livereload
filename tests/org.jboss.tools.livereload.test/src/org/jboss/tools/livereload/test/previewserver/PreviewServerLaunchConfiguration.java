@@ -18,8 +18,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
+import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.jboss.tools.livereload.internal.LiveReloadTestActivator;
-import org.jboss.tools.livereload.internal.util.WSTUtils;
 
 /**
  * @author xcoulon

@@ -1,4 +1,0 @@
-# This file enables runtime tracing
-org.jboss.tools.livereload/info=true
-org.jboss.tools.livereload/debug=true
-org.jboss.tools.livereload/trace=false

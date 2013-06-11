@@ -24,6 +24,7 @@ import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.model.ServerDelegate;
 import org.jboss.ide.eclipse.as.core.server.internal.JBossServer;
+import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

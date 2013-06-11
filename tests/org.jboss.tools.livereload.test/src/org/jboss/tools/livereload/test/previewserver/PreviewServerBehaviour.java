@@ -17,8 +17,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
-import org.jboss.tools.livereload.internal.server.jetty.JettyServerRunner;
-import org.jboss.tools.livereload.internal.util.Logger;
+import org.jboss.tools.livereload.core.internal.server.jetty.JettyServerRunner;
+import org.jboss.tools.livereload.core.internal.util.Logger;
 
 /**
  * @author xcoulon
