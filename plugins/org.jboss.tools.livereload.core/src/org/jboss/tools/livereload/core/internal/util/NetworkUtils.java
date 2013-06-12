@@ -11,14 +11,13 @@
 
 package org.jboss.tools.livereload.core.internal.util;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,16 +39,18 @@ public class NetworkUtils {
 	 * @return all {@link InetAddress} for the running VM.
 	 * @throws SocketException
 	 */
-	public static Map<String, List<InetAddress>> retrieveNetworkInterfaces() throws SocketException {
-		final Map<String, List<InetAddress>> namedAddresses = new HashMap<String, List<InetAddress>>();
+	public static Map<String, InetAddress> retrieveNetworkInterfaces() throws SocketException {
+		final Map<String, InetAddress> namedAddresses = new HashMap<String, InetAddress>();
 		final Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
 		for (NetworkInterface netint : Collections.list(nets)) {
-			final List<InetAddress> addresses = new ArrayList<InetAddress>();
 			final Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
 			for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-				addresses.add(inetAddress);
+				if((inetAddress instanceof Inet6Address) || inetAddress.isAnyLocalAddress() || inetAddress.isLinkLocalAddress() || inetAddress.isLoopbackAddress() || inetAddress.isMulticastAddress()
+						) {
+					continue;
+				}
+				namedAddresses.put(netint.getDisplayName(), inetAddress);
 			}
-			namedAddresses.put(netint.getDisplayName(), addresses);
 		}
 		return namedAddresses;
 	}

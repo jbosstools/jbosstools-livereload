@@ -13,10 +13,11 @@ package org.jboss.tools.livereload.internal.util;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jboss.tools.livereload.core.internal.util.NetworkUtils;
 import org.junit.Test;
@@ -31,8 +32,11 @@ public class NetworkUtilsTestCase {
 	public void shouldRetrieveInetAddresses() throws SocketException {
 		// pre-condition
 		// operation
-		final Map<String, List<InetAddress>> networkInterfaces = NetworkUtils.retrieveNetworkInterfaces();
+		final Map<String, InetAddress> networkInterfaces = NetworkUtils.retrieveNetworkInterfaces();
 		// verification
 		assertThat(networkInterfaces).isNotEmpty();
+		for(Entry<String, InetAddress> entry : networkInterfaces.entrySet()) {
+			assertThat(entry.getValue()).isInstanceOf(Inet4Address.class);
+		}
 	}
 }
