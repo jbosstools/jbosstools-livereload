@@ -14,6 +14,8 @@ package org.jboss.tools.livereload.core.internal.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.jboss.tools.livereload.core.internal.util.URIUtils.URIConverter;
+
 /**
  * @author xcoulon
  * 
@@ -30,7 +32,9 @@ public class URIUtils {
 
 	public static class URIConverter {
 
-		final URI originalURI;
+		private final URI originalURI;
+		
+		private String targetHost;
 
 		/**
 		 * Constructor
@@ -43,9 +47,14 @@ public class URIUtils {
 
 		public String toPort(int newPort) throws URISyntaxException {
 			final URI modifiedURI = new URI(originalURI.getScheme(), null,
-					originalURI.getHost() != null ? originalURI.getHost() : "localhost", newPort,
+					targetHost != null ? targetHost : originalURI.getHost(), newPort,
 					originalURI.getPath(), originalURI.getQuery(), originalURI.getFragment());
 			return modifiedURI.toString();
+		}
+
+		public URIConverter toHost(final String targetHost) {
+			this.targetHost = targetHost;
+			return this;
 		}
 
 	}

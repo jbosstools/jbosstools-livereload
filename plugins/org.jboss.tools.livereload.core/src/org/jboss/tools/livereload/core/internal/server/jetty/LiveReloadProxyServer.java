@@ -40,15 +40,15 @@ public class LiveReloadProxyServer extends Server {
 	 *            the LiveReload configuration to use.
 	 * @throws UnknownHostException
 	 */
-	public LiveReloadProxyServer(final int proxyPort, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
+	public LiveReloadProxyServer(final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
 			final boolean enableScriptInjection) {
 		super();
 		this.proxyPort = proxyPort;
 		this.targetPort = targetPort;
-		configure(proxyPort, targetPort, liveReloadPort, allowRemoteConnections, enableScriptInjection);
+		configure(proxyPort, targetHost, targetPort, liveReloadPort, allowRemoteConnections, enableScriptInjection);
 	}
 
-	private void configure(final int proxyPort, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
+	private void configure(final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
 			final boolean enableScriptInjection) {
 		setAttribute(JettyServerRunner.NAME, "LiveReload-Proxy-Server-" + proxyPort + ":" + targetPort);
 		final SelectChannelConnector connector = new SelectChannelConnector();
@@ -61,7 +61,7 @@ public class LiveReloadProxyServer extends Server {
 
 		final ServletContextHandler context = new ServletContextHandler();
 		context.setConnectorNames(new String[] { connector.getName() });
-		ServletHolder servletHolder = new ServletHolder(new ApplicationsProxyServlet(targetPort));
+		ServletHolder servletHolder = new ServletHolder(new ApplicationsProxyServlet(targetHost, targetPort));
 		context.addServlet(servletHolder, "/*");
 		setHandler(context);
 		if (enableScriptInjection) {
