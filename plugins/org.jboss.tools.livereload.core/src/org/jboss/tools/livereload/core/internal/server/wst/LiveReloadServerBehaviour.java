@@ -279,7 +279,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 					final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
 					final boolean enableScriptInjection = isScriptInjectionEnabled();
 					final int proxyPort = getProxyPort(startedServer);
-					final LiveReloadProxyServer proxyServer = new LiveReloadProxyServer(proxyPort, targetPort,
+					final LiveReloadProxyServer proxyServer = new LiveReloadProxyServer(proxyPort, startedServer.getHost(), targetPort,
 							websocketPort, allowRemoteConnections, enableScriptInjection);
 					final JettyServerRunner proxyRunner = JettyServerRunner.start(proxyServer);
 					proxyRunners.put(startedServer, proxyRunner);
