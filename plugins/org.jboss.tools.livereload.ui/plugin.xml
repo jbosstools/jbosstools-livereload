@@ -102,7 +102,7 @@
          id="org.eclipse.ui.browser.editor"
          name="%viewWebBrowserTitle"/-->
       <editor
-         extensions="htm,html,shtml"
+         extensions="htm,html,xhtml,shtml"
          icon="$nl$/icons/livereload_editor_launcher.png"
          id="org.jboss.tools.livereload.openFileInBrowserWithLiveReload"
          launcher="org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserWithLiveReloadLauncher"
