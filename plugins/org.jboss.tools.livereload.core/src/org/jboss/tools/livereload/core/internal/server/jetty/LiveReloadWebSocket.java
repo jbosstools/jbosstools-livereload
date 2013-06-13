@@ -12,6 +12,8 @@ import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientConnectedEvent;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientDisconnectedEvent;
+import org.jboss.tools.livereload.core.internal.service.LiveReloadClientRefreshedEvent;
+import org.jboss.tools.livereload.core.internal.service.LiveReloadClientRefreshingEvent;
 import org.jboss.tools.livereload.core.internal.service.ServerResourcePublishedEvent;
 import org.jboss.tools.livereload.core.internal.service.ServerResourcePublishedFilter;
 import org.jboss.tools.livereload.core.internal.service.Subscriber;
@@ -40,15 +42,18 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 
 	private static EventService eventService = EventService.getInstance();
 
-	private final String id;
+	private final String clientId;
+
+	private final String clientAddress;
 
 	private Connection connection;
 	
 	private String browserLocation = null;
 
-	public LiveReloadWebSocket(final String userAgent, final String address) {
-		this.id = new StringBuilder((userAgent != null) ? userAgent : "unknown User-Agent").append(" at ")
-				.append((address != null) ? address : "unknown IP Address").toString();
+	public LiveReloadWebSocket(final String userAgent, final String clientAddress) {
+		this.clientId = new StringBuilder((userAgent != null) ? userAgent : "unknown User-Agent").append(" at ")
+				.append((clientAddress != null) ? clientAddress : "unknown IP Address").toString();
+		this.clientAddress = clientAddress;
 	}
 
 	@Override
@@ -132,11 +137,14 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 				WorkspaceResourceChangedEvent event = (WorkspaceResourceChangedEvent) e;
 				List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 				for(String command : commands) {
+					eventService.publish(new LiveReloadClientRefreshingEvent(clientAddress));
 					sendMessage(command);
+					eventService.publish(new LiveReloadClientRefreshedEvent(clientAddress));
 				}
 			} else if(e instanceof ServerResourcePublishedEvent) {
 				final String command = ReloadCommandGenerator.generateReloadCommand(browserLocation);
 				sendMessage(command);
+				eventService.publish(new LiveReloadClientRefreshedEvent(clientAddress));
 			} else {
 				Logger.debug("Ignoring event " + e);
 			}
@@ -147,7 +155,7 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 
 	@Override
 	public String getId() {
-		return id + " at " + browserLocation;
+		return clientId + " at " + browserLocation;
 	}
 
 }

@@ -362,7 +362,7 @@ public class WSTUtils {
 		// check the configuration
 		if (requiresProxy && !liveReloadServerBehaviour.isProxyEnabled()) {
 			// check if server was already running
-			stopServer(liveReloadServer, 5, TimeUnit.SECONDS);
+			stopServer(liveReloadServer, 15, TimeUnit.SECONDS);
 			// by default, let's add support for script injection if the proxy
 			// is required.
 			liveReloadServerBehaviour.setProxyEnabled(true);
@@ -370,10 +370,9 @@ public class WSTUtils {
 		}
 		if (requiresRemoteConnexions && !liveReloadServerBehaviour.isRemoteConnectionsAllowed()) {
 			// check if server was already running
-			stopServer(liveReloadServer, 5, TimeUnit.SECONDS);
+			stopServer(liveReloadServer, 15, TimeUnit.SECONDS);
 			// by default, let's add support for script injection if the remote
 			// connections are required.
-			liveReloadServer.stop(true);
 			liveReloadServerBehaviour.setProxyEnabled(true);
 			liveReloadServerBehaviour.setScriptInjectionAllowed(true);
 			liveReloadServerBehaviour.setRemoteConnectionsAllowed(true);
