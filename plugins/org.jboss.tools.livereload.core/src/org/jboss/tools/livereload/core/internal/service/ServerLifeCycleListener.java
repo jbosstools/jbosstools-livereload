@@ -120,7 +120,7 @@ public class ServerLifeCycleListener implements IServerListener, IServerLifecycl
 
 	@Override
 	public void publishStarted(IServer server) {
-		// nothing to do
+		EventService.getInstance().publish(new LiveReloadClientRefreshingEvent(server.getId()));
 	}
 
 	@Override

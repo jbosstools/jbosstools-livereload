@@ -10,8 +10,10 @@
  ******************************************************************************/
 package org.jboss.tools.livereload.core.internal.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventObject;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +29,7 @@ public class EventService {
 
 	private static final EventService instance = new EventService();
 
-	private final Map<Subscriber, EventFilter> subscribers = new ConcurrentHashMap<Subscriber, EventFilter>();
+	private final Map<Subscriber, List<EventFilter>> subscribers = new ConcurrentHashMap<Subscriber, List<EventFilter>>();
 
 	/** Singleton constructor */
 	private EventService() {
@@ -46,14 +48,16 @@ public class EventService {
 	 */
 	public void publish(final EventObject event) {
 		if (this.subscribers.size() > 0) {
-			for (Entry<Subscriber, EventFilter> entry: this.subscribers.entrySet()) {
+			for (Entry<Subscriber, List<EventFilter>> entry: this.subscribers.entrySet()) {
 				final Subscriber subscriber = entry.getKey();
-				final EventFilter filter = entry.getValue();
-				if(filter.accept(event)) {
-					Logger.debug("Informing subscriber '{}' of {}", subscriber.getId(), event.getSource());
-					subscriber.inform(event);
-				} else {
-					Logger.debug("Ignored event {} by subscriber {}", event, subscriber.getId());
+				final List<EventFilter> filters = entry.getValue();
+				for(EventFilter filter : filters) {
+					if (filter.accept(event)) {
+						Logger.debug("Informing subscriber '{}' of {}", subscriber.getId(), event.getSource());
+						subscriber.inform(event);
+					} else {
+						Logger.debug("Ignored event {} by subscriber {}", event, subscriber.getId());
+					}
 				}
 			}
 		} else {
@@ -63,7 +67,10 @@ public class EventService {
 
 	public void subscribe(final Subscriber subscriber, final EventFilter filter) {
 		Logger.debug("Welcome to new subscriber {} " , subscriber.getId());
-		this.subscribers.put(subscriber, filter);
+		if(!this.subscribers.containsKey(subscriber)) {
+			this.subscribers.put(subscriber, new ArrayList<EventFilter>());
+		}
+		this.subscribers.get(subscriber).add(filter);
 	}
 
 	public void unsubscribe(final Subscriber subscriber) {

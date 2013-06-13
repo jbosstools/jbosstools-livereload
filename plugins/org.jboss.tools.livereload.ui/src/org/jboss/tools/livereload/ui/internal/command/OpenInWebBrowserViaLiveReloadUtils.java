@@ -217,7 +217,7 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 							&& liveReloadServer.getServerRestartState()) {
 						Logger.info("Restarting the server {}", liveReloadServer.getName());
 						liveReloadServer.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-					} else {
+					} else if(liveReloadServer.getServerState() == IServer.STATE_STOPPED) {
 						Logger.info("Starting the server {}", liveReloadServer.getName());
 						liveReloadServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
 					}

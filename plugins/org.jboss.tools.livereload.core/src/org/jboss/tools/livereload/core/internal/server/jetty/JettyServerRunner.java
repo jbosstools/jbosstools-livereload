@@ -30,7 +30,7 @@ import org.jboss.tools.livereload.core.internal.util.TimeoutUtils.TaskMonitor;
 public class JettyServerRunner implements Runnable {
 
 	public static final String NAME = "serverName";
-	
+
 	private final Server server;
 
 	/**
@@ -41,7 +41,7 @@ public class JettyServerRunner implements Runnable {
 	public static JettyServerRunner start(final Server jettyServer) throws TimeoutException {
 		final JettyServerRunner runner = new JettyServerRunner(jettyServer);
 		Logger.debug("Starting {} on port {}", jettyServer, runner.getPort());
-		final Thread serverThread = new Thread(runner, (String)jettyServer.getAttribute(JettyServerRunner.NAME));
+		final Thread serverThread = new Thread(runner, (String) jettyServer.getAttribute(JettyServerRunner.NAME));
 		serverThread.start();
 		// wait until server is started
 		final TaskMonitor monitor = new TaskMonitor() {
@@ -58,7 +58,7 @@ public class JettyServerRunner implements Runnable {
 		}
 		return runner;
 	}
-	
+
 	public static void stop(final JettyServerRunner runner) {
 		if (runner != null) {
 			try {
@@ -72,13 +72,15 @@ public class JettyServerRunner implements Runnable {
 				if (TimeoutUtils.timeout(monitor, 5, TimeUnit.SECONDS)) {
 					Logger.error("Failed to stop LiveReload Server within expected time (reason: timeout)");
 					// attempt to stop what can be stopped.
-					throw new TimeoutException("Failed to stop LiveReload Server within expected time (reason: timeout)");
+					throw new TimeoutException(
+							"Failed to stop LiveReload Server within expected time (reason: timeout)");
 				}
 			} catch (Exception e) {
 				Logger.error("Failed to stop LiveReload Server", e);
 			}
 		}
 	}
+
 	/**
 	 * Constructor to use when script injection proxy should not be enabled
 	 * 
@@ -92,9 +94,12 @@ public class JettyServerRunner implements Runnable {
 	@Override
 	public void run() {
 		try {
-			Logger.debug("Starting {}...", server.getAttribute(NAME));
-			server.start();
-			server.join();
+			// avoids starting the server if it was already started before
+			if (!server.isStarted()) { 
+				Logger.debug("Starting {}...", server.getAttribute(NAME));
+				server.start();
+				server.join();
+			}
 		} catch (Exception e) {
 			Logger.error("Failed to start '" + server.getAttribute(NAME) + "'", e);
 			try {
@@ -118,7 +123,7 @@ public class JettyServerRunner implements Runnable {
 	 */
 	public boolean isStarted() {
 		boolean started = server.isStarted();
-		for(Connector connector : server.getConnectors()) {
+		for (Connector connector : server.getConnectors()) {
 			started = started && connector.isStarted();
 		}
 		return started;
@@ -132,7 +137,7 @@ public class JettyServerRunner implements Runnable {
 	public boolean isStopped() {
 		return server.isStopped();
 	}
-	
+
 	public int getPort() {
 		return server.getConnectors()[0].getPort();
 	}

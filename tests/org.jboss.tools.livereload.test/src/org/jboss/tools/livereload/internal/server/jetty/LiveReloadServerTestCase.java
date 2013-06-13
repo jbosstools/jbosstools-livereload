@@ -36,9 +36,7 @@ import org.eclipse.jetty.websocket.WebSocketClientFactory;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.internal.Server;
-import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.eclipse.wst.server.core.util.SocketUtil;
-import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.ServerLifeCycleListener;
@@ -571,9 +569,9 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		// pre-condition
 		createHttpPreviewServer();
-		((Server) httpPreviewServer).setServerState(IServer.STATE_STARTED);
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		// operation
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true, false);
 		// verification
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 	}

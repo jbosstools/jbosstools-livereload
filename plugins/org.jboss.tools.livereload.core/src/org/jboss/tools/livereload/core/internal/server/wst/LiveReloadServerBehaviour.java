@@ -35,6 +35,9 @@ import org.jboss.tools.livereload.core.internal.server.jetty.JettyServerRunner;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadServer;
 import org.jboss.tools.livereload.core.internal.service.EventService;
+import org.jboss.tools.livereload.core.internal.service.LiveReloadClientRefreshFilter;
+import org.jboss.tools.livereload.core.internal.service.LiveReloadClientRefreshedEvent;
+import org.jboss.tools.livereload.core.internal.service.LiveReloadClientRefreshingEvent;
 import org.jboss.tools.livereload.core.internal.service.ServerLifeCycleListener;
 import org.jboss.tools.livereload.core.internal.service.ServerStartedAndStoppedFilter;
 import org.jboss.tools.livereload.core.internal.service.ServerStartedEvent;
@@ -67,6 +70,8 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 		super.initialize(monitor);
 		// register for Server started and Server stopped events
 		EventService.getInstance().subscribe(this, new ServerStartedAndStoppedFilter());
+		EventService.getInstance().subscribe(this, new LiveReloadClientRefreshFilter());
+		setServerPublishState(IServer.PUBLISH_STATE_NONE);
 	}
 
 	/**
@@ -94,7 +99,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 
 	@Override
 	public IStatus canPublish() {
-		return Status.CANCEL_STATUS;
+		return Status.OK_STATUS;
 	}
 
 	@Override
@@ -201,8 +206,6 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 		workingCopy.save(true, new NullProgressMonitor());
 	}
 
-
-
 	@Override
 	public IStatus canStop() {
 		if (getServer().getServerState() == IServer.STATE_STARTING
@@ -284,6 +287,10 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			startProxy(((ServerStartedEvent) event).getServer());
 		} else if (event instanceof ServerStoppedEvent) {
 			stopProxy(((ServerStoppedEvent) event).getServer());
+		} else if (event instanceof LiveReloadClientRefreshingEvent) {
+			setServerPublishState(IServer.PUBLISH_STATE_UNKNOWN);
+		} else if (event instanceof LiveReloadClientRefreshedEvent) {
+			setServerPublishState(IServer.PUBLISH_STATE_NONE);
 		}
 
 	}
