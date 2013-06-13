@@ -27,6 +27,8 @@ public class LiveReloadLaunchConfiguration implements ILaunchConfigurationDelega
 
 	private static final String SERVER_ID = "server-id"; //$NON-NLS-1$
 
+	public static final String LIVERELOAD_MODE = "livereload";
+
 	public static final String WEBSOCKET_PORT = JBossLiveReloadCoreActivator.PLUGIN_ID + ".websocket_port";
 
 	public static final String ENABLE_PROXY_SERVER = JBossLiveReloadCoreActivator.PLUGIN_ID + ".enable_proxy_server";

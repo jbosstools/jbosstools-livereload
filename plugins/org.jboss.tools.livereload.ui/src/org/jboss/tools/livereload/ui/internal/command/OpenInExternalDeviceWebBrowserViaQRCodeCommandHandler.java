@@ -13,13 +13,18 @@ package org.jboss.tools.livereload.ui.internal.command;
 
 import static org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserViaLiveReloadUtils.retrieveServerModuleFromSelectedElement;
 
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.ui.IServerModule;
+import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
+import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.jboss.tools.livereload.ui.internal.util.Logger;
 
 /**
@@ -34,14 +39,29 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeCommandHandler extends Abstr
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final IServerModule appModule = retrieveServerModuleFromSelectedElement(HandlerUtil.getCurrentSelection(event));
-		if (appModule != null) {
+		CHECK: if (appModule != null) {
 			try {
-				TitleAreaDialog dialog = new OpenInExternalDeviceWebBrowserViaQRCodeDialog(appModule, Display.getDefault().getActiveShell());
-				dialog.open();
+				final IServer liveReloadServer = WSTUtils.findOrCreateLiveReloadServer(true, false);
+				final LiveReloadServerBehaviour liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils
+						.findServerBehaviour(liveReloadServer);
+				if (liveReloadServerBehaviour.isRemoteConnectionsAllowed()
+						&& !OpenInWebBrowserViaLiveReloadUtils.promptRemoteConnections(liveReloadServerBehaviour)) {
+					break CHECK;
+				}
+				if (liveReloadServerBehaviour.isProxyEnabled() && !liveReloadServerBehaviour.isScriptInjectionEnabled()
+						&& !OpenInWebBrowserViaLiveReloadUtils.promptForScriptInjection(liveReloadServerBehaviour)) {
+					break CHECK;
+				}
+				OpenInWebBrowserViaLiveReloadUtils.startOrRestartServer(liveReloadServer, 30, TimeUnit.SECONDS);
+				try {
+					TitleAreaDialog dialog = new OpenInExternalDeviceWebBrowserViaQRCodeDialog(appModule, Display.getDefault().getActiveShell());
+					dialog.open();
+				} catch (Exception e) {
+					Logger.error("Failed to open Web Browser via LiveReload command for selected module " + appModule, e);
+				}
 			} catch (Exception e) {
 				Logger.error("Failed to open Web Browser via LiveReload command for selected module " + appModule, e);
 			}
-
 		}
 		return null;
 	}

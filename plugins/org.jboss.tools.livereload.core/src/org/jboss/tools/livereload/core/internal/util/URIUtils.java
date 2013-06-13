@@ -14,8 +14,6 @@ package org.jboss.tools.livereload.core.internal.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.jboss.tools.livereload.core.internal.util.URIUtils.URIConverter;
-
 /**
  * @author xcoulon
  * 
