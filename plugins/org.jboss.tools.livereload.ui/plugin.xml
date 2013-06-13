@@ -70,10 +70,6 @@
                           value="org.eclipse.wst.server.ui.IServerModule">
                     </instanceof>
                  </iterate>
-                 <test
-                       forcePluginActivation="true"
-                       property="org.jboss.tools.livereload.serverStarted">
-                 </test>
               </and>
            </with>
           </activeWhen>
@@ -94,16 +90,12 @@
                           value="org.eclipse.wst.server.ui.IServerModule">
                     </instanceof>
                  </iterate>
-                 <test
-                       forcePluginActivation="true"
-                       property="org.jboss.tools.livereload.serverStarted">
-                 </test>
               </and>
            </with>
           </activeWhen>
       </handler>
    </extension>
-   <extension
+   <!--extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
             class="org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserViaLiveReloadProxyEnablementTester"
@@ -112,7 +104,7 @@
             properties="serverStarted"
             type="org.eclipse.jface.viewers.ITreeSelection">
       </propertyTester> 
-   </extension>
+   </extension-->
    
    <extension point="org.eclipse.ui.editors">
       <editor

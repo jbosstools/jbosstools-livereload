@@ -23,6 +23,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
@@ -64,18 +65,6 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 	@Override
 	protected void initialize(IProgressMonitor monitor) {
 		super.initialize(monitor);
-		final IServerWorkingCopy swc = getServer().createWorkingCopy();
-		try {
-			// configure the websocket port if it hasn't been done before (could
-			// be initialized during tests)
-			if (swc.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1) == -1) {
-				swc.setAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT,
-						LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT);
-				swc.saveAll(true, null);
-			}
-		} catch (CoreException e) {
-			Logger.error("Failed to save the new LiveReload server configuration", e);
-		}
 		// register for Server started and Server stopped events
 		EventService.getInstance().subscribe(this, new ServerStartedAndStoppedFilter());
 	}
@@ -152,25 +141,67 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 	 * @param server
 	 * @return
 	 */
-	private boolean isScriptInjectionEnabled() {
+	public boolean isScriptInjectionEnabled() {
 		return getServer().getAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, false);
 	}
+	
+	/**
+	 * Method to configure if script injection is allowed or not
+	 * @param allowScriptInjection true to allow, false otherwise.
+	 * @throws CoreException 
+	 */
+	public void setScriptInjectionAllowed(boolean allowScriptInjection) throws CoreException {
+		configureServerAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, allowScriptInjection);
+	}
 
 	/**
 	 * @param server
 	 * @return
 	 */
-	private boolean isRemoteConnectionsAllowed() {
+	public boolean isRemoteConnectionsAllowed() {
 		return getServer().getAttribute(LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, false);
 	}
+	
+	/**
+	 * Method to configure if remote connections are allowed or not
+	 * @param allowRemoteConnections true to allow, false otherwise.
+	 * @throws CoreException 
+	 */
+	public void setRemoteConnectionsAllowed(boolean allowRemoteConnections) throws CoreException {
+		configureServerAttribute(LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, allowRemoteConnections);
+	}
 
 	/**
 	 * @param server
 	 * @return
 	 */
-	private boolean isProxyEnabled() {
+	public boolean isProxyEnabled() {
 		return getServer().getAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, false);
 	}
+
+	/**
+	 * Method to configure if proxy is enabled or not
+	 * @param enableProxy true to allow, false otherwise.
+	 * @throws CoreException 
+	 */
+	public void setProxyEnabled(boolean enableProxy) throws CoreException {
+		configureServerAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, enableProxy);
+	}
+
+	/**
+	 * Sets the attribute value in the underlying {@link IServer}
+	 * @param attributeName
+	 * @param attributeValue
+	 * @throws CoreException
+	 */
+	private void configureServerAttribute(final String attributeName, boolean attributeValue) throws CoreException {
+		final IServerWorkingCopy workingCopy = getServer().createWorkingCopy();
+		workingCopy.setAttribute(attributeName, attributeValue);
+		setServerRestartState(true);
+		workingCopy.save(true, new NullProgressMonitor());
+	}
+
+
 
 	@Override
 	public IStatus canStop() {
@@ -349,5 +380,6 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 	public void setServerStopped() {
 		setServerState(IServer.STATE_STOPPED);
 	}
+
 
 }

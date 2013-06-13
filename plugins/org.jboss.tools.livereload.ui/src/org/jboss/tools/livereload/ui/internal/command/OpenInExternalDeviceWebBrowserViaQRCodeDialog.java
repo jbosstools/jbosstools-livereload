@@ -11,8 +11,6 @@
 
 package org.jboss.tools.livereload.ui.internal.command;
 
-import static org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserViaLiveReloadUtils.findLiveReloadProxyServer;
-
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.SocketException;
@@ -71,6 +69,7 @@ import org.eclipse.wst.server.ui.IServerModule;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.NetworkUtils;
+import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.jboss.tools.livereload.ui.internal.util.ImageRepository;
 
 import com.google.zxing.BarcodeFormat;
@@ -117,16 +116,12 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 	@Override
 	protected Control createContents(Composite parent) {
 		Control control = super.createContents(parent);
-		setupDialog(parent);
-		return control;
-	}
-
-	private void setupDialog(Composite parent) {
-		parent.getShell().setText(OpenInExternalDeviceWebBrowserViaQRCodeMessages.DIALOG_NAME);
-		setTitle(OpenInExternalDeviceWebBrowserViaQRCodeMessages.DIALOG_TITLE);
+		parent.getShell().setText(DialogMessages.QRCODE_DIALOG_NAME);
+		setTitle(DialogMessages.QRCODE_DIALOG_TITLE);
 		setTitleImage(TITLE_IMAGE);
-		setMessage(OpenInExternalDeviceWebBrowserViaQRCodeMessages.DIALOG_MESSAGE);
+		setMessage(DialogMessages.QRCODE_DIALOG_MESSAGE);
 		setDialogHelpAvailable(false);
+		return control;
 	}
 
 	@Override
@@ -151,7 +146,7 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 			Entry<String, InetAddress> selectedNetworkInterface = (Entry<String, InetAddress>) tableItems[0].getData();
 
 			try {
-				final LiveReloadProxyServer liveReloadProxyServer = findLiveReloadProxyServer(serverModule.getServer());
+				final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(serverModule.getServer());
 				final int proxyPort = liveReloadProxyServer.getProxyPort();
 				final String host = selectedNetworkInterface.getValue().getHostAddress();
 				URL url;

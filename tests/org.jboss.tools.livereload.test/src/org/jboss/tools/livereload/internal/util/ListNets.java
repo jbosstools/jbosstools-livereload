@@ -1,11 +1,12 @@
 package org.jboss.tools.livereload.internal.util;
 
+import static java.lang.System.out;
+
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.Enumeration;
-import static java.lang.System.out;
 
 public class ListNets {
 

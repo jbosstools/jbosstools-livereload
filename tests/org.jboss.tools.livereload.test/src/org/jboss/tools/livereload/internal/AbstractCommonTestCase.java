@@ -13,6 +13,11 @@ package org.jboss.tools.livereload.internal;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -21,6 +26,9 @@ import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.wst.server.core.IServer;
+import org.eclipse.wst.server.core.ServerCore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -127,6 +135,80 @@ public abstract class AbstractCommonTestCase {
 			LOGGER.info("Test Workspace sync'd in " + (endTime - startTime)
 					+ "ms.");
 		}
+	}
+	
+	@Before
+	public void stopandDestroyAllServers() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
+		for(IServer server : ServerCore.getServers()) {
+			if(server.getServerState() != IServer.STATE_STOPPED) {
+				stopServer(server, 30, TimeUnit.SECONDS);
+			}
+			server.delete();
+		}
+	}
+	
+	/**
+	 * Starts the given {@link IServer} with a given
+	 * 
+	 * @param server
+	 * @param timeout
+	 * @param unit
+	 * @throws CoreException
+	 * @throws TimeoutException
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	public static void startServer(final IServer server, int timeout, TimeUnit unit) throws InterruptedException,
+			ExecutionException, TimeoutException, CoreException {
+		LOGGER.info("Starting server {}", server.getName());
+		server.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
+
+			@Override
+			public void run() {
+				while (server.getServerState() != IServer.STATE_STARTED) {
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						LOGGER.error("Failed to sleep", e);
+					}
+				}
+
+			}
+		});
+		future.get(timeout, unit);
+	}
+
+	/**
+	 * Stops the given {@link IServer} with a given
+	 * 
+	 * @param server
+	 * @param timeout
+	 * @param unit
+	 * @throws CoreException
+	 * @throws TimeoutException
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	public static void stopServer(final IServer server, int timeout, TimeUnit unit) throws InterruptedException,
+			ExecutionException, TimeoutException {
+		LOGGER.info("Stopping server {}", server.getName());
+		server.stop(true);
+		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
+
+			@Override
+			public void run() {
+				while (server.getServerState() != IServer.STATE_STOPPED) {
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						LOGGER.error("Failed to sleep", e);
+					}
+				}
+
+			}
+		});
+		future.get(timeout, unit);
 	}
 
 }

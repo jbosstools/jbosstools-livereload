@@ -34,7 +34,7 @@ public class PreviewServerLaunchConfiguration implements ILaunchConfigurationDel
 			throws CoreException {
 
 		final String serverId = configuration.getAttribute(SERVER_ID, (String) null);
-		PreviewServerBehaviour serverBehaviour = (PreviewServerBehaviour) WSTUtils.findServerBehaviour(serverId);
+		PreviewServerBehaviour serverBehaviour = (PreviewServerBehaviour) WSTUtils.findServerBehaviour(serverId); 
 		if (serverBehaviour == null) {
 			// can't carry on if ServerBehaviour is not found
 			return;

@@ -36,7 +36,9 @@ import org.eclipse.jetty.websocket.WebSocketClientFactory;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.internal.Server;
+import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.eclipse.wst.server.core.util.SocketUtil;
+import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.ServerLifeCycleListener;
@@ -45,11 +47,8 @@ import org.jboss.tools.livereload.core.internal.util.TimeoutUtils.TaskMonitor;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.jboss.tools.livereload.internal.AbstractCommonTestCase;
 import org.jboss.tools.livereload.internal.WorkbenchUtils;
-import org.jboss.tools.livereload.internal.util.WSTTestUtils;
 import org.jboss.tools.livereload.test.previewserver.PreviewServerBehaviour;
 import org.jboss.tools.livereload.test.previewserver.PreviewServerFactory;
-import org.jboss.tools.livereload.test.previewserver.ServerStarterUtil;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -108,18 +107,6 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		folderDocumentLocation = indexDocumentlocation.replace("index.html", "");
 	}
 
-	@After
-	public void destroyServer() throws CoreException {
-		if (liveReloadServer != null) {
-			liveReloadServer.stop(true);
-			liveReloadServer.delete();
-		}
-		if(httpPreviewServer != null) {
-			httpPreviewServer.stop(true);
-			httpPreviewServer.delete();
-		}
-	}
-
 	/**
 	 * @throws CoreException
 	 * @throws TimeoutException
@@ -129,18 +116,18 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	 */
 	private void createAndLaunchLiveReloadServer(final boolean enableProxyServer, final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		final String serverId = WSTTestUtils.createLiveReloadServer(liveReloadServerPort, enableProxyServer,
-				injectScript);
-		liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(serverId);
+		final IServer server = WSTUtils.createLiveReloadServer(liveReloadServerPort, enableProxyServer,
+				injectScript, false);
+		liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(server);
 		assertThat(liveReloadServerBehaviour).isNotNull();
 		liveReloadServer = liveReloadServerBehaviour.getServer();
 		assertThat(liveReloadServer).isNotNull();
 		assertThat(liveReloadServer.canStart(ILaunchManager.RUN_MODE).isOK()).isTrue();
 
 		assertThat(SocketUtil.isPortInUse(liveReloadServerPort)).isFalse();
-		ServerStarterUtil.startServer(liveReloadServer, 60, TimeUnit.SECONDS);
+		startServer(liveReloadServer, 60, TimeUnit.SECONDS);
 	}
-
+	
 	/**
 	 * Creates an HTTP Preview Server but does not start it.
 	 * 
@@ -185,20 +172,6 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final Connection connection = future.get();
 		Thread.sleep(200);
 		return connection;
-	}
-
-	@After
-	public void stopServers() throws CoreException {
-		if (liveReloadServerBehaviour != null) {
-			liveReloadServerBehaviour.stop(true);
-		}
-		if (liveReloadServer != null) {
-			liveReloadServer.delete();
-		}
-		if (httpPreviewServer != null) {
-			httpPreviewServer.stop(true);
-			httpPreviewServer.delete();
-		}
 	}
 
 	@Test
