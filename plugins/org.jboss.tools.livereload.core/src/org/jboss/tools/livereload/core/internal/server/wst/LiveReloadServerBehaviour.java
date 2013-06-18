@@ -319,9 +319,9 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 					final int proxyPort = getProxyPort(startedServer);
 					final LiveReloadProxyServer proxyServer = new LiveReloadProxyServer(proxyPort, startedServer.getHost(), targetPort,
 							websocketPort, allowRemoteConnections, enableScriptInjection);
+					proxyServers.put(startedServer, proxyServer);
 					final JettyServerRunner proxyRunner = JettyServerRunner.start(proxyServer);
 					proxyRunners.put(startedServer, proxyRunner);
-					proxyServers.put(startedServer, proxyServer);
 				} catch (Exception e) {
 					Logger.error("Failed to create or start LiveReload proxy for server " + startedServer.getName(), e);
 				}

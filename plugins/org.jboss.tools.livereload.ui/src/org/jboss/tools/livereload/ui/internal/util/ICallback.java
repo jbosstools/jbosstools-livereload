@@ -9,22 +9,16 @@
  * Xavier Coulon - Initial API and implementation 
  ******************************************************************************/
 
-package org.jboss.tools.livereload.core.internal.service;
+package org.jboss.tools.livereload.ui.internal.util;
 
-import java.util.EventObject;
-
-import org.jboss.tools.livereload.core.internal.server.jetty.ProxyConnectorAddedEvent;
-import org.jboss.tools.livereload.core.internal.server.jetty.ProxyConnectorRemovedEvent;
+import org.eclipse.wst.server.core.IServer;
 
 /**
  * @author xcoulon
- *
+ * 
  */
-public class ProxyEventFilter implements EventFilter {
+public interface ICallback {
 
-	@Override
-	public boolean accept(EventObject event) {
-		return event instanceof ProxyConnectorAddedEvent || event instanceof ProxyConnectorRemovedEvent;
-	}
+	abstract void execute(final IServer liveReloadServer);
 
 }

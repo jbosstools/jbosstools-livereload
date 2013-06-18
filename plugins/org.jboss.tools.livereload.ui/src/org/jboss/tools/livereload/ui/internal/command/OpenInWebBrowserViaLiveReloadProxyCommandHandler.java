@@ -13,16 +13,13 @@ package org.jboss.tools.livereload.ui.internal.command;
 
 import static org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserViaLiveReloadUtils.retrieveServerModuleFromSelectedElement;
 
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.ui.IServerModule;
-import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
-import org.jboss.tools.livereload.core.internal.util.WSTUtils;
+import org.jboss.tools.livereload.ui.internal.util.ICallback;
 import org.jboss.tools.livereload.ui.internal.util.Logger;
 
 /**
@@ -36,25 +33,20 @@ public class OpenInWebBrowserViaLiveReloadProxyCommandHandler extends AbstractHa
 
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		// first, check if there's a LiveReload created and started.
 		final IServerModule appModule = retrieveServerModuleFromSelectedElement(HandlerUtil.getCurrentSelection(event));
-		CHECK: if (appModule != null) {
-			try {
-				final IServer liveReloadServer = WSTUtils.findOrCreateLiveReloadServer(true, false);
-				final LiveReloadServerBehaviour liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils
-						.findServerBehaviour(liveReloadServer);
-				if (liveReloadServerBehaviour.isRemoteConnectionsAllowed()
-						&& !OpenInWebBrowserViaLiveReloadUtils.promptRemoteConnections(liveReloadServerBehaviour)) {
-					break CHECK;
+		try {
+			OpenInWebBrowserViaLiveReloadUtils.openWithLiveReloadServer(appModule, true, false, new ICallback() {
+				@Override
+				public void execute(IServer liveReloadServer) {
+					try {
+						OpenInWebBrowserViaLiveReloadUtils.openInBrowser(appModule);
+					} catch (Exception e) {
+						Logger.error("Failed to Open in Web Browser via LiveReload", e);
+					}
 				}
-				if (liveReloadServerBehaviour.isProxyEnabled() && !liveReloadServerBehaviour.isScriptInjectionEnabled()
-						&& !OpenInWebBrowserViaLiveReloadUtils.promptForScriptInjection(liveReloadServerBehaviour)) {
-					break CHECK;
-				}
-				OpenInWebBrowserViaLiveReloadUtils.openInBrowserAfterStartup(appModule, liveReloadServer, 30, TimeUnit.SECONDS);
-			} catch (Exception e) {
-				Logger.error("Failed to open Web Browser via LiveReload command for selected module " + appModule, e);
-			}
+			});
+		} catch (Exception e) {
+			Logger.error("Failed to Open in Web Browser via LiveReload", e);
 		}
 		return null;
 	}

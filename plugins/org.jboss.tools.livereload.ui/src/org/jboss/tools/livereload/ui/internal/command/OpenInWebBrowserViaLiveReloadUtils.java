@@ -14,26 +14,19 @@ package org.jboss.tools.livereload.ui.internal.command;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.wst.server.core.IServer;
-import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.eclipse.wst.server.ui.IServerModule;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
@@ -41,8 +34,8 @@ import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehav
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.ProjectUtils;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
-import org.jboss.tools.livereload.ui.internal.configuration.LiveReloadServerConfigurationMessages;
-import org.jboss.tools.livereload.ui.internal.util.ImageRepository;
+import org.jboss.tools.livereload.ui.internal.util.CallbackJob;
+import org.jboss.tools.livereload.ui.internal.util.ICallback;
 
 /**
  * Utility class
@@ -97,145 +90,110 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	}
 
 	/**
-	 * Opens the given URL in an external browser
 	 * 
-	 * @param url
-	 * @throws PartInitException
-	 */
-	public static void openInBrowser(final URL url) throws PartInitException {
-		PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
-	}
-
-	/**
-	 * Opens a Message Dialog that asks to the user if he wants to start the
-	 * LiveReload server with Remote Connections enabled. The user can accept
-	 * and use the toggle button to disable the Remote Connections at the same
-	 * time.
-	 * 
-	 * @param liveReloadServerBehaviour
-	 * @throws CoreException
-	 */
-	public static boolean promptRemoteConnections(final LiveReloadServerBehaviour liveReloadServerBehaviour)
-			throws CoreException {
-		MessageDialog dialog = new MessageDialog(Display.getDefault().getActiveShell(),
-				DialogMessages.REMOTE_CONNECTIONS_DIALOG_TITLE, ImageRepository.getInstance().getImage(
-						"livereload_wiz.png"), DialogMessages.REMOTE_CONNECTIONS_DIALOG_MESSAGE, MessageDialog.WARNING,
-				new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL },
-				2);
-		int result = dialog.open();
-		if (result == 0) {
-			return true;
-		} else if (result == 1) {
-			liveReloadServerBehaviour.setRemoteConnectionsAllowed(false);
-			return true;
-		}
-		// cancel
-		return false;
-	}
-
-	/**
-	 * Opens a Message Dialog that asks to the user if he wants to enable script
-	 * injection before starting the LiveReload server.
-	 * 
-	 * @param liveReloadServerBehaviour
-	 * @throws CoreException
-	 */
-	public static boolean promptForScriptInjection(final LiveReloadServerBehaviour liveReloadServerBehaviour)
-			throws CoreException {
-		final String message = NLS.bind(DialogMessages.SCRIPT_INJECTION_DIALOG_MESSAGE,
-				LiveReloadServerConfigurationMessages.ALLOW_REMOTE_CONNECTIONS_LABEL);
-		MessageDialog dialog = new MessageDialog(Display.getDefault().getActiveShell(),
-				DialogMessages.SCRIPT_INJECTION_DIALOG_TITLE, ImageRepository.getInstance().getImage(
-						"livereload_wiz.png"), message, MessageDialog.WARNING, new String[] {
-						IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL }, 2);
-		int result = dialog.open();
-		if (result == 0) {
-			liveReloadServerBehaviour.setScriptInjectionAllowed(true);
-			return true;
-		} else if (result == 1) {
-			return true;
-		}
-		// cancel
-		return false;
-	}
-
-	public static void openInBrowserAfterStartup(final IPath file, final IServer liveReloadServer, final int timeout,
-			final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException, CoreException {
-		Executors.newSingleThreadExecutor().submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					startOrRestartServer(liveReloadServer, timeout, unit);
-					final LiveReloadServerBehaviour liveReloadServerBehaviour = (LiveReloadServerBehaviour) liveReloadServer
-							.loadAdapter(ServerBehaviourDelegate.class, new NullProgressMonitor());
-					if (liveReloadServerBehaviour.isProxyEnabled()) {
-						openInBrowser(computeURL(file, liveReloadServer));
-					} else {
-						openInBrowser(new URL("file", null, -1, file.toOSString()));
-					}
-		
-				} catch (Exception e) {
-					Logger.error("Failed to open '" + file.toOSString() + "' in external browser", e);
-				}
-			}
-		});
-	}
-
-	public static void openInBrowserAfterStartup(final IServerModule module, final IServer liveReloadServer,
-			final int timeout, final TimeUnit unit) {
-		Executors.newSingleThreadExecutor().submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					startOrRestartServer(liveReloadServer, timeout, unit);
-					final URL url = computeURL(module);
-					openInBrowser(url);
-				} catch (Exception e) {
-					Logger.error("Failed to open URL for module '" + module.getModule()[0].getName()
-							+ "' in external browser", e);
-				}
-			}
-		});
-	}
-
-	/**
-	 * @param liveReloadServer
-	 * @param timeout
-	 * @param unit
+	 * @param location
+	 * @param shouldEnableScriptInjection
+	 * @param shouldAllowRemoteConnections
+	 * @param callback
 	 * @throws CoreException
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 * @throws TimeoutException
+	 * @throws MalformedURLException
 	 */
-	public static void startOrRestartServer(final IServer liveReloadServer, final int timeout, final TimeUnit unit)
-			throws TimeoutException, InterruptedException, ExecutionException {
-		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					if (liveReloadServer.getServerState() == IServer.STATE_STARTED
-							&& liveReloadServer.getServerRestartState()) {
-						Logger.info("Restarting the server {}", liveReloadServer.getName());
-						liveReloadServer.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-					} else if(liveReloadServer.getServerState() == IServer.STATE_STOPPED) {
-						Logger.info("Starting the server {}", liveReloadServer.getName());
-						liveReloadServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-					}
-					while (liveReloadServer.getServerState() != IServer.STATE_STARTED) {
-						Thread.sleep(500);
-					}
-				} catch (Exception e) {
-					Logger.error("Failed (re)start Livereload Server", e);
+	public static void openWithLiveReloadServer(final Object location, final boolean shouldEnableScriptInjection,
+			final boolean shouldAllowRemoteConnections, final ICallback callback) {
+		try {
+			final IServer liveReloadServer = WSTUtils.findLiveReloadServer();
+			if (liveReloadServer == null) {
+				final LiveReloadServerConfigurationDialogModel model = new LiveReloadServerConfigurationDialogModel(
+						shouldEnableScriptInjection, shouldAllowRemoteConnections);
+				final LiveReloadServerConfigurationDialog dialog = new LiveReloadServerConfigurationDialog(model,
+						DialogMessages.LIVERELOAD_SERVER_DIALOG_TITLE, NLS.bind(
+								DialogMessages.LIVERELOAD_SERVER_CREATION_DIALOG_MESSAGE, new Object[] {
+										IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }));
+				int result = dialog.open();
+				if (result == IDialogConstants.CANCEL_ID) {
+					return;
 				}
-
+				final IServer createdLiveReloadServer = WSTUtils.createLiveReloadServer(
+						LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT, true, model.isScriptInjectionEnabled(),
+						model.isRemoteConnectionsAllowed());
+				final Job job = new CallbackJob(callback, createdLiveReloadServer, true);
+				job.schedule();
+			} else {
+				final LiveReloadServerBehaviour liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils
+						.findServerBehaviour(liveReloadServer);
+				final boolean scriptInjectionEnabled = liveReloadServerBehaviour.isScriptInjectionEnabled();
+				final boolean remoteConnectionsAllowed = liveReloadServerBehaviour.isRemoteConnectionsAllowed();
+				final boolean serverStopped = liveReloadServer.getServerState() != IServer.STATE_STARTED;
+				if (serverStopped || (shouldEnableScriptInjection && !scriptInjectionEnabled)
+						|| (shouldAllowRemoteConnections && !remoteConnectionsAllowed)) {
+					final LiveReloadServerConfigurationDialogModel model = new LiveReloadServerConfigurationDialogModel(
+							scriptInjectionEnabled || shouldEnableScriptInjection, remoteConnectionsAllowed
+									|| shouldAllowRemoteConnections);
+					final LiveReloadServerConfigurationDialog dialog = new LiveReloadServerConfigurationDialog(model,
+							DialogMessages.LIVERELOAD_SERVER_DIALOG_TITLE, NLS.bind(
+									DialogMessages.LIVERELOAD_SERVER_STARTUP_DIALOG_MESSAGE, new Object[] {
+											IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }));
+					int result = dialog.open();
+					if (result == IDialogConstants.CANCEL_ID) {
+						return;
+					}
+					liveReloadServerBehaviour.setScriptInjectionAllowed(model.isScriptInjectionEnabled());
+					liveReloadServerBehaviour.setRemoteConnectionsAllowed(model.isRemoteConnectionsAllowed());
+					final Job job = new CallbackJob(callback, liveReloadServer, true);
+					job.schedule();
+				} else {
+					final Job job = new CallbackJob(callback, liveReloadServer, false);
+					job.schedule();
+				}
 			}
-		});
-		future.get(timeout, unit);
+			
+			
+		} catch (Exception e) {
+			Logger.error("Failed to open selected element in Web Browser via LiveReload Server or via QR Code", e);
+		}
+	}
+	
+	
+
+	/**
+	 * Opens the given {@link URL} in an external browser
+	 * 
+	 * @param module
+	 * @throws PartInitException
+	 * @throws MalformedURLException
+	 */
+	public static void openInBrowser(final URL url) throws PartInitException, MalformedURLException {
+		PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
 	}
 
 	/**
-	 * @param liveReloadServer
+	 * Opens the given {@link IPath} using the given LiveReload {@link IServer}
+	 * in an external browser
+	 * 
+	 * @param module
+	 * @throws PartInitException
+	 * @throws MalformedURLException
 	 */
+	public static void openInBrowser(final IPath location, final IServer liveReloadServer) throws PartInitException,
+			MalformedURLException {
+		PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+				.openURL(computeURL(location, liveReloadServer));
+	}
+
+	/**
+	 * Opens the given {@link IServerModule} in an external browser
+	 * 
+	 * @param module
+	 * @throws PartInitException
+	 * @throws MalformedURLException
+	 */
+	public static void openInBrowser(final IServerModule module) throws PartInitException, MalformedURLException {
+		PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(computeURL(module));
+	}
+
 	private static URL computeURL(final IPath file, final IServer liveReloadServer) throws MalformedURLException {
 		final String host = liveReloadServer.getHost();
 		final int port = liveReloadServer.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1);
@@ -245,11 +203,6 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 		return new URL("http", host, port, location.toString());
 	}
 
-	/**
-	 * @param appModule
-	 * @return
-	 * @throws MalformedURLException
-	 */
 	private static URL computeURL(final IServerModule appModule) throws MalformedURLException {
 		final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(appModule.getServer());
 		final int proxyPort = liveReloadProxyServer.getProxyPort();

@@ -11,13 +11,10 @@
 
 package org.jboss.tools.livereload.ui.internal.command;
 
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IEditorLauncher;
 import org.eclipse.wst.server.core.IServer;
-import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
-import org.jboss.tools.livereload.core.internal.util.WSTUtils;
+import org.jboss.tools.livereload.ui.internal.util.ICallback;
 import org.jboss.tools.livereload.ui.internal.util.Logger;
 
 /**
@@ -31,21 +28,18 @@ public class OpenInWebBrowserWithLiveReloadLauncher implements IEditorLauncher {
 	 */
 	public void open(final IPath file) {
 		try {
-			final IServer liveReloadServer = WSTUtils.findOrCreateLiveReloadServer(false, false);
-			final LiveReloadServerBehaviour liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils
-					.findServerBehaviour(liveReloadServer);
-			if (liveReloadServerBehaviour.isRemoteConnectionsAllowed()
-					&& !OpenInWebBrowserViaLiveReloadUtils.promptRemoteConnections(liveReloadServerBehaviour)) {
-				return;
-			}
-			if (liveReloadServerBehaviour.isProxyEnabled() && !liveReloadServerBehaviour.isScriptInjectionEnabled()
-					&& !OpenInWebBrowserViaLiveReloadUtils.promptForScriptInjection(liveReloadServerBehaviour)) {
-				return;
-			}
-			
-			OpenInWebBrowserViaLiveReloadUtils.openInBrowserAfterStartup(file, liveReloadServer, 30, TimeUnit.SECONDS);
+			OpenInWebBrowserViaLiveReloadUtils.openWithLiveReloadServer(file, true, false, new ICallback() {
+				@Override
+				public void execute(IServer liveReloadServer) {
+					try {
+						OpenInWebBrowserViaLiveReloadUtils.openInBrowser(file, liveReloadServer);
+					} catch (Exception e) {
+						Logger.error("Failed to open file in Web Browser via LiveReload Server", e);
+					}
+				}
+			});
 		} catch (Exception e) {
-			Logger.error("Failed to open file in Web Browser with LiveReload support", e);
+			Logger.error("Failed to Open in Web Browser via LiveReload", e);
 		}
 	}
 }

@@ -33,6 +33,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/fest-assert-1.4.jar,
  lib/fest-util-1.1.6.jar,
- lib/com.springsource.org.objenesis-1.0.0.jar,
+ lib/objenesis-1.0.jar,
  lib/mockito-core-1.9.5.jar
 Import-Package: org.eclipse.wst.web.internal.deployables

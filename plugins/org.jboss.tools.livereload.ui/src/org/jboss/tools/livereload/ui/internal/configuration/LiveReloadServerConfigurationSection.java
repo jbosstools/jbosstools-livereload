@@ -19,8 +19,11 @@ import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -41,6 +44,8 @@ import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfi
 public class LiveReloadServerConfigurationSection extends ServerEditorSection {
 
 	private Text websocketPortText;
+	private Button remoteConnectionsEnablementButton;
+	private Button scriptInjectionEnablementButton;
 	private ControlDecoration websocketPortDecoration;
 
 	public void createSection(Composite parent) {
@@ -58,6 +63,7 @@ public class LiveReloadServerConfigurationSection extends ServerEditorSection {
 		d.horizontalSpan = 2;
 		d.grabExcessHorizontalSpace = true;
 		explanation.setLayoutData(d);
+		
 		// Websocket port
 		Label websocketPortLabel = toolkit.createLabel(composite,
 				LiveReloadServerConfigurationMessages.WEBSOCKET_SERVER_PORT_LABEL);
@@ -80,6 +86,38 @@ public class LiveReloadServerConfigurationSection extends ServerEditorSection {
 			}
 		};
 		websocketPortText.addModifyListener(websocketPortModifyListener);
+		
+		// livereload.js script injection enablement
+		scriptInjectionEnablementButton = toolkit.createButton(composite,
+				LiveReloadServerConfigurationMessages.ENABLE_SCRIPT_INJECTION_LABEL, SWT.CHECK);
+		scriptInjectionEnablementButton.setSelection(server.getAttribute(
+				LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, false));
+		scriptInjectionEnablementButton.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
+		d = new GridData();
+		d.grabExcessHorizontalSpace = true;
+		d.horizontalSpan = 2;
+		scriptInjectionEnablementButton.setLayoutData(d);
+		scriptInjectionEnablementButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				execute(new SetScriptInjectionEnablementButtonCommand(server));
+			}
+		});
+
+		// Remote connections enablement
+		remoteConnectionsEnablementButton = toolkit.createButton(composite,
+				LiveReloadServerConfigurationMessages.ALLOW_REMOTE_CONNECTIONS_LABEL, SWT.CHECK);
+		remoteConnectionsEnablementButton.setSelection(server.getAttribute(
+				LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, false));
+		remoteConnectionsEnablementButton.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
+		d = new GridData();
+		d.grabExcessHorizontalSpace = true;
+		d.horizontalSpan = 2;
+		remoteConnectionsEnablementButton.setLayoutData(d);
+		remoteConnectionsEnablementButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				execute(new SetRemoteConnectionsEnablementCommand(server));
+			}
+		});
 		
 		toolkit.paintBordersFor(composite);
 		section.setClient(composite);
@@ -125,6 +163,50 @@ public class LiveReloadServerConfigurationSection extends ServerEditorSection {
 				websocketPortDecoration.show();
 			}
 
+		}
+
+	}
+	
+	public class SetRemoteConnectionsEnablementCommand extends ServerCommand {
+
+		public SetRemoteConnectionsEnablementCommand(final IServerWorkingCopy server) {
+			super(server, LiveReloadServerConfigurationMessages.ALLOW_REMOTE_CONNECTIONS_COMMAND);
+		}
+
+		@Override
+		public void execute() {
+			server.setAttribute(LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS,
+					remoteConnectionsEnablementButton.getSelection());
+		}
+
+		@Override
+		public void undo() {
+			final boolean originalValue = server.getOriginal().getAttribute(
+					LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, false);
+			server.setAttribute(LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, originalValue);
+			remoteConnectionsEnablementButton.setSelection(originalValue);
+		}
+
+	}
+
+	public class SetScriptInjectionEnablementButtonCommand extends ServerCommand {
+
+		public SetScriptInjectionEnablementButtonCommand(final IServerWorkingCopy server) {
+			super(server, LiveReloadServerConfigurationMessages.ENABLE_SCRIPT_INJECTION_COMMAND);
+		}
+
+		@Override
+		public void execute() {
+			server.setAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION,
+					scriptInjectionEnablementButton.getSelection());
+		}
+
+		@Override
+		public void undo() {
+			final boolean originalValue = server.getOriginal().getAttribute(
+					LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, false);
+			server.setAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, originalValue);
+			scriptInjectionEnablementButton.setSelection(originalValue);
 		}
 
 	}

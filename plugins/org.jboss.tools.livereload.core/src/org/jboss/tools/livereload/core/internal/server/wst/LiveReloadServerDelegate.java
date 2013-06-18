@@ -11,10 +11,6 @@
 
 package org.jboss.tools.livereload.core.internal.server.wst;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -33,8 +29,6 @@ import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
  * 
  */
 public class LiveReloadServerDelegate extends ServerDelegate {
-
-	private final List<IProject> projects = new ArrayList<IProject>();
 
 	/*
 	 * (non-Javadoc)
@@ -72,8 +66,5 @@ public class LiveReloadServerDelegate extends ServerDelegate {
 
 	}
 
-	public void addProject(final IProject project) {
-		projects.add(project);
-	}
-
+	
 }

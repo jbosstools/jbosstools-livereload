@@ -36,6 +36,7 @@ import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfi
  * @author xcoulon
  * 
  */
+@Deprecated
 @SuppressWarnings("restriction")
 public class LiveReloadProxyServerConfigurationSection extends ServerEditorSection {
 

@@ -27,6 +27,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.wst.server.core.IRuntime;
 import org.eclipse.wst.server.core.IRuntimeType;
 import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
@@ -35,8 +36,7 @@ import org.eclipse.wst.server.core.IServerType;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
-import org.eclipse.wst.server.core.model.ServerDelegate;
-import org.jboss.ide.eclipse.as.core.server.internal.JBossServer;
+import org.jboss.ide.eclipse.as.core.server.IJBossServer;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
@@ -63,6 +63,7 @@ public class WSTUtils {
 	 * 
 	 * @return the list of the existing LiveReload servers, or an empty list if
 	 *         none exists yet.
+	 * 
 	 */
 	public static List<IServer> findLiveReloadServers() {
 		final List<IServer> liveReloadServers = new ArrayList<IServer>();
@@ -72,6 +73,21 @@ public class WSTUtils {
 			}
 		}
 		return liveReloadServers;
+	}
+
+	/**
+	 * Returns the first existing LiveReload server.
+	 * 
+	 * @return the first existing LiveReload servers, or null if none exists
+	 *         yet.
+	 */
+	public static IServer findLiveReloadServer() {
+		for (IServer server : ServerCore.getServers()) {
+			if (server.getServerType().getId().equals(LIVERELOAD_SERVER_TYPE)) {
+				return server;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -166,9 +182,10 @@ public class WSTUtils {
 	 */
 	public static int getWebPort(final IServer server) {
 		final String serverType = server.getServerType().getId();
-		if (serverType.startsWith(JBOSSASAS_SERVER_PREFIX)) {
-			JBossServer jBossServer = (JBossServer) server.getAdapter(ServerDelegate.class);
-			return jBossServer.getJBossWebPort();
+		final Object adapter = server.loadAdapter(IJBossServer.class, null);
+		// JBoss AS Server
+		if (adapter != null && adapter instanceof IJBossServer) {
+			return ((IJBossServer)adapter).getJBossWebPort();
 		}
 		if (serverType.equals(HTTP_PREVIEW_SERVER_TYPE)) {
 			return server.getAttribute(HTTP_PREVIEW_PORT, 8080);
@@ -214,16 +231,6 @@ public class WSTUtils {
 	}
 
 	/**
-	 * Checks all existing LiveReload {@link IServer} and returns true whatever
-	 * if server state, false otherwise
-	 * 
-	 * @return
-	 */
-	public static boolean liveReloadExists() {
-		return (!findLiveReloadServers().isEmpty());
-	}
-
-	/**
 	 * Create a new LiveReload Server.
 	 * 
 	 * @param websocketPort
@@ -253,38 +260,6 @@ public class WSTUtils {
 	}
 
 	/**
-	 * Stops the given {@link IServer} with a given
-	 * 
-	 * @param server
-	 * @param timeout
-	 * @param unit
-	 * @throws CoreException
-	 * @throws TimeoutException
-	 * @throws ExecutionException
-	 * @throws InterruptedException
-	 */
-	public static void stopServer(final IServer server, int timeout, TimeUnit unit) throws InterruptedException,
-			ExecutionException, TimeoutException {
-		Logger.info("Stopping server {}", server.getName());
-		server.stop(true);
-		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
-
-			@Override
-			public void run() {
-				while (server.getServerState() != IServer.STATE_STOPPED) {
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						Logger.error("Failed to sleep", e);
-					}
-				}
-
-			}
-		});
-		future.get(timeout, unit);
-	}
-
-	/**
 	 * finds the {@link LiveReloadProxyServer} for the given {@link IServer}
 	 * 
 	 * @param appServer
@@ -305,19 +280,6 @@ public class WSTUtils {
 	}
 
 	/**
-	 * Checks if the given {@link IServer} is "watched" by at least one
-	 * *started* LiveReload server in the workspace.
-	 * 
-	 * @param appServer
-	 *            the server to check
-	 * @return true if the given server is watch by a started LiveReload server,
-	 *         false otherwise.
-	 */
-	public static boolean checkAppServerWatched(final IServer appServer) {
-		return findLiveReloadProxyServer(appServer) != null;
-	}
-
-	/**
 	 * Checks if the given {@link IServer} is started.
 	 * 
 	 * @param appServer
@@ -327,57 +289,42 @@ public class WSTUtils {
 	public static boolean isServerStarted(final IServer appServer) {
 		return appServer.getServerState() == IServer.STATE_STARTED;
 	}
-
+	
 	/**
-	 * Returns for a LiveReload Server whose configuration matches the given
-	 * arguments. If the first LiveReload Server found in the workspace does not
-	 * meet the requirements, the server is stopped and configured. If there is
-	 * no server at all, a new one is created with the expected configuration.
-	 * 
-	 * @param requiresProxy
-	 * @param requiresRemoteConnexions
-	 * @return the server configure but in an unknown state (may have been
-	 *         stopped or left started)
+	 * Starts or restarts the given {@link IServer} within the given interval of time.
+	 * @param liveReloadServer
+	 * @param timeout
+	 * @param unit
 	 * @throws CoreException
-	 * @throws TimeoutException
-	 * @throws ExecutionException
 	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * @throws TimeoutException
 	 */
-	public static IServer findOrCreateLiveReloadServer(final boolean requiresProxy,
-			final boolean requiresRemoteConnexions) throws Exception {
-		final List<IServer> liveReloadServers = findLiveReloadServers();
-		// no server: create and configure a new one
-		if (liveReloadServers.isEmpty()) {
-			// by default, let's add support for script injection if the proxy
-			// is required.
-			final IServer liveReloadServer = createLiveReloadServer(
-					LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT, requiresProxy, requiresProxy,
-					requiresRemoteConnexions);
-			return liveReloadServer;
-		}
-		// pick the first LiveReload server
-		final IServer liveReloadServer = liveReloadServers.get(0);
-		final LiveReloadServerBehaviour liveReloadServerBehaviour = (LiveReloadServerBehaviour) liveReloadServer
-				.loadAdapter(ServerBehaviourDelegate.class, new NullProgressMonitor());
-		// check the configuration
-		if (requiresProxy && !liveReloadServerBehaviour.isProxyEnabled()) {
-			// check if server was already running
-			stopServer(liveReloadServer, 15, TimeUnit.SECONDS);
-			// by default, let's add support for script injection if the proxy
-			// is required.
-			liveReloadServerBehaviour.setProxyEnabled(true);
-			liveReloadServerBehaviour.setScriptInjectionAllowed(true);
-		}
-		if (requiresRemoteConnexions && !liveReloadServerBehaviour.isRemoteConnectionsAllowed()) {
-			// check if server was already running
-			stopServer(liveReloadServer, 15, TimeUnit.SECONDS);
-			// by default, let's add support for script injection if the remote
-			// connections are required.
-			liveReloadServerBehaviour.setProxyEnabled(true);
-			liveReloadServerBehaviour.setScriptInjectionAllowed(true);
-			liveReloadServerBehaviour.setRemoteConnectionsAllowed(true);
-		}
-		return liveReloadServer;
+	public static void startOrRestartServer(final IServer liveReloadServer, final int timeout, final TimeUnit unit)
+			throws TimeoutException, InterruptedException, ExecutionException {
+		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
+					if (liveReloadServer.getServerState() == IServer.STATE_STARTED
+							&& liveReloadServer.getServerRestartState()) {
+						Logger.info("Restarting the server {}", liveReloadServer.getName());
+						liveReloadServer.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+					} else if (liveReloadServer.getServerState() == IServer.STATE_STOPPED) {
+						Logger.info("Starting the server {}", liveReloadServer.getName());
+						liveReloadServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+					}
+					while (liveReloadServer.getServerState() != IServer.STATE_STARTED && System.currentTimeMillis() < limitTime) {
+						TimeUnit.MILLISECONDS.sleep(500);
+					}
+				} catch (Exception e) {
+					Logger.error("Failed (re)start Livereload Server", e);
+				}
+
+			}
+		});
+		future.get(timeout, unit);
 	}
 
 }
