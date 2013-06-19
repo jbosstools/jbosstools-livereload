@@ -14,7 +14,6 @@ package org.jboss.tools.livereload.core.internal.server.jetty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
-import java.util.StringTokenizer;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -32,6 +31,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationListener;
 import org.eclipse.jetty.continuation.ContinuationSupport;
+import org.jboss.tools.livereload.core.internal.util.HttpUtils;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.ScriptInjectionUtils;
 
@@ -64,7 +64,7 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 		final HttpServletRequest httpRequest = (HttpServletRequest) request;
 		final String acceptedContentTypes = httpRequest.getHeader("Accept");
 		Logger.trace("Processing request {} {}", httpRequest.getMethod(), httpRequest.getRequestURI());
-		if (!"/livereload".equals(httpRequest.getRequestURI()) && isHtmlContentType(acceptedContentTypes)) {
+		if (!"/livereload".equals(httpRequest.getRequestURI()) && HttpUtils.isHtmlContentType(acceptedContentTypes)) {
 			Continuation continuation = ContinuationSupport.getContinuation(request);
 			final ModifiableHttpServletResponse responseWrapper = new ModifiableHttpServletResponse(
 					(HttpServletResponse) response);
@@ -117,7 +117,7 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 		// (HttpServletResponse#getContentType() returns null !)
 		final String returnedContentType = responseWrapper.getHeader("Content-Type");
 		Logger.trace(" response type: {}", returnedContentType);
-		if (isHtmlContentType(returnedContentType)) {
+		if (HttpUtils.isHtmlContentType(returnedContentType)) {
 			Logger.debug("Injecting livereload.js <script> in response for {} ({})", httpRequest.getRequestURI(),
 					returnedContentType);
 			final InputStream responseStream = responseWrapper.getResponseAsStream();
@@ -135,35 +135,6 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 	}
 
 	
-	/**
-	 * <p>
-	 * Iterates over the given acceptedContentTypes, looking for one of those
-	 * values:
-	 * <ul>
-	 * <li>text/html</li>
-	 * <li>application/xhtml+xml</li>
-	 * <li>application/xml</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param acceptedContentTypes
-	 * @return true if one of the values above was found, false otherwise
-	 */
-	private static boolean isHtmlContentType(final String acceptedContentTypes) {
-		if (acceptedContentTypes == null) {
-			return false;
-		}
-		final StringTokenizer tokenizer = new StringTokenizer(acceptedContentTypes, ",");
-		while (tokenizer.hasMoreElements()) {
-			final String acceptedContentType = tokenizer.nextToken();
-			if ("text/html".equals(acceptedContentType) || "application/xhtml+xml".equals(acceptedContentType)
-					|| "application/xml".equals(acceptedContentType)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 	}

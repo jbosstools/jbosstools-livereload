@@ -276,7 +276,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	}
 
 	@Test
-	public void shouldInjectLiveReloadScriptInHtmlPage() throws Exception {
+	public void shouldInjectLiveReloadScriptInHtmlPageWithSimpleAcceptedTypes() throws Exception {
 		// pre-condition
 		createAndLaunchLiveReloadServer(true, true);
 		final String scriptContent = new StringBuilder(
@@ -286,6 +286,44 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		HttpClient client = new HttpClient();
 		HttpMethod method = new GetMethod(indexDocumentlocation);
 		method.addRequestHeader("Accept", "text/html");
+		int status = client.executeMethod(method);
+		// verification
+		assertThat(status).isEqualTo(HttpStatus.SC_OK);
+		// Read the response body.
+		String responseBody = new String(method.getResponseBody());
+		assertThat(responseBody).contains(scriptContent);
+	}
+
+	@Test
+	public void shouldInjectLiveReloadScriptInHtmlPageWithSimpleAcceptedTypeAndcharset() throws Exception {
+		// pre-condition
+		createAndLaunchLiveReloadServer(true, true);
+		final String scriptContent = new StringBuilder(
+				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
+		.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
+		// operation
+		HttpClient client = new HttpClient();
+		HttpMethod method = new GetMethod(indexDocumentlocation);
+		method.addRequestHeader("Accept", "text/html;charset=UTF-8");
+		int status = client.executeMethod(method);
+		// verification
+		assertThat(status).isEqualTo(HttpStatus.SC_OK);
+		// Read the response body.
+		String responseBody = new String(method.getResponseBody());
+		assertThat(responseBody).contains(scriptContent);
+	}
+
+	@Test
+	public void shouldInjectLiveReloadScriptInHtmlPageWithMultipleAcceptedTypeAndQualityFactors() throws Exception {
+		// pre-condition
+		createAndLaunchLiveReloadServer(true, true);
+		final String scriptContent = new StringBuilder(
+				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
+		.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
+		// operation
+		HttpClient client = new HttpClient();
+		HttpMethod method = new GetMethod(indexDocumentlocation);
+		method.addRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 		int status = client.executeMethod(method);
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
