@@ -18,6 +18,7 @@ import org.jboss.tools.livereload.core.internal.service.ServerResourcePublishedE
 import org.jboss.tools.livereload.core.internal.service.ServerResourcePublishedFilter;
 import org.jboss.tools.livereload.core.internal.service.Subscriber;
 import org.jboss.tools.livereload.core.internal.service.WorkspaceResourceChangedEvent;
+import org.jboss.tools.livereload.core.internal.service.WorkspaceResourceChangedEventFallbackFilter;
 import org.jboss.tools.livereload.core.internal.service.WorkspaceResourceChangedEventFilter;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.ProjectUtils;
@@ -42,14 +43,30 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 
 	private static EventService eventService = EventService.getInstance();
 
+	/** The client id (based on its user-agent header and IP Address).*/
 	private final String clientId;
 
+	/** The client address. */
 	private final String clientAddress;
-
+	
+	/** The underlying jetty/websocket connection. */
 	private Connection connection;
 	
+	/** The location that the browser sends in an 'info' message to the server. */
 	private String browserLocation = null;
 
+	/**
+	 * Indicates if the incoming events should be notified to the browser in
+	 * fallback mode, ie, just sending a 'reload' command with the given
+	 * browserlocation.
+	 */
+	private boolean fallbackMode = false;;
+
+	/**
+	 * Constructor
+	 * @param userAgent the browser's user-agent sent in the HTTP request header
+	 * @param clientAddress the browser's IP Address
+	 */
 	public LiveReloadWebSocket(final String userAgent, final String clientAddress) {
 		this.clientId = new StringBuilder((userAgent != null) ? userAgent : "unknown User-Agent").append(" at ")
 				.append((clientAddress != null) ? clientAddress : "unknown IP Address").toString();
@@ -65,7 +82,9 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	@Override
 	public void onClose(int closeCode, String message) {
 		eventService.unsubscribe(this);
-		eventService.publish(new LiveReloadClientDisconnectedEvent(connection));
+		if(connection != null) {
+			eventService.publish(new LiveReloadClientDisconnectedEvent(connection));
+		}
 	}
 
 	public void sendMessage(String data) throws IOException {
@@ -95,7 +114,8 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 				// TODO: process info message to know if this socket is concerned
 				// with some changes
 				//eg: '{"command":"info","plugins":{"less":{"disable":false,"version":"1.0"}},"url":"file:///Users/xcoulon/git/html5eap6/src/main/webapp/index.html"}'
-				browserLocation = rootNode.path("url").asText();
+				this.browserLocation = rootNode.path("url").asText();
+				this.fallbackMode = false;
 				if(browserLocation == null) {
 					return;
 				}
@@ -116,7 +136,12 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 						eventService.subscribe(this, new ServerResourcePublishedFilter(server));
 						eventService.publish(new LiveReloadClientConnectedEvent(server));
 					} else {
-						Logger.warn("Unable to determine the server associated to following browser location: " + browserLocation);
+						this.fallbackMode = true;
+						eventService.subscribe(this, new WorkspaceResourceChangedEventFallbackFilter());
+						eventService.publish(new LiveReloadClientConnectedEvent(browserLocation));
+						Logger.info("Falling back to file changes notification for browser location: "
+								+ browserLocation);
+					
 					}
 				}
 				// close connection from this client
@@ -134,14 +159,20 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	public void inform(EventObject e) {
 		try {
 			if (e instanceof WorkspaceResourceChangedEvent) {
-				WorkspaceResourceChangedEvent event = (WorkspaceResourceChangedEvent) e;
-				List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
-				for(String command : commands) {
-					eventService.publish(new LiveReloadClientRefreshingEvent(clientAddress));
+				if (fallbackMode) {
+					final String command = ReloadCommandGenerator.generateReloadCommand(browserLocation);
 					sendMessage(command);
 					eventService.publish(new LiveReloadClientRefreshedEvent(clientAddress));
+				} else {
+					WorkspaceResourceChangedEvent event = (WorkspaceResourceChangedEvent) e;
+					List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
+					for (String command : commands) {
+						eventService.publish(new LiveReloadClientRefreshingEvent(clientAddress));
+						sendMessage(command);
+						eventService.publish(new LiveReloadClientRefreshedEvent(clientAddress));
+					}
 				}
-			} else if(e instanceof ServerResourcePublishedEvent) {
+			} else if (e instanceof ServerResourcePublishedEvent) {
 				final String command = ReloadCommandGenerator.generateReloadCommand(browserLocation);
 				sendMessage(command);
 				eventService.publish(new LiveReloadClientRefreshedEvent(clientAddress));

@@ -70,6 +70,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 	/** File location prefixed with http:// scheme. */
 	private String indexDocumentlocation;
+	
+	private String unknownServerLocation;
 
 	private String unknowDocumentLocation;
 
@@ -100,6 +102,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		indexFileLocation = "file://" + index_html_file.getLocation().toOSString();
 		indexDocumentlocation = "http://localhost:" + liveReloadServerPort + "/" + project.getName() + "/"
 				+ index_html_file.getLocation().makeRelativeTo(project.getLocation()).toOSString();
+		unknownServerLocation = "http://localhost:12345/index.html";
 		unknowDocumentLocation = indexDocumentlocation.replace("index.html", "unknown.html");
 		cssDocumentLocation = indexDocumentlocation.replace("index.html", "/styles.css");
 		folderDocumentLocation = indexDocumentlocation.replace("index.html", "");
@@ -210,18 +213,47 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(1);
 		connection.close();
 	}
+	
+	@Test
+	public void shouldAcceptWebsocketEvenIfServerUnknown() throws Exception {
+		// pre-condition
+		createAndLaunchLiveReloadServer(true, false);
+		final LiveReloadTestClient client = new LiveReloadTestClient(unknownServerLocation);
+		// operation
+		final Connection connection = connectFrom(client);
+		// verification
+		assertThat(connection.isOpen()).isTrue();
+		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(1);
+		connection.close();
+	}
+	
+	@Test
+	public void shouldAcceptWebsocketEvenIfServerUnknownAndProjectUnknown() throws Exception {
+		// pre-condition
+		createAndLaunchLiveReloadServer(true, false);
+		final LiveReloadTestClient client = new LiveReloadTestClient(unknownServerLocation.replace(project.getName(), "foobar"));
+		// operation
+		final Connection connection = connectFrom(client);
+		// verification
+		assertThat(connection.isOpen()).isTrue();
+		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(1);
+		connection.close();
+	}
+
 
 	@Test
-	public void shouldNotAcceptHttpConnexion() throws Exception {
+	public void shouldNotAcceptHttpConnexionWhenProxyDisabled() throws Exception {
 		// pre-condition
 		createAndLaunchLiveReloadServer(false, false);
 		// operation
 		HttpClient client = new HttpClient();
 		HttpMethod method = new GetMethod(indexDocumentlocation);
-		client.executeMethod(method);
-		// verification: should have time'd out
+		int result = client.executeMethod(method);
+		// verification: should have time'd out but just returned a 404 error
+		assertThat(result).isEqualTo(404);
 	}
 
+	
 	@Test
 	public void shouldAcceptHttpConnexionAndReturnHtmlResource() throws Exception {
 		createAndLaunchLiveReloadServer(true, true);
@@ -399,6 +431,23 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		connection.close();
 	}
 
+	@Test
+	public void shouldBeNotifiedWhenLocalFileChangedWithProxyEnabledAndUnknownServerLocation() throws Exception {
+		// pre-condition
+		createAndLaunchLiveReloadServer(true, true);
+		final LiveReloadTestClient client = new LiveReloadTestClient(unknownServerLocation);
+		// operation
+		final Connection connection = connectFrom(client);
+		// operation : trigger a resource changed event
+		WorkbenchUtils.replaceAllOccurrencesOfCode("WebContent/index.html", project, "Hello, World",
+				"Hello, LiveReload !");
+		Thread.sleep(200);
+		// verification: client should have been notified with a reload message
+		assertThat(client.isNotificationReceived()).isEqualTo(true);
+		assertThat(client.getReceivedNotification().contains(unknownServerLocation));
+		// end
+		connection.close();
+	}
 	@Test
 	public void shouldBeNotifiedWhenLocalFileChangedWithProxyDisabled() throws Exception {
 		// pre-condition
