@@ -20,11 +20,9 @@ public class DialogMessages extends NLS {
 	
 	public static String REMOTE_CONNECTIONS_DIALOG_TITLE;
 	public static String REMOTE_CONNECTIONS_DIALOG_MESSAGE;
-	public static String REMOTE_CONNECTIONS_DIALOG_TOGGLE;
 
 	public static String SCRIPT_INJECTION_DIALOG_TITLE;
 	public static String SCRIPT_INJECTION_DIALOG_MESSAGE;
-	public static String SCRIPT_INJECTION_DIALOG_TOGGLE;
 	
 	public static String LIVERELOAD_SERVER_DIALOG_TITLE;
 	public static String LIVERELOAD_SERVER_CREATION_DIALOG_MESSAGE;

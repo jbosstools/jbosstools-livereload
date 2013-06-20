@@ -49,6 +49,7 @@ public class WSTUtils {
 
 	public static final String LIVERELOAD_RUNTIME_TYPE = "org.jboss.tools.livereload.serverTypeRuntime";
 	public static final String LIVERELOAD_SERVER_TYPE = "org.jboss.tools.livereload.serverType";
+	public static final String OPENSHIFT_SERVER_TYPE = "org.jboss.tools.openshift.express.openshift.server.type";
 	public static final String HTTP_PREVIEW_SERVER_TYPE = "org.eclipse.wst.server.preview.server";
 	public static final String HTTP_PREVIEW_PORT = "port";
 	public static final String TEST_PREVIEW_SERVER_TYPE = "org.jboss.tools.livereload.test.previewServerType";

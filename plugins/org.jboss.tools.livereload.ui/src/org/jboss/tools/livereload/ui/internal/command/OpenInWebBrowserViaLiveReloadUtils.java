@@ -52,25 +52,6 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	}
 
 	/**
-	 * Returns the {@link IServer} from the selection if this selection's first
-	 * element is an {@link IServerModule}, null otherwise.
-	 * 
-	 * @param selection
-	 * @return the {@link IServer} from the selection if this selection's first
-	 *         element is an {@link IServerModule}, null otherwise.
-	 */
-	public static IServer retrieveServerFromSelectedElement(final Object selection) {
-		if (selection instanceof IStructuredSelection) {
-			final Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
-			if (selectedObject instanceof IServerModule) {
-				final IServerModule selectedModule = (IServerModule) selectedObject;
-				return selectedModule.getServer();
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * Returns the {@link IServerModule} from the selection if this selection's
 	 * first element is an {@link IServerModule}, null otherwise.
 	 * 
@@ -191,7 +172,10 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	 * @throws MalformedURLException
 	 */
 	public static void openInBrowser(final IServerModule module) throws PartInitException, MalformedURLException {
-		PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(computeURL(module));
+		final URL url = computeURL(module);
+		if (url != null) {
+			PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
+		}
 	}
 
 	private static URL computeURL(final IPath file, final IServer liveReloadServer) throws MalformedURLException {
@@ -205,6 +189,9 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 
 	private static URL computeURL(final IServerModule appModule) throws MalformedURLException {
 		final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(appModule.getServer());
+		if(liveReloadProxyServer == null) {
+			return null;
+		}
 		final int proxyPort = liveReloadProxyServer.getProxyPort();
 		final String host = liveReloadProxyServer.getProxyHost();
 		final URL url = new URL("http", host, proxyPort, "/" + appModule.getModule()[0].getName());
