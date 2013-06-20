@@ -16,16 +16,13 @@ import static org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserVia
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.ui.IServerModule;
-import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 
 /**
- * Checks if the selected {@link IServerModule} is deployed on a {@link IServer}
- * that is started and has a {@link LiveReloadProxyServer} associated with it.
- * 
+ * Checks if the selected {@link IServerModule} is not deployed on a OpenShift.
  * @author xcoulon
  */
-public class OpenInWebBrowserViaLiveReloadProxyEnablementTester extends PropertyTester {
+public class OpenInWebBrowserViaLiveReloadProxyVisibilityTester extends PropertyTester {
 
 	@Override
 	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -34,8 +31,7 @@ public class OpenInWebBrowserViaLiveReloadProxyEnablementTester extends Property
 			return false;
 		}
 		final IServer appServer = appModule.getServer();
-		final boolean liveReloadProxyServerExists = (WSTUtils.findLiveReloadProxyServer(appModule.getServer()) != null);
-		return appServer != null && WSTUtils.isServerStarted(appServer) && liveReloadProxyServerExists;
+		return appServer != null && !WSTUtils.OPENSHIFT_SERVER_TYPE.equals(appServer.getServerType().getId());
 	}
 
 }

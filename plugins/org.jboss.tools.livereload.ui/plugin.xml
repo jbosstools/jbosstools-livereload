@@ -22,13 +22,19 @@
 			style="push">
 			<visibleWhen checkEnabled="false">
 				<with variable="selection">
+				  <and>
 					<iterate
-					ifEmpty="false"
-					operator="or">
-						<adapt
-						type="org.eclipse.wst.server.ui.IServerModule">
-						</adapt>
+						ifEmpty="false"
+						operator="or">
+							<adapt
+								type="org.eclipse.wst.server.ui.IServerModule">
+							</adapt>
 					</iterate>
+					<test
+                       forcePluginActivation="true"
+                       property="org.jboss.tools.livereload.localServer">
+                    </test>
+				  </and>
 				</with>
 			</visibleWhen>
 		</command>
@@ -39,13 +45,19 @@
 			style="push">
 			<visibleWhen checkEnabled="false">
 				<with variable="selection">
+				  <and>
 					<iterate
-					ifEmpty="false"
-					operator="or">
-						<adapt
-						type="org.eclipse.wst.server.ui.IServerModule">
-						</adapt>
+						ifEmpty="false"
+						operator="or">
+							<adapt
+								type="org.eclipse.wst.server.ui.IServerModule">
+							</adapt>
 					</iterate>
+					<test
+                       forcePluginActivation="true"
+                       property="org.jboss.tools.livereload.localServer">
+                    </test>
+				  </and>
 				</with>
 			</visibleWhen>
 		</command>
@@ -110,6 +122,13 @@
             id="org.jboss.tools.livereload.liveReloadPropertyTester"
             namespace="org.jboss.tools.livereload"
             properties="serverStarted"
+            type="org.eclipse.jface.viewers.ITreeSelection">
+      </propertyTester> 
+      <propertyTester
+            class="org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserViaLiveReloadProxyVisibilityTester"
+            id="org.jboss.tools.livereload.liveReloadPropertyTester"
+            namespace="org.jboss.tools.livereload"
+            properties="localServer"
             type="org.eclipse.jface.viewers.ITreeSelection">
       </propertyTester> 
    </extension>
