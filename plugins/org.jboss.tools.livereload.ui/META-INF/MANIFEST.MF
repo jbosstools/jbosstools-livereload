@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: LiveReload UI
+Bundle-Name: JBoss Tools LiveReload UI
 Bundle-SymbolicName: org.jboss.tools.livereload.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.jboss.tools.livereload.ui.JBossLiveReloadUIActivator
