@@ -117,7 +117,7 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 					return;
 				}
 				final IServer createdLiveReloadServer = WSTUtils.createLiveReloadServer(
-						LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT, true, model.isScriptInjectionEnabled(),
+						LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT, model.isScriptInjectionEnabled(),
 						model.isRemoteConnectionsAllowed());
 				final Job job = new CallbackJob(callback, createdLiveReloadServer, true);
 				job.schedule();

@@ -115,9 +115,9 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	 * @throws InterruptedException
 	 * 
 	 */
-	private void createAndLaunchLiveReloadServer(final boolean enableProxyServer, final boolean injectScript)
+	private void createAndLaunchLiveReloadServer(final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		final IServer server = WSTUtils.createLiveReloadServer(liveReloadServerPort, enableProxyServer,
+		final IServer server = WSTUtils.createLiveReloadServer(liveReloadServerPort,
 				injectScript, false);
 		liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(server);
 		assertThat(liveReloadServerBehaviour).isNotNull();
@@ -178,7 +178,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldAcceptWebsocketConnexionWithoutProxy() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(false, false);
+		createAndLaunchLiveReloadServer(false);
 		final LiveReloadTestClient client = new LiveReloadTestClient(indexFileLocation);
 		// operation
 		final Connection connection = connectFrom(client);
@@ -191,7 +191,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldNotAcceptWebsocketConnexionWithoutValidUrlInfo() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(false, false);
+		createAndLaunchLiveReloadServer(false);
 		final LiveReloadTestClient client = new LiveReloadTestClient("");
 		// operation
 		final Connection connection = connectFrom(client);
@@ -204,7 +204,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldAcceptWebsocketConnexionWithProxy() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, false);
+		createAndLaunchLiveReloadServer(false);
 		final LiveReloadTestClient client = new LiveReloadTestClient(indexFileLocation);
 		// operation
 		final Connection connection = connectFrom(client);
@@ -217,7 +217,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldAcceptWebsocketEvenIfServerUnknown() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, false);
+		createAndLaunchLiveReloadServer(false);
 		final LiveReloadTestClient client = new LiveReloadTestClient(unknownServerLocation);
 		// operation
 		final Connection connection = connectFrom(client);
@@ -230,7 +230,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldAcceptWebsocketEvenIfServerUnknownAndProjectUnknown() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, false);
+		createAndLaunchLiveReloadServer(false);
 		final LiveReloadTestClient client = new LiveReloadTestClient(unknownServerLocation.replace(project.getName(), "foobar"));
 		// operation
 		final Connection connection = connectFrom(client);
@@ -239,24 +239,10 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(1);
 		connection.close();
 	}
-
-
-	@Test
-	public void shouldNotAcceptHttpConnexionWhenProxyDisabled() throws Exception {
-		// pre-condition
-		createAndLaunchLiveReloadServer(false, false);
-		// operation
-		HttpClient client = new HttpClient();
-		HttpMethod method = new GetMethod(indexDocumentlocation);
-		int result = client.executeMethod(method);
-		// verification: should have time'd out but just returned a 404 error
-		assertThat(result).isEqualTo(404);
-	}
-
 	
 	@Test
 	public void shouldAcceptHttpConnexionAndReturnHtmlResource() throws Exception {
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		// operation
 		HttpClient client = new HttpClient();
 		HttpMethod method = new GetMethod(indexDocumentlocation);
@@ -267,7 +253,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 	@Test
 	public void shouldAcceptHttpConnexionAndReturnNotFoundResource() throws Exception {
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		// operation
 		HttpClient client = new HttpClient();
 		HttpMethod method = new GetMethod(unknowDocumentLocation);
@@ -279,7 +265,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldAcceptHttpConnexionAndReturnForbiddenResponseWhenRequestingFolder() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		// operation
 		HttpClient client = new HttpClient();
 		HttpMethod method = new GetMethod(folderDocumentLocation);
@@ -291,7 +277,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldNotInjectLiveReloadScriptInHtmlPage() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, false);
+		createAndLaunchLiveReloadServer(false);
 		final String scriptContent = new StringBuilder(
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
 				.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
@@ -310,7 +296,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldInjectLiveReloadScriptInHtmlPageWithSimpleAcceptedTypes() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		final String scriptContent = new StringBuilder(
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
 				.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
@@ -329,7 +315,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldInjectLiveReloadScriptInHtmlPageWithSimpleAcceptedTypeAndcharset() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		final String scriptContent = new StringBuilder(
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
 		.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
@@ -348,7 +334,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldInjectLiveReloadScriptInHtmlPageWithMultipleAcceptedTypeAndQualityFactors() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		final String scriptContent = new StringBuilder(
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
 		.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
@@ -365,25 +351,9 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	}
 
 	@Test
-	public void shouldGetLiveReloadScriptWithProxyDisabled() throws Exception {
-		// pre-condition
-		createAndLaunchLiveReloadServer(false, false);
-		// operation
-		HttpClient client = new HttpClient();
-		HttpMethod method = new GetMethod("http://localhost:" + liveReloadServerPort + "/livereload.js");
-		method.addRequestHeader("Accept", "text/javascript");
-		int status = client.executeMethod(method);
-		// verification
-		assertThat(status).isEqualTo(HttpStatus.SC_OK);
-		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
-		assertThat(responseBody).isNotEmpty();
-	}
-
-	@Test
 	public void shouldGetLiveReloadScriptWithProxyEnabled() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		// operation
 		HttpClient client = new HttpClient();
 		HttpMethod method = new GetMethod("http://localhost:" + liveReloadServerPort + "/livereload.js");
@@ -398,7 +368,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 	@Test
 	public void shouldNotInjectLiveReloadScriptInCssPage() throws Exception {
-		createAndLaunchLiveReloadServer(true, false);
+		createAndLaunchLiveReloadServer(false);
 		final String scriptContent = new StringBuilder(
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
 				.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
@@ -417,7 +387,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldBeNotifiedWhenLocalFileChangedWithProxyEnabled() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		final LiveReloadTestClient client = new LiveReloadTestClient(indexDocumentlocation);
 		// operation
 		final Connection connection = connectFrom(client);
@@ -434,7 +404,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldBeNotifiedWhenLocalFileChangedWithProxyEnabledAndUnknownServerLocation() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		final LiveReloadTestClient client = new LiveReloadTestClient(unknownServerLocation);
 		// operation
 		final Connection connection = connectFrom(client);
@@ -448,57 +418,19 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// end
 		connection.close();
 	}
-	@Test
-	public void shouldBeNotifiedWhenLocalFileChangedWithProxyDisabled() throws Exception {
-		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
-		final LiveReloadTestClient client = new LiveReloadTestClient(indexFileLocation);
-		// operation
-		final Connection connection = connectFrom(client);
-		// operation : trigger a resource changed event
-		WorkbenchUtils.replaceAllOccurrencesOfCode("WebContent/index.html", project, "Hello, World",
-				"Hello, LiveReload !");
-		Thread.sleep(200);
-		// verification: client should have been notified with a reload message
-		assertThat(client.isNotificationReceived()).isEqualTo(true);
-		assertThat(client.getReceivedNotification()).contains(
-				"\"path\":\"" + indexFileLocation.substring("file://".length()) + "\"");
-		// end
-		connection.close();
-	}
-
-	@Test
-	public void shouldBeNotifiedWhenRemoteResourceDeployedWithProxyDisabled() throws Exception {
-		// pre-condition
-		final int httpPreviewPort = createHttpPreviewServer();
-		createAndLaunchLiveReloadServer(false, false);
-		final String indexRemoteDocumentlocation = "http://localhost:" + httpPreviewPort + "/" + project.getName()
-				+ "/index.html";
-		final LiveReloadTestClient client = new LiveReloadTestClient(indexRemoteDocumentlocation);
-		// operation: client-server handshake
-		final Connection connection = connectFrom(client);
-		// operation: simulate HTTP preview server startup: notify listeners
-		((Server) httpPreviewServer).setServerState(IServer.STATE_STARTED);
-		((Server) httpPreviewServer).publish(IServer.PUBLISH_AUTO, new NullProgressMonitor());
-		Thread.sleep(200);
-		// verification: client should have been notified with a reload message
-		assertThat(client.isNotificationReceived()).isEqualTo(true);
-		// end
-		connection.close();
-	}
 
 	@Test
 	public void shouldBeNotifiedWhenRemoteResourceDeployedWithProxyEnabledButNotUsed() throws Exception {
 		// pre-condition
 		final int httpPreviewPort = createHttpPreviewServer();
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		final String indexRemoteDocumentlocation = "http://localhost:" + httpPreviewPort + "/" + project.getName()
 				+ "/index.html";
 		final LiveReloadTestClient client = new LiveReloadTestClient(indexRemoteDocumentlocation);
-		// operation
-		final Connection connection = connectFrom(client);
-		// operation: simulate HTTP preview server startup: notify listeners
+		// operation: start server and connect to it
 		((Server) httpPreviewServer).setServerState(IServer.STATE_STARTED);
+		final Connection connection = connectFrom(client);
+		// operation: simulate publish
 		((Server) httpPreviewServer).publish(IServer.PUBLISH_AUTO, new NullProgressMonitor());
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
@@ -512,14 +444,14 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldBeNotifiedWhenRemoteResourceDeployedWithProxyEnabledAndUsed() throws Exception {
 		// pre-condition
 		final int httpPreviewPort = createHttpPreviewServer();
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		final String indexRemoteDocumentlocation = "http://localhost:" + httpPreviewPort + "/" + project.getName()
 				+ "/index.html";
 		final LiveReloadTestClient client = new LiveReloadTestClient(indexRemoteDocumentlocation);
-		// operation
-		final Connection connection = connectFrom(client);
-		// operation: simulate HTTP preview server startup: notify listeners
+		// operation: start server and connect to it
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		final Connection connection = connectFrom(client);
+		// operation: simulate HTTP preview server publish
 		((Server) httpPreviewServer).publish(IServer.PUBLISH_AUTO, new NullProgressMonitor());
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
@@ -533,7 +465,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldNotBeNotifiedWhenConnectionClosed() throws Exception {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		final LiveReloadTestClient client = new LiveReloadTestClient(indexFileLocation);
 		// operation
 		final Connection connection = connectFrom(client);
@@ -549,7 +481,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 	@Test
 	public void shouldNotInjectLiveReloadScriptInUnknownHtmlPage() throws Exception {
-		createAndLaunchLiveReloadServer(true, false);
+		createAndLaunchLiveReloadServer(false);
 		// operation
 		HttpClient client = new HttpClient();
 		HttpMethod method = new GetMethod(unknowDocumentLocation);
@@ -563,7 +495,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldAddServerListenerWhenCreatingHttpPreviewServerAfterLiveReloadServerAndProxyModeEnabled()
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		// operation
 		createHttpPreviewServer();
 		// verification
@@ -578,33 +510,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		createHttpPreviewServer();
 		// operation
-		createAndLaunchLiveReloadServer(true, true);
-		// verification
-		assertThat(
-				liveReloadServerBehaviour.getServerLifeCycleListener().getSupervisedServers(
-						ServerLifeCycleListener.SERVER_LISTENER)).contains(httpPreviewServer);
-	}
-
-	@Test
-	public void shouldAddServerListenerWhenCreatingHttpPreviewServerAfterLiveReloadServerAndProxyModeDisabled()
-			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		// pre-condition
-		createAndLaunchLiveReloadServer(false, false);
-		// operation
-		createHttpPreviewServer();
-		// verification
-		assertThat(
-				liveReloadServerBehaviour.getServerLifeCycleListener().getSupervisedServers(
-						ServerLifeCycleListener.SERVER_LISTENER)).contains(httpPreviewServer);
-	}
-
-	@Test
-	public void shouldAddServerListenerWhenCreatingLiveReloadServerAfterHttpPreviewServerAndProxyModeDisabled()
-			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		// pre-condition
-		createHttpPreviewServer();
-		// operation
-		createAndLaunchLiveReloadServer(false, false);
+		createAndLaunchLiveReloadServer(true);
 		// verification
 		assertThat(
 				liveReloadServerBehaviour.getServerLifeCycleListener().getSupervisedServers(
@@ -615,7 +521,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldRemoveServerListenerWhenDeletingServer() throws InterruptedException, CoreException,
 			ExecutionException, TimeoutException {
 		// pre-condition
-		createAndLaunchLiveReloadServer(false, false);
+		createAndLaunchLiveReloadServer(false);
 		createHttpPreviewServer();
 		assertThat(
 				liveReloadServerBehaviour.getServerLifeCycleListener().getSupervisedServers(
@@ -633,7 +539,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 			InterruptedException, ExecutionException, TimeoutException {
 		// pre-condition
 		createHttpPreviewServer();
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		// operation
 		((Server) httpPreviewServer).setServerState(IServer.STATE_STARTED);
 		// verification
@@ -643,7 +549,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldAddProxyWhenCreatingAndStartingHttpPreviewServerAndProxyModeEnabled() throws CoreException,
 			InterruptedException, ExecutionException, TimeoutException {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		// operation
 		createHttpPreviewServer();
 		((Server) httpPreviewServer).setServerState(IServer.STATE_STARTED);
@@ -658,40 +564,16 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		createHttpPreviewServer();
 		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		// operation
-		createAndLaunchLiveReloadServer(true, false);
+		createAndLaunchLiveReloadServer(false);
 		// verification
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
-	}
-
-	@Test
-	public void shouldNotAddProxyWhenStartingHttpPreviewServerAndProxyModeDisabled() throws CoreException,
-			InterruptedException, ExecutionException, TimeoutException {
-		// pre-condition
-		createAndLaunchLiveReloadServer(false, false);
-		// operation
-		createHttpPreviewServer();
-		((Server) httpPreviewServer).setServerState(IServer.STATE_STARTED);
-		// verification
-		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).isEmpty();
-	}
-
-	@Test
-	public void shouldAddProxyWhenCreatingLiveReloadServerAndHttpPreviewServerStartedAndProxyModeDisabled()
-			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		// pre-condition
-		createHttpPreviewServer();
-		((Server) httpPreviewServer).setServerState(IServer.STATE_STARTED);
-		// operation
-		createAndLaunchLiveReloadServer(false, false);
-		// verification
-		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).isEmpty();
 	}
 
 	@Test
 	public void shouldRemoveProxyWhenDeletingServer() throws InterruptedException, CoreException, ExecutionException,
 			TimeoutException {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		createHttpPreviewServer();
 		// operation
 		httpPreviewServer.delete();
@@ -703,7 +585,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldRemoveProxyWhenStoppingServer() throws InterruptedException, CoreException, ExecutionException,
 			TimeoutException {
 		// pre-condition
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).isEmpty();
 		createHttpPreviewServer();
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
@@ -730,7 +612,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldStopLiveReloadServerIfRunning() throws CoreException, InterruptedException, ExecutionException,
 			TimeoutException {
 		// precondition
-		createAndLaunchLiveReloadServer(false, false);
+		createAndLaunchLiveReloadServer(false);
 		assertThat(liveReloadServer.canStop().isOK()).isTrue();
 		// operation
 		liveReloadServer.stop(true);
@@ -751,7 +633,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		createHttpPreviewServer();
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-		createAndLaunchLiveReloadServer(true, false);
+		createAndLaunchLiveReloadServer(false);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
 		int proxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0].getPort();
@@ -774,7 +656,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		createHttpPreviewServer();
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
 		int proxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0].getPort();
@@ -798,7 +680,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		createHttpPreviewServer();
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
 		int proxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0].getPort();
@@ -817,7 +699,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		createHttpPreviewServer();
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
 		int proxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0].getPort();
@@ -841,7 +723,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		createHttpPreviewServer();
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-		createAndLaunchLiveReloadServer(true, true);
+		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
 		int proxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0].getPort();

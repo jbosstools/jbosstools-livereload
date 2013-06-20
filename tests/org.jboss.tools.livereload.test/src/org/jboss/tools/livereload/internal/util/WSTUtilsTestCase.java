@@ -23,8 +23,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
+import org.eclipse.wst.server.core.ServerPort;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.eclipse.wst.server.core.util.SocketUtil;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
@@ -34,17 +36,18 @@ import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.jboss.tools.livereload.internal.AbstractCommonTestCase;
 import org.jboss.tools.livereload.test.previewserver.PreviewServerFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author xcoulon
  * 
  */
+@SuppressWarnings("restriction")
 public class WSTUtilsTestCase extends AbstractCommonTestCase {
 
 	private IServer jbossasServer = null;
-	private IServer tomcatServer = null;
+	private IServer tomcat6Server = null;
+	private IServer tomcat7Server = null;
 	private List<IServer> servers = null;
 
 	@Before
@@ -57,12 +60,25 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		when(jbossasServer.getHost()).thenReturn("localhost");
 		when(jbossasServer.getAttribute(WSTUtils.JBOSSAS_SERVER_PORT, -1)).thenReturn(8080);
 		when(jbossasServer.loadAdapter(IJBossServer.class, null)).thenReturn(jbossServer);
+		when(jbossasServer.getServerState()).thenReturn(IServer.STATE_STARTED);
 		
-		tomcatServer = mock(IServer.class, RETURNS_DEEP_STUBS);
-		when(tomcatServer.getServerType().getId()).thenReturn(WSTUtils.TOMCAT_SERVER_TYPE);
-		when(tomcatServer.getHost()).thenReturn("localhost");
-		when(tomcatServer.getAttribute(WSTUtils.TOMCAT_SERVER_PORT, -1)).thenReturn(8081);
-		servers = Arrays.asList(jbossasServer, tomcatServer);
+		tomcat6Server = mock(IServer.class, RETURNS_DEEP_STUBS);
+		when(tomcat6Server.getServerType().getId()).thenReturn(WSTUtils.TOMCAT_60_SERVER_TYPE);
+		when(tomcat6Server.getHost()).thenReturn("localhost");
+		final TomcatServerBehaviour tomcat6ServerBehaviour = mock(TomcatServerBehaviour.class, RETURNS_DEEP_STUBS);
+		when(tomcat6ServerBehaviour.getTomcatServer().getServerPorts()).thenReturn(new ServerPort[]{new ServerPort("foo", "foo", 8086, "HTTP"), new ServerPort("foo", "foo", 8009, "AJP")});
+		when(tomcat6Server.getServerState()).thenReturn(IServer.STATE_STARTED);
+		when(tomcat6Server.getAdapter(ServerBehaviourDelegate.class)).thenReturn(tomcat6ServerBehaviour);
+		
+		tomcat7Server = mock(IServer.class, RETURNS_DEEP_STUBS);
+		when(tomcat7Server.getServerType().getId()).thenReturn(WSTUtils.TOMCAT_70_SERVER_TYPE);
+		when(tomcat7Server.getHost()).thenReturn("localhost");
+		final TomcatServerBehaviour tomcat7ServerBehaviour = mock(TomcatServerBehaviour.class, RETURNS_DEEP_STUBS);
+		when(tomcat7ServerBehaviour.getTomcatServer().getServerPorts()).thenReturn(new ServerPort[]{new ServerPort("foo", "foo", 8087, "HTTP"), new ServerPort("foo", "foo", 8009, "AJP")});
+		when(tomcat7Server.getAdapter(ServerBehaviourDelegate.class)).thenReturn(tomcat7ServerBehaviour);
+		when(tomcat7Server.getServerState()).thenReturn(IServer.STATE_STARTED);
+		
+		servers = Arrays.asList(jbossasServer, tomcat6Server, tomcat7Server);
 		// remove all existing servers in the workspace
 		for (IServer server : ServerCore.getServers()) {
 			server.delete();
@@ -79,15 +95,24 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		assertThat(server).isEqualTo(jbossasServer);
 	}
 
-	@Ignore("Tomcat is not  supported yet.")
 	@Test
 	public void shouldRetrieveTomcat7ServerFromBrowserLocation() {
 		// pre-conditions
-		final String browserLocation = "http://localhost:8081/bar";
+		final String browserLocation = "http://localhost:8087/bar";
 		// operation
 		final IServer server = WSTUtils.extractServer(browserLocation, servers);
 		// verifications
-		assertThat(server).isEqualTo(tomcatServer);
+		assertThat(server).isEqualTo(tomcat7Server);
+	}
+
+	@Test
+	public void shouldRetrieveTomcat6ServerFromBrowserLocation() {
+		// pre-conditions
+		final String browserLocation = "http://localhost:8086/bar";
+		// operation
+		final IServer server = WSTUtils.extractServer(browserLocation, servers);
+		// verifications
+		assertThat(server).isEqualTo(tomcat6Server);
 	}
 
 	@Test
@@ -103,7 +128,7 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldRetrieveOneLiveReloadServer() throws CoreException {
 		// pre-condition
-		WSTUtils.createLiveReloadServer(50000, false, false, false);
+		WSTUtils.createLiveReloadServer(50000, false, false);
 		// operation
 		final List<IServer> liveReloadServers = WSTUtils.findLiveReloadServers();
 		// verification
@@ -122,7 +147,7 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldFindOneLiveReloadServer() throws CoreException {
 		// pre-condition
-		WSTUtils.createLiveReloadServer(50000, false, false, false);
+		WSTUtils.createLiveReloadServer(50000, false, false);
 		// operation
 		final IServer liveReloadServer = WSTUtils.findLiveReloadServer();
 		// verification
@@ -141,7 +166,7 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldFilterStartedServersAndFindOne() throws Exception {
 		// pre-condition
-		final IServer createdLiveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000), true, false, false);
+		final IServer createdLiveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000), false, false);
 		startServer(createdLiveReloadServer, 30, TimeUnit.SECONDS);
 		final List<IServer> existingServers = WSTUtils.findLiveReloadServers();
 		assertThat(existingServers).hasSize(1);
@@ -154,7 +179,7 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldFilterStartedServersAndFindNone() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		// pre-condition
-		WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000), true, false, false);
+		WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000), false, false);
 		final List<IServer> existingServers = WSTUtils.findLiveReloadServers();
 		assertThat(existingServers).hasSize(1);
 		// operation
@@ -168,7 +193,7 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		final IServer previewServer = PreviewServerFactory.createServer(project);
 		startServer(previewServer, 30, TimeUnit.SECONDS);
-		final IServer liveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000), true, false, false);
+		final IServer liveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000), false, false);
 		startServer(liveReloadServer, 30, TimeUnit.SECONDS);
 		// operation
 		final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(previewServer);
@@ -177,23 +202,10 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	}
 
 	@Test
-	public void shouldNotFindLiveReloadServerForPreviewServer() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		// pre-condition
-		final IServer previewServer = PreviewServerFactory.createServer(project);
-		startServer(previewServer, 30, TimeUnit.SECONDS);
-		final IServer liveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000), false, false, false);
-		startServer(liveReloadServer, 30, TimeUnit.SECONDS);
-		// operation
-		final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(previewServer);
-		// verification
-		assertThat(liveReloadProxyServer).isNull();
-	}
-	
-	@Test
 	public void shouldStartServer() throws CoreException, TimeoutException, InterruptedException, ExecutionException {
 		// pre-condition
 		final IServer liveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000),
-				false, false, false);
+				false, false);
 		// operation
 		WSTUtils.startOrRestartServer(liveReloadServer, 30, TimeUnit.SECONDS);
 		// verification
@@ -204,7 +216,7 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	public void shouldRestartServer() throws CoreException, TimeoutException, InterruptedException, ExecutionException {
 		// pre-condition
 		final IServer liveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000),
-				false, false, false);
+				false, false);
 		startServer(liveReloadServer, 30, TimeUnit.SECONDS);
 		// operation
 		// force restart state by changing some configuration
