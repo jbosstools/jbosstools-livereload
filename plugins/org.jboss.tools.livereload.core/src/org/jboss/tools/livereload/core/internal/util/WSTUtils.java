@@ -28,6 +28,7 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
 import org.eclipse.wst.server.core.IRuntime;
 import org.eclipse.wst.server.core.IRuntimeType;
 import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
@@ -35,6 +36,7 @@ import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerType;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
+import org.eclipse.wst.server.core.ServerPort;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
@@ -45,6 +47,7 @@ import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehav
  * @author xcoulon
  * 
  */
+@SuppressWarnings("restriction")
 public class WSTUtils {
 
 	public static final String LIVERELOAD_RUNTIME_TYPE = "org.jboss.tools.livereload.serverTypeRuntime";
@@ -55,8 +58,8 @@ public class WSTUtils {
 	public static final String TEST_PREVIEW_PORT = "port";
 	public static final String JBOSSASAS_SERVER_PREFIX = "org.jboss.ide.eclipse.as.";
 	public static final String JBOSSAS_SERVER_PORT = "org.jboss.ide.as.serverport";
-	public static final String TOMCAT_SERVER_TYPE = "org.apache.tomcat.servertype";
-	public static final String TOMCAT_SERVER_PORT = "org.apache.tomcat.serverport";
+	public static final String TOMCAT_60_SERVER_TYPE = "org.eclipse.jst.server.tomcat.60";
+	public static final String TOMCAT_70_SERVER_TYPE = "org.eclipse.jst.server.tomcat.70";
 
 	/**
 	 * Returns the list of the existing LiveReload servers.
@@ -174,13 +177,17 @@ public class WSTUtils {
 	}
 
 	/**
-	 * Returns the Web Port for the given {@link IServer} or <code>-1</code> if
-	 * the given server is not supported(yet).
+	 * Returns the Web Port for the given {@link IServer}, <code>8080</code> if the server is of an unknown type or <code>-1</code> if
+	 * the server is not started.
 	 * 
 	 * @param server
 	 * @return
 	 */
 	public static int getWebPort(final IServer server) {
+		// ignore not-started servers
+		if(server.getServerState() != IServer.STATE_STARTED) {
+			return -1;
+		}
 		final String serverType = server.getServerType().getId();
 		final Object adapter = server.loadAdapter(IJBossServer.class, null);
 		// JBoss AS Server
@@ -196,12 +203,17 @@ public class WSTUtils {
 		if (serverType.equals(LIVERELOAD_SERVER_TYPE)) {
 			return server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1);
 		}
-		// if (TOMCAT_SERVER_TYPE.equals(serverType)) {
-		// return server.getAttribute(TOMCAT_SERVER_PORT, -1);
-		// }
-		// Logger.warn("Unsupported server type: " +
-		// server.getServerType().getName());
-		return -1;
+		if(TOMCAT_70_SERVER_TYPE.equals(serverType) || TOMCAT_60_SERVER_TYPE.equals(serverType)) {
+			final TomcatServerBehaviour tomcatServer = (TomcatServerBehaviour) server.getAdapter(ServerBehaviourDelegate.class);
+			for(ServerPort port: tomcatServer.getTomcatServer().getServerPorts()) {
+				if("HTTP".equals(port.getProtocol())) {
+					return port.getPort();
+				}
+			}
+		}
+		// default assumption for unknown specific server type...
+		Logger.warn("Assuming that server '" + server.getName() + "' is running on port 8080. LiveReload may not work as expected if it is not the case.");
+		return 8080;
 	}
 
 	/**
@@ -241,7 +253,7 @@ public class WSTUtils {
 	 * @return the server
 	 * @throws CoreException
 	 */
-	public static IServer createLiveReloadServer(final int websocketPort, final boolean enableProxy,
+	public static IServer createLiveReloadServer(final int websocketPort, 
 			final boolean injectScript, final boolean allowRemoteConnections) throws CoreException {
 		final String serverName = "LiveReload Server at localhost";
 		IRuntimeType rt = ServerCore.findRuntimeType(LIVERELOAD_RUNTIME_TYPE);
@@ -253,7 +265,7 @@ public class WSTUtils {
 		swc.setName(serverName);
 		swc.setRuntime(runtime);
 		swc.setAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, websocketPort);
-		swc.setAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, enableProxy);
+		swc.setAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, true);
 		swc.setAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, injectScript);
 		swc.setAttribute(LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, allowRemoteConnections);
 		return swc.save(true, new NullProgressMonitor());

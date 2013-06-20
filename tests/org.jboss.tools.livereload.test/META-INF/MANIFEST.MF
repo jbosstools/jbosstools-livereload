@@ -27,7 +27,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.wst.common.project.facet.core;bundle-version="1.4.300",
  org.eclipse.wst.common.modulecore;bundle-version="1.2.300",
  ch.qos.logback.core;bundle-version="1.0.0",
- javax.servlet;bundle-version="3.0.0"
+ javax.servlet;bundle-version="3.0.0",
+ org.eclipse.jst.server.tomcat.core;bundle-version="1.1.403"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,

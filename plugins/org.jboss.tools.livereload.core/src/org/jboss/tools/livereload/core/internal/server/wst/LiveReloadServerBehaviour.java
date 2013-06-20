@@ -124,10 +124,13 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			// server attributes
 			final IServer server = getServer();
 			websocketPort = server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1);
-			final boolean enableProxyServer = isProxyEnabled();
+			// fix the new default behaviour: proxy is now always enabled
+			if(!isProxyEnabled()) {
+				setProxyEnabled(true);
+			}
 			final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
 			final boolean enableScriptInjection = isScriptInjectionEnabled();
-			this.liveReloadServer = new LiveReloadServer(websocketPort, enableProxyServer, allowRemoteConnections,
+			this.liveReloadServer = new LiveReloadServer(websocketPort, true, allowRemoteConnections,
 					enableScriptInjection);
 			this.liveReloadServerRunnable = JettyServerRunner.start(liveReloadServer);
 			// listen to file changes in the workspace
@@ -275,7 +278,9 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 	 * removes current listener to file changes in the workspace
 	 */
 	private void removeWorkspaceResourceChangeListener() {
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceChangeListener);
+		if(resourceChangeListener != null) {
+			ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceChangeListener);
+		}
 	}
 
 	@Override
