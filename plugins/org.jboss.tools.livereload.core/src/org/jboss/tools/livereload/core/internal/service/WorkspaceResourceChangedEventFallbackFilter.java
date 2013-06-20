@@ -11,41 +11,29 @@
 
 package org.jboss.tools.livereload.core.internal.service;
 
-import java.util.Arrays;
 import java.util.EventObject;
-import java.util.List;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
 /**
- * Filter to allow event of type {@link WorkspaceResourceChangedEvent} if the parent project matches the expected one.
+ * A fallback filter in case where the client establishes a connection from a
+ * browser location that cannot be resolved to an existing server or project. In
+ * that case, the filter will allow any {@link WorkspaceResourceChangedEvent}.
+ * This is sub-optimal because *any workspace change* will end-up in a browser
+ * notification, but still, it allows for LiveReload support.
+ * 
  * @author xcoulon
  * 
  */
-public class WorkspaceResourceChangedEventFilter implements EventFilter {
-
-	/**
-	 * The list of file extensions that are allowed. Typically, these correspond
-	 * to files that are part of HTML pages (HTML, CSS, JS, Images).
-	 */
-	static final List<String> acceptedFileTypes = Arrays.asList("html", "xhtml", "htm", "css", "js", "gif", "png",
-			"jpg", "jpeg", "bmp", "ico");
-
-	/**
-	 * The Eclipse project for which this filter should allow events. Events
-	 * related to files in other projects should be discarded by this filter, no
-	 * matter which extension they have.
-	 */
-	private final IProject project;
+public class WorkspaceResourceChangedEventFallbackFilter extends WorkspaceResourceChangedEventFilter {
 
 	/**
 	 * Default constructor.
 	 * 
 	 * @param project
 	 */
-	public WorkspaceResourceChangedEventFilter(final IProject project) {
-		this.project = project;
+	public WorkspaceResourceChangedEventFallbackFilter() {
+		super(null);
 	}
 
 	/**
@@ -60,7 +48,7 @@ public class WorkspaceResourceChangedEventFilter implements EventFilter {
 			WorkspaceResourceChangedEvent event = (WorkspaceResourceChangedEvent) e;
 			for (IResource resource : event.getChangedResources()) {
 				final String fileExtension = resource.getFileExtension() != null ? resource.getFileExtension().toLowerCase() : null;
-				if (resource.getProject().equals(project) && fileExtension != null && acceptedFileTypes.contains(fileExtension)) {
+				if (acceptedFileTypes.contains(fileExtension)) {
 					return true;
 				}
 			}
