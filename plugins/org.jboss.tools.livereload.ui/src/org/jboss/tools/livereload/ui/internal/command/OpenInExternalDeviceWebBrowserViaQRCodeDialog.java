@@ -144,7 +144,6 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 		if (tableItems.length > 0) {
 			@SuppressWarnings("unchecked")
 			Entry<String, InetAddress> selectedNetworkInterface = (Entry<String, InetAddress>) tableItems[0].getData();
-
 			try {
 				final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(serverModule.getServer());
 				final int proxyPort = liveReloadProxyServer.getProxyPort();

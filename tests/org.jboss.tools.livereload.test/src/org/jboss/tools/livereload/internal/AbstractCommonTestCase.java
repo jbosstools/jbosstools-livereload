@@ -158,7 +158,7 @@ public abstract class AbstractCommonTestCase {
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	public static void startServer(final IServer server, int timeout, TimeUnit unit) throws InterruptedException,
+	public static void startServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException, CoreException {
 		LOGGER.info("Starting server {}", server.getName());
 		server.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
@@ -166,9 +166,10 @@ public abstract class AbstractCommonTestCase {
 
 			@Override
 			public void run() {
-				while (server.getServerState() != IServer.STATE_STARTED) {
+				final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
+				while (server.getServerState() != IServer.STATE_STARTED && System.currentTimeMillis() < limitTime) {
 					try {
-						Thread.sleep(500);
+						TimeUnit.MILLISECONDS.sleep(500);
 					} catch (InterruptedException e) {
 						LOGGER.error("Failed to sleep", e);
 					}
@@ -190,7 +191,7 @@ public abstract class AbstractCommonTestCase {
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	public static void stopServer(final IServer server, int timeout, TimeUnit unit) throws InterruptedException,
+	public static void stopServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException {
 		LOGGER.info("Stopping server {}", server.getName());
 		server.stop(true);
@@ -198,9 +199,10 @@ public abstract class AbstractCommonTestCase {
 
 			@Override
 			public void run() {
-				while (server.getServerState() != IServer.STATE_STOPPED) {
+				final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
+				while (server.getServerState() != IServer.STATE_STOPPED && System.currentTimeMillis() < limitTime) {
 					try {
-						Thread.sleep(500);
+						TimeUnit.MILLISECONDS.sleep(500);
 					} catch (InterruptedException e) {
 						LOGGER.error("Failed to sleep", e);
 					}

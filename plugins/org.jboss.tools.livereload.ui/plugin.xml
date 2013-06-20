@@ -120,7 +120,7 @@
          icon="$nl$/icons/livereload_editor_launcher.png"
          id="org.jboss.tools.livereload.openFileInBrowserWithLiveReload"
          launcher="org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserWithLiveReloadLauncher"
-         name="Web Browser via LiveReload Proxy"/>
+         name="Web Browser via LiveReload Server"/>
   </extension>
   
   <extension
@@ -132,13 +132,13 @@
             order="10"
             typeIds="org.jboss.tools.livereload.serverType">
       </section>
-      <section
+      <!--section
             class="org.jboss.tools.livereload.ui.internal.configuration.LiveReloadProxyServerConfigurationSection"
             id="org.jboss.tools.livereload.proxyConfigurationSection"
             insertionId="org.eclipse.wst.server.editor.overview.left"
             order="10"
             typeIds="org.jboss.tools.livereload.serverType">
-      </section>
+      </section-->
    </extension>
 
 </plugin>

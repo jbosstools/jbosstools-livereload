@@ -34,9 +34,10 @@ public class TimeoutUtils {
 		Future<?> future = executor.submit(new Runnable() {
 			@Override
 			public void run() {
-				while(!monitor.isComplete()) {
+				final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(duration, unit);
+				while(!monitor.isComplete() && System.currentTimeMillis() < limitTime) {
 					try {
-						Thread.sleep(500);
+						TimeUnit.MILLISECONDS.sleep(500);
 					} catch (InterruptedException e) {
 						throw new TimeoutException(e);
 					}

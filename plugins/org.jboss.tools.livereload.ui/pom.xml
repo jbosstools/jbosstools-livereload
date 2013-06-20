@@ -13,13 +13,6 @@
 
 	<packaging>eclipse-plugin</packaging>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>core</artifactId>
-			<version>2.2</version>
-		</dependency>
-	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -30,12 +23,17 @@
 						<id>copy</id>
 						<phase>generate-sources</phase>
 						<goals>
-							<goal>copy-dependencies</goal>
+							<goal>copy</goal>
 						</goals>
 						<configuration>
-							<excludeScope>system</excludeScope>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.google.zxing</groupId>
+									<artifactId>core</artifactId>
+									<version>2.2</version>
+								</artifactItem>
+							</artifactItems>
 							<outputDirectory>lib</outputDirectory>
-							<excludeArtifactIds>xml-resolver,wsdl4j</excludeArtifactIds>
 						</configuration>
 					</execution>
 				</executions>
