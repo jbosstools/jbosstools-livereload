@@ -34,8 +34,7 @@ public class OpenInWebBrowserViaLiveReloadProxyEnablementTester extends Property
 			return false;
 		}
 		final IServer appServer = appModule.getServer();
-		final boolean liveReloadProxyServerExists = (WSTUtils.findLiveReloadProxyServer(appModule.getServer()) != null);
-		return appServer != null && WSTUtils.isServerStarted(appServer) && liveReloadProxyServerExists;
+		return appServer != null && WSTUtils.isServerStarted(appServer);
 	}
 
 }
