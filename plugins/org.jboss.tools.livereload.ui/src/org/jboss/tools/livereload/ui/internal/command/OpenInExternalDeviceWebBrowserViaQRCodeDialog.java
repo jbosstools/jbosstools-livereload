@@ -146,6 +146,9 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 			Entry<String, InetAddress> selectedNetworkInterface = (Entry<String, InetAddress>) tableItems[0].getData();
 			try {
 				final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(serverModule.getServer());
+				if(liveReloadProxyServer == null) {
+					return null;
+				}
 				final int proxyPort = liveReloadProxyServer.getProxyPort();
 				final String host = selectedNetworkInterface.getValue().getHostAddress();
 				URL url;
@@ -199,7 +202,7 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 		});
 		if (networkInterfacesTable.getItemCount() > 0) {
 			networkInterfacesTable.setSelection(0);
-			serverModuleURL = computeURL(networkInterfacesTable.getSelection());
+			this.serverModuleURL = computeURL(networkInterfacesTable.getSelection());
 		}
 	}
 
@@ -269,7 +272,9 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 		
 		locationLabel = new Link(locationContainer, SWT.NONE);
 		locationLabel.setBackground(whiteColor);
-		locationLabel.setText(toHtmlAnchor(serverModuleURL));
+		if(serverModuleURL != null) {
+			locationLabel.setText(toHtmlAnchor(serverModuleURL));
+		}
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(1, 1).align(SWT.CENTER, SWT.CENTER).grab(true, false).applyTo(locationLabel);
 		locationLabel.addListener(SWT.Selection, new LinkListener(serverModuleURL));
 		createContextMenu(locationLabel, serverModuleURL);
@@ -281,7 +286,10 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 	 * @return
 	 */
 	private static String toHtmlAnchor(final String location) {
-		return "<a href=\"" + location + "\">" + location + "</a>";
+		if(location != null) {
+			return "<a href=\"" + location + "\">" + location + "</a>";
+		}
+		return null;
 	}
 
 	private void createContextMenu(final Control control, final String serverModuleURL) {

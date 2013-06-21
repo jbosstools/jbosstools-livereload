@@ -20,13 +20,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
 import org.eclipse.wst.server.core.IRuntime;
@@ -304,40 +307,69 @@ public class WSTUtils {
 	}
 	
 	/**
-	 * Starts or restarts the given {@link IServer} within the given interval of time.
-	 * @param liveReloadServer
+	 * Creates a {@link Job} that will start or restart the given {@link IServer} within the given interval of time. 
+	 * @param server
 	 * @param timeout
 	 * @param unit
+	 * @return a Job not scheduled yet.
 	 * @throws CoreException
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 * @throws TimeoutException
 	 */
-	public static void startOrRestartServer(final IServer liveReloadServer, final int timeout, final TimeUnit unit)
+	public static Job startOrRestartServer(final IServer server, final int timeout, final TimeUnit unit)
 			throws TimeoutException, InterruptedException, ExecutionException {
-		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
+		if (server == null) {
+			return null;
+		}
+		final boolean isStopping = (server.getServerState() == IServer.STATE_STOPPING);
+		final boolean needsStop = (server.getServerState() == IServer.STATE_STARTING || server.getServerState() == IServer.STATE_STARTED );
+		final boolean needsRestart = isStopping || needsStop;
+		return new Job((needsRestart ? "Restarting " : "Starting ") + server.getName() + "...") {
 			@Override
-			public void run() {
+			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
-					if (liveReloadServer.getServerState() == IServer.STATE_STARTED
-							&& liveReloadServer.getServerRestartState()) {
-						Logger.info("Restarting the server {}", liveReloadServer.getName());
-						liveReloadServer.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-					} else if (liveReloadServer.getServerState() == IServer.STATE_STOPPED) {
-						Logger.info("Starting the server {}", liveReloadServer.getName());
-						liveReloadServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+					if (needsStop) {
+						server.stop(true);
 					}
-					while (liveReloadServer.getServerState() != IServer.STATE_STARTED && System.currentTimeMillis() < limitTime) {
-						TimeUnit.MILLISECONDS.sleep(500);
+					if(needsStop || isStopping) {
+						while (server.getServerState() != IServer.STATE_STOPPED
+								&& System.currentTimeMillis() < limitTime && !monitor.isCanceled()) {
+							TimeUnit.SECONDS.sleep(1);
+						}
 					}
+					if(monitor.isCanceled()) {
+						return Status.CANCEL_STATUS;
+					}
+					
+					final int ticks = (int)TimeUnit.SECONDS.convert(timeout, unit); // the timeout should not be higher that Integer.MAX_VALUE seconds
+					final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, ticks);
+					server.start(ILaunchManager.RUN_MODE, subMonitor);
+					while (server.getServerState() != IServer.STATE_STARTED && System.currentTimeMillis() < limitTime
+							&& !subMonitor.isCanceled() && !monitor.isCanceled()) {
+						TimeUnit.SECONDS.sleep(1);
+						subMonitor.worked(1);
+					}
+					subMonitor.done();
+					if (server.getServerState() != IServer.STATE_STARTED) {
+						if (needsRestart) {
+							Logger.error("Failed to restart " + server.getName() + " before timeout");
+						} else {
+							Logger.error("Failed to start " + server.getName() + " before timeout");
+						}
+					}
+					return Status.OK_STATUS;
 				} catch (Exception e) {
-					Logger.error("Failed (re)start Livereload Server", e);
+					if (needsRestart) {
+						Logger.error("Failed to restart " + server.getName() + " before timeout", e);
+					} else {
+						Logger.error("Failed to start " + server.getName() + " before timeout", e);
+					}
+					return Status.CANCEL_STATUS;
 				}
-
 			}
-		});
-		future.get(timeout, unit);
+		};
 	}
 
 }
