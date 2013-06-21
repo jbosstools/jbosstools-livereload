@@ -175,6 +175,9 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 		final URL url = computeURL(module);
 		if (url != null) {
 			PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
+		} else {
+			final String moduleName = (module != null && module.getModule().length > 0) ? module.getModule()[0].getName() : "unknown";
+			Logger.warn("Unable to open the selected module '" + moduleName + "' in an external browser.");
 		}
 	}
 
