@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
@@ -201,13 +202,15 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		assertThat(liveReloadProxyServer).isNotNull();
 	}
 
-	@Test
+	@Test(timeout=60*1000) // 1 min timeout
 	public void shouldStartServer() throws CoreException, TimeoutException, InterruptedException, ExecutionException {
 		// pre-condition
 		final IServer liveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000),
 				false, false);
 		// operation
-		WSTUtils.startOrRestartServer(liveReloadServer, 30, TimeUnit.SECONDS);
+		final Job job = WSTUtils.startOrRestartServer(liveReloadServer, 30, TimeUnit.SECONDS);
+		job.schedule();
+		job.join();
 		// verification
 		assertThat(liveReloadServer.getServerState()).isEqualTo(IServer.STATE_STARTED);
 	}

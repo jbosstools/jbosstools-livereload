@@ -19,7 +19,7 @@ import org.eclipse.wst.server.ui.IServerModule;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 
 /**
- * Checks if the selected {@link IServerModule} is not deployed on a OpenShift.
+ * Checks if the selected {@link IServerModule} is not deployed on an OpenShift server.
  * @author xcoulon
  */
 public class OpenInWebBrowserViaLiveReloadProxyVisibilityTester extends PropertyTester {

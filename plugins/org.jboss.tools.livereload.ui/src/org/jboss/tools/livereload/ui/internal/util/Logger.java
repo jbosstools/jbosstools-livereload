@@ -100,7 +100,7 @@ public final class Logger {
 	}
 
 	/**
-	 * Logs a message with a 'warning' severity.
+	 * Logs a message with left 'warning' severity.
 	 * 
 	 * @param message
 	 *            the message to log

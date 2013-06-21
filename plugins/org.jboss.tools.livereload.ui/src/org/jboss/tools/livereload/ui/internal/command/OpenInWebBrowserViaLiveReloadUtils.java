@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
@@ -34,8 +33,7 @@ import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehav
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.ProjectUtils;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
-import org.jboss.tools.livereload.ui.internal.util.CallbackJob;
-import org.jboss.tools.livereload.ui.internal.util.ICallback;
+import org.jboss.tools.livereload.ui.internal.util.Pair;
 
 /**
  * Utility class
@@ -71,6 +69,10 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	}
 
 	/**
+	 * Returns a {@link Pair} containing the found/created LiveReload
+	 * {@link IServer} and a {@link Boolean} indicateing whether this server
+	 * should be started or restarted (because the user changed its
+	 * configuration).
 	 * 
 	 * @param location
 	 * @param shouldEnableScriptInjection
@@ -82,59 +84,51 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	 * @throws TimeoutException
 	 * @throws MalformedURLException
 	 */
-	public static void openWithLiveReloadServer(final Object location, final boolean shouldEnableScriptInjection,
-			final boolean shouldAllowRemoteConnections, final ICallback callback) {
-		try {
-			final IServer liveReloadServer = WSTUtils.findLiveReloadServer();
-			if (liveReloadServer == null) {
+	public static Pair<IServer, Boolean> openWithLiveReloadServer(final Object location, final boolean shouldEnableScriptInjection,
+			final boolean shouldAllowRemoteConnections) throws CoreException {
+		final IServer liveReloadServer = WSTUtils.findLiveReloadServer();
+		if (liveReloadServer == null) {
+			final LiveReloadServerConfigurationDialogModel model = new LiveReloadServerConfigurationDialogModel(
+					shouldEnableScriptInjection, shouldAllowRemoteConnections);
+			final LiveReloadServerConfigurationDialog dialog = new LiveReloadServerConfigurationDialog(model,
+					DialogMessages.LIVERELOAD_SERVER_DIALOG_TITLE, NLS.bind(
+							DialogMessages.LIVERELOAD_SERVER_CREATION_DIALOG_MESSAGE, new Object[] {
+									IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }));
+			int result = dialog.open();
+			if (result == IDialogConstants.CANCEL_ID) {
+				return null;
+			}
+			final IServer createdLiveReloadServer = WSTUtils.createLiveReloadServer(
+					LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT, model.isScriptInjectionEnabled(),
+					model.isRemoteConnectionsAllowed());
+			return new Pair<IServer, Boolean>(createdLiveReloadServer, Boolean.TRUE);
+		} else {
+			final LiveReloadServerBehaviour liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils
+					.findServerBehaviour(liveReloadServer);
+			final boolean scriptInjectionEnabled = liveReloadServerBehaviour.isScriptInjectionEnabled();
+			final boolean remoteConnectionsAllowed = liveReloadServerBehaviour.isRemoteConnectionsAllowed();
+			final boolean serverStopped = liveReloadServer.getServerState() != IServer.STATE_STARTED;
+			if (serverStopped || (shouldEnableScriptInjection && !scriptInjectionEnabled)
+					|| (shouldAllowRemoteConnections && !remoteConnectionsAllowed)) {
 				final LiveReloadServerConfigurationDialogModel model = new LiveReloadServerConfigurationDialogModel(
-						shouldEnableScriptInjection, shouldAllowRemoteConnections);
+						scriptInjectionEnabled || shouldEnableScriptInjection, remoteConnectionsAllowed
+								|| shouldAllowRemoteConnections);
 				final LiveReloadServerConfigurationDialog dialog = new LiveReloadServerConfigurationDialog(model,
 						DialogMessages.LIVERELOAD_SERVER_DIALOG_TITLE, NLS.bind(
-								DialogMessages.LIVERELOAD_SERVER_CREATION_DIALOG_MESSAGE, new Object[] {
+								DialogMessages.LIVERELOAD_SERVER_STARTUP_DIALOG_MESSAGE, new Object[] {
 										IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }));
 				int result = dialog.open();
 				if (result == IDialogConstants.CANCEL_ID) {
-					return;
+					return null;
 				}
-				final IServer createdLiveReloadServer = WSTUtils.createLiveReloadServer(
-						LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT, model.isScriptInjectionEnabled(),
-						model.isRemoteConnectionsAllowed());
-				final Job job = new CallbackJob(callback, createdLiveReloadServer, true);
-				job.schedule();
+				liveReloadServerBehaviour.setScriptInjectionAllowed(model.isScriptInjectionEnabled());
+				liveReloadServerBehaviour.setRemoteConnectionsAllowed(model.isRemoteConnectionsAllowed());
+				return new Pair<IServer, Boolean>(liveReloadServer, Boolean.TRUE);
 			} else {
-				final LiveReloadServerBehaviour liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils
-						.findServerBehaviour(liveReloadServer);
-				final boolean scriptInjectionEnabled = liveReloadServerBehaviour.isScriptInjectionEnabled();
-				final boolean remoteConnectionsAllowed = liveReloadServerBehaviour.isRemoteConnectionsAllowed();
-				final boolean serverStopped = liveReloadServer.getServerState() != IServer.STATE_STARTED;
-				if (serverStopped || (shouldEnableScriptInjection && !scriptInjectionEnabled)
-						|| (shouldAllowRemoteConnections && !remoteConnectionsAllowed)) {
-					final LiveReloadServerConfigurationDialogModel model = new LiveReloadServerConfigurationDialogModel(
-							scriptInjectionEnabled || shouldEnableScriptInjection, remoteConnectionsAllowed
-									|| shouldAllowRemoteConnections);
-					final LiveReloadServerConfigurationDialog dialog = new LiveReloadServerConfigurationDialog(model,
-							DialogMessages.LIVERELOAD_SERVER_DIALOG_TITLE, NLS.bind(
-									DialogMessages.LIVERELOAD_SERVER_STARTUP_DIALOG_MESSAGE, new Object[] {
-											IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }));
-					int result = dialog.open();
-					if (result == IDialogConstants.CANCEL_ID) {
-						return;
-					}
-					liveReloadServerBehaviour.setScriptInjectionAllowed(model.isScriptInjectionEnabled());
-					liveReloadServerBehaviour.setRemoteConnectionsAllowed(model.isRemoteConnectionsAllowed());
-					final Job job = new CallbackJob(callback, liveReloadServer, true);
-					job.schedule();
-				} else {
-					final Job job = new CallbackJob(callback, liveReloadServer, false);
-					job.schedule();
-				}
+				return new Pair<IServer, Boolean>(liveReloadServer, Boolean.FALSE);
 			}
-			
-			
-		} catch (Exception e) {
-			Logger.error("Failed to open selected element in Web Browser via LiveReload Server or via QR Code", e);
 		}
+			
 	}
 	
 	
