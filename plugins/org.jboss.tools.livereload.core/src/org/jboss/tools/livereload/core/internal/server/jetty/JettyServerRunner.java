@@ -50,7 +50,7 @@ public class JettyServerRunner implements Runnable {
 				return runner.isStarted();
 			}
 		};
-		if (TimeoutUtils.timeout(monitor, 5, TimeUnit.SECONDS)) {
+		if (TimeoutUtils.timeout(monitor, 15, TimeUnit.SECONDS)) {
 			Logger.error("Failed to start " + jettyServer + " within expected time (reason: timeout)");
 			// attempt to stop what can be stopped.
 			stop(runner);
