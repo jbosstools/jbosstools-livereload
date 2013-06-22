@@ -138,6 +138,7 @@ public abstract class AbstractCommonTestCase {
 	}
 	
 	@Before
+	@After
 	public void stopandDestroyAllServers() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		for(IServer server : ServerCore.getServers()) {
 			if(server.getServerState() != IServer.STATE_STOPPED) {

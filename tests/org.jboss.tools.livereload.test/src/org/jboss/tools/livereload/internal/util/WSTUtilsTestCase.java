@@ -212,6 +212,7 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		job.schedule();
 		job.join();
 		// verification
+		assertThat(job.getResult().isOK()).isTrue();
 		assertThat(liveReloadServer.getServerState()).isEqualTo(IServer.STATE_STARTED);
 	}
 
