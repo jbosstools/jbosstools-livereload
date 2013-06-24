@@ -276,7 +276,7 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 			locationLabel.setText(toHtmlAnchor(serverModuleURL));
 		}
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(1, 1).align(SWT.CENTER, SWT.CENTER).grab(true, false).applyTo(locationLabel);
-		locationLabel.addListener(SWT.Selection, new LinkListener(serverModuleURL));
+		locationLabel.addListener(SWT.Selection, new LinkListener());
 		createContextMenu(locationLabel, serverModuleURL);
 		
 	}
@@ -297,7 +297,7 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 		menuManager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 		Menu contextMenu = menuManager.createContextMenu(control);
 		control.setMenu(contextMenu);
-		menuManager.add(new CopyToClipboardAction(serverModuleURL));
+		menuManager.add(new CopyToClipboardAction());
 	}
 	/**
 	 * @return
@@ -388,29 +388,21 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 
 	}
 	
-	static class LinkListener implements Listener {
-		
-		private final String url;
-		
-		public LinkListener(final String url) {
-			this.url = url;
-		}
+	public class LinkListener implements Listener {
+	
 		public void handleEvent(Event event) {
 			try {
-				OpenInWebBrowserViaLiveReloadUtils.openInBrowser(new URL(url));
+				OpenInWebBrowserViaLiveReloadUtils.openInBrowser(new URL(serverModuleURL));
 			} catch (Exception e) {
-				Logger.error("Failed to open URL '" + url + "' in an external Browser", e);
+				Logger.error("Failed to open URL '" + serverModuleURL + "' in an external Browser", e);
 			}
 		}
 	}
 	
-	static class CopyToClipboardAction extends Action {
+	public class CopyToClipboardAction extends Action {
 		
-		private final String serverModuleURL;
-		
-		public CopyToClipboardAction(final String serverModuleURL) {
+		public CopyToClipboardAction() {
 			super("Copy", PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
-			this.serverModuleURL = serverModuleURL;
 //			setActionDefinitionId(ActionFactory.COPY.getCommandId());
 //			setAccelerator(SWT.CTRL | 'C');
 		}
