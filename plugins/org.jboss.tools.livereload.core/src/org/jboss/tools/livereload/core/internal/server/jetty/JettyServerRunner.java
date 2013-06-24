@@ -98,7 +98,7 @@ public class JettyServerRunner implements Runnable {
 			if (!server.isStarted()) { 
 				Logger.debug("Starting {}...", server.getAttribute(NAME));
 				server.start();
-				server.join();
+				//server.join();
 			}
 		} catch (Exception e) {
 			Logger.error("Failed to start '" + server.getAttribute(NAME) + "'", e);
