@@ -195,6 +195,10 @@ public abstract class AbstractCommonTestCase {
 	public static void stopServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException {
 		LOGGER.info("Stopping server {}", server.getName());
+		if(!server.canStop().isOK()) {
+			LOGGER.warn("Cannot stop server {}, current state={}", server.getName(), server.getServerState());
+			return;
+		}
 		server.stop(true);
 		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
 
