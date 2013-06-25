@@ -36,15 +36,18 @@ import org.eclipse.wst.server.core.IRuntime;
 import org.eclipse.wst.server.core.IRuntimeType;
 import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
 import org.eclipse.wst.server.core.IServer;
+import org.eclipse.wst.server.core.IServerListener;
 import org.eclipse.wst.server.core.IServerType;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
+import org.eclipse.wst.server.core.ServerEvent;
 import org.eclipse.wst.server.core.ServerPort;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
+import org.jboss.tools.livereload.core.internal.util.TimeoutUtils.TaskMonitor;
 
 /**
  * @author xcoulon
@@ -372,4 +375,53 @@ public class WSTUtils {
 		};
 	}
 
+	public static void stop(final IServer server, final long duration, final TimeUnit unit) throws TimeoutException {
+		if (server.canStop().isOK()) {
+			final ServerListener listener = new ServerListener();
+			try {
+				server.addServerListener(listener);
+				server.stop(true);
+				TimeoutUtils.timeout(new TaskMonitor() {
+					@Override
+					public boolean isComplete() {
+						return listener.hasStopped;
+					}
+				}, duration, unit);
+			} finally {
+				server.removeServerListener(listener);
+			}
+		}
+	}
+	
+	public static void restart(final IServer server, final long duration, final TimeUnit unit) {
+		final ServerListener listener = new ServerListener();
+		try {
+			server.addServerListener(listener);
+			server.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+			TimeoutUtils.timeout(new TaskMonitor() {
+				@Override
+				public boolean isComplete() {
+					return listener.hasStopped && listener.hasStarted;
+				}
+			}, duration, unit);
+		} finally {
+			server.removeServerListener(listener);
+		}
+	}
+	
+	static class ServerListener implements IServerListener {
+
+		public boolean hasStopped = false;
+		public boolean hasStarted = false;
+		
+		@Override
+		public void serverChanged(ServerEvent event) {
+			if(event.getServer().getServerState() == IServer.STATE_STOPPED) {
+				hasStopped = true;
+			} else if(event.getServer().getServerState() == IServer.STATE_STARTED) {
+				hasStarted = true;
+			}
+		}
+	}
+	
 }

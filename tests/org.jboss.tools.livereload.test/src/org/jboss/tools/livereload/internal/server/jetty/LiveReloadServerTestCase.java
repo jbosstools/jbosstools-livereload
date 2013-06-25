@@ -718,7 +718,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		connection.close();
 	}
 
-	@Test
+	@Test(timeout=30*1000)
 	public void shouldReuseSameProxyPortAfterLiveReloadServerRestart() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
@@ -730,16 +730,15 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final LiveReloadTestClient client = new LiveReloadTestClient("http://localhost:" + proxyPort + "/"
 				+ projectName + "/WebContent/index.html");
 		// operation
-		final Connection connection = connectFrom(client);
+		connectFrom(client);
 		// operation: restart the LiveReload Server
+		WSTUtils.restart(liveReloadServer, 30, TimeUnit.SECONDS);
 		liveReloadServer.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
 		// verification
-		assertThat(connection.isOpen()).isTrue();
-		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(1);
+		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(0);
 		int newProxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0]
 				.getPort();
 		assertThat(proxyPort).isEqualTo(newProxyPort);
-		connection.close();
 	}
 
 }

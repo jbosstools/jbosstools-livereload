@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
+import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -56,6 +57,8 @@ public abstract class AbstractCommonTestCase {
 
 	public final static String DEFAULT_SAMPLE_PROJECT_NAME = WorkbenchUtils
 			.retrieveSampleProjectName(AbstractCommonTestCase.class);
+
+	private static final int TIMEOUT_STOP = 30;
 
 	private ProjectSynchronizator synchronizor;
 
@@ -142,7 +145,7 @@ public abstract class AbstractCommonTestCase {
 	public void stopandDestroyAllServers() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		for(IServer server : ServerCore.getServers()) {
 			if(server.getServerState() != IServer.STATE_STOPPED) {
-				stopServer(server, 30, TimeUnit.SECONDS);
+				WSTUtils.stop(server, TIMEOUT_STOP, TimeUnit.SECONDS);
 			}
 			server.delete();
 		}
@@ -180,42 +183,4 @@ public abstract class AbstractCommonTestCase {
 		});
 		future.get(timeout, unit);
 	}
-
-	/**
-	 * Stops the given {@link IServer} with a given
-	 * 
-	 * @param server
-	 * @param timeout
-	 * @param unit
-	 * @throws CoreException
-	 * @throws TimeoutException
-	 * @throws ExecutionException
-	 * @throws InterruptedException
-	 */
-	public static void stopServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
-			ExecutionException, TimeoutException {
-		LOGGER.info("Stopping server {}", server.getName());
-		if(!server.canStop().isOK()) {
-			LOGGER.warn("Cannot stop server {}, current state={}", server.getName(), server.getServerState());
-			return;
-		}
-		server.stop(true);
-		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
-
-			@Override
-			public void run() {
-				final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
-				while (server.getServerState() != IServer.STATE_STOPPED && System.currentTimeMillis() < limitTime) {
-					try {
-						TimeUnit.MILLISECONDS.sleep(500);
-					} catch (InterruptedException e) {
-						LOGGER.error("Failed to sleep", e);
-					}
-				}
-
-			}
-		});
-		future.get(timeout, unit);
-	}
-
 }
