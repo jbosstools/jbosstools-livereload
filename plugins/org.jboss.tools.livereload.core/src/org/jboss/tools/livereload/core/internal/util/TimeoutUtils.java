@@ -30,7 +30,7 @@ public class TimeoutUtils {
 	 * @return true if the monitor#verify() method did not return true within the given time
 	 */
 	public static boolean timeout(final TaskMonitor monitor, final long duration, final TimeUnit unit) throws TimeoutException {
-		ExecutorService executor = Executors.newCachedThreadPool();
+		ExecutorService executor = Executors.newSingleThreadExecutor();
 		Future<?> future = executor.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -39,7 +39,7 @@ public class TimeoutUtils {
 					try {
 						TimeUnit.MILLISECONDS.sleep(500);
 					} catch (InterruptedException e) {
-						throw new TimeoutException(e);
+						throw new RuntimeException(e);
 					}
 				}
 			}
@@ -55,7 +55,7 @@ public class TimeoutUtils {
 			Logger.error("Operation failed to complete within expected time", e);
 			return true;
 		} finally {
-			future.cancel(true); 
+			executor.shutdownNow();
 		} 
 	}
 
