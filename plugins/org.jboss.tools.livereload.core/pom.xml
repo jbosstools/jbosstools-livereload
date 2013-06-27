@@ -61,7 +61,7 @@
 						<fileset>
 							<directory>lib</directory>
 							<includes>
-								<include>**/*</include>
+								<include>**/*.jar</include>
 							</includes>
 						</fileset>
 					</filesets>

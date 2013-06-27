@@ -40,7 +40,7 @@ public class ApplicationsProxyServlet extends ProxyServlet {
 	@Override
 	protected HttpURI proxyHttpURI(HttpServletRequest request, String uri) throws MalformedURLException {
 		try {
-			final URI requestURI = new URI(request.getRequestURI());
+			final URI requestURI = new URI(uri);
 			final URI originalURI = new URI(request.getScheme(), requestURI.getUserInfo(), request.getServerName(), request.getLocalPort(), requestURI.getPath(), requestURI.getQuery(), requestURI.getFragment());
 			final String proxiedURI = URIUtils.convert(originalURI).toHost(targetHost).toPort(targetPort);
 			return new HttpURI(proxiedURI);

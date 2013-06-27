@@ -663,7 +663,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		assertThat(responseBody).doesNotContain("livereload.js");
 	}
 
-	@Test
+	@Test(timeout=60*10000)
 	public void shouldForwardRequestOnProxiedServerWithScriptInjection() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
@@ -685,6 +685,22 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		assertThat(responseBody).contains("Hello, World!");
 		assertThat(responseBody).contains("livereload.js").contains(
 				Integer.toString(liveReloadServerBehaviour.getLiveReloadServer().getPort()));
+	}
+	
+	@Test
+	public void shouldForwardRequestWithQueryParams() throws IOException, CoreException, InterruptedException, ExecutionException, TimeoutException {
+		createHttpPreviewServer();
+		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		createAndLaunchLiveReloadServer(true);
+		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
+		// operation: send a request with a query param. The Preview server has a special servlet that will return a 400 error if the 
+		// proxy did not forward the query param 
+		int proxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0].getPort();
+		HttpClient client = new HttpClient();
+		HttpMethod method = new GetMethod("http://localhost:" + proxyPort + "/foo/bar?w00t=true");
+		int status = client.executeMethod(method);
+		// verification
+		assertThat(status).isEqualTo(200);
 	}
 
 	@Test
