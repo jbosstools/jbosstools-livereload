@@ -115,9 +115,9 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	 * @throws InterruptedException
 	 * 
 	 */
-	private void createAndLaunchLiveReloadServer(final boolean injectScript)
+	private IServer createAndLaunchLiveReloadServer(final String serverName, final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		final IServer server = WSTUtils.createLiveReloadServer(liveReloadServerPort,
+		final IServer server = WSTUtils.createLiveReloadServer(serverName, liveReloadServerPort,
 				injectScript, false);
 		liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(server);
 		assertThat(liveReloadServerBehaviour).isNotNull();
@@ -127,6 +127,19 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 		assertThat(SocketUtil.isPortInUse(liveReloadServerPort)).isFalse();
 		startServer(liveReloadServer, 60, TimeUnit.SECONDS);
+		return server;
+	}
+
+	/**
+	 * @throws CoreException
+	 * @throws TimeoutException
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 * 
+	 */
+	private IServer createAndLaunchLiveReloadServer(final boolean injectScript)
+			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
+		return createAndLaunchLiveReloadServer("LiveReload Test Server at localhost", injectScript);
 	}
 	
 	/**
@@ -739,6 +752,18 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		int newProxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0]
 				.getPort();
 		assertThat(proxyPort).isEqualTo(newProxyPort);
+	}
+	
+	@Test
+	public void shouldNotStartIfPortAlreadyInUse() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
+		// pre-condition: create a first server (no need for script injection)
+		final IServer firstServer = createAndLaunchLiveReloadServer("Server 1", false);
+		assertThat(firstServer.getServerState()).isEqualTo(IServer.STATE_STARTED);
+		// operation: create a second server (no need for script injection
+		// either) and attempt to start it on the same port -> should not start
+		final IServer secondServer = createAndLaunchLiveReloadServer("Server 2", false);
+		// verification
+		assertThat(secondServer.getServerState()).isEqualTo(IServer.STATE_STOPPED);
 	}
 
 }
