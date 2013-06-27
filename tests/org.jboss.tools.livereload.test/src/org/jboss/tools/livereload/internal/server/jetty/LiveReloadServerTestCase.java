@@ -125,7 +125,6 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		assertThat(liveReloadServer).isNotNull();
 		assertThat(liveReloadServer.canStart(ILaunchManager.RUN_MODE).isOK()).isTrue();
 
-		assertThat(SocketUtil.isPortInUse(liveReloadServerPort)).isFalse();
 		startServer(liveReloadServer, 60, TimeUnit.SECONDS);
 		return server;
 	}
