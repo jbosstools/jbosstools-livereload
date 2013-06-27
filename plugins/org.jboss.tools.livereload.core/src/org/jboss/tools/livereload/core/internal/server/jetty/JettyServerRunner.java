@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
-import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils.TaskMonitor;

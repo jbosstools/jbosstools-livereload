@@ -13,7 +13,7 @@ import org.osgi.framework.BundleContext;
 public class JBossLiveReloadCoreActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.jboss.tools.livereload"; //$NON-NLS-1$
+	public static final String PLUGIN_ID = "org.jboss.tools.livereload.core"; //$NON-NLS-1$
 
 	// The shared instance
 	private static JBossLiveReloadCoreActivator plugin;

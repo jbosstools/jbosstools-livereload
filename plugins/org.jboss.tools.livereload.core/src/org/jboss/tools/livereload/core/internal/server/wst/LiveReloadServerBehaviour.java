@@ -123,7 +123,9 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			// now, let's init and start the embedded jetty server from the
 			// server attributes
 			final IServer server = getServer();
-			websocketPort = server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1);
+			// retrieve the websocket port, use the default value if it was missing
+			websocketPort = server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT);
+			
 			// fix the new default behaviour: proxy is now always enabled
 			if(!isProxyEnabled()) {
 				setProxyEnabled(true);
