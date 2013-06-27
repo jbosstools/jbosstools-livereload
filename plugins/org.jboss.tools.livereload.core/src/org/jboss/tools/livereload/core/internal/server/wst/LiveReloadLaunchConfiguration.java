@@ -13,6 +13,7 @@ package org.jboss.tools.livereload.core.internal.server.wst;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
@@ -42,7 +43,8 @@ public class LiveReloadLaunchConfiguration implements ILaunchConfigurationDelega
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
 			throws CoreException {
-
+		// Quoting Rob Stryker: "First thing's first, this never should be registered in the debug manager"
+		DebugPlugin.getDefault().getLaunchManager().removeLaunch(launch);
 		final String serverId = configuration.getAttribute(SERVER_ID, (String) null);
 		LiveReloadServerBehaviour serverBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(serverId);
 		if (serverBehaviour == null) {
