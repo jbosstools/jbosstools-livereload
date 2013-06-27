@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
@@ -65,13 +66,16 @@ public final class Logger {
 	 * @param t
 	 *            the throwable cause
 	 */
-	public static void error(final String message, final Throwable t) {
+	public static IStatus error(final String message, final Throwable t) {
 		if (JBossLiveReloadCoreActivator.getDefault() != null) {
+			final Status status = new Status(Status.ERROR, JBossLiveReloadCoreActivator.PLUGIN_ID, message, t);
 			JBossLiveReloadCoreActivator.getDefault().getLog()
-					.log(new Status(Status.ERROR, JBossLiveReloadCoreActivator.PLUGIN_ID, message, t));
+					.log(status);
+			return status;
 		} else {
 			// at least write in the .log file
 			t.printStackTrace();
+			return null;
 		}
 	}
 

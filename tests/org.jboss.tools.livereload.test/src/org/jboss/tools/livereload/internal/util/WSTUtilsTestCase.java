@@ -207,10 +207,9 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		final IServer liveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000),
 				false, false);
+		assertThat(liveReloadServer.getServerState()).isEqualTo(IServer.STATE_STOPPED);
 		// operation
-		final Job job = WSTUtils.startOrRestartServer(liveReloadServer, 30, TimeUnit.SECONDS);
-		job.schedule();
-		job.join();
+		final Job job = startServer(liveReloadServer, 30, TimeUnit.SECONDS);
 		// verification
 		assertThat(job.getResult().isOK()).isTrue();
 		assertThat(liveReloadServer.getServerState()).isEqualTo(IServer.STATE_STARTED);

@@ -130,15 +130,19 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			}
 			final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
 			final boolean enableScriptInjection = isScriptInjectionEnabled();
-			this.liveReloadServer = new LiveReloadServer(websocketPort, true, allowRemoteConnections,
+			this.liveReloadServer = new LiveReloadServer(server.getName(), websocketPort, true, allowRemoteConnections,
 					enableScriptInjection);
 			this.liveReloadServerRunnable = JettyServerRunner.start(liveReloadServer);
-			// listen to file changes in the workspace
-			addWorkspaceResourceChangeListener();
-			// listen to server lifecycles
-			addServerLifeCycleListener();
-			// set the server status to "Started"
-			setServerStarted();
+			if(!this.liveReloadServerRunnable.isSuccessfullyStarted()) { 
+				setServerStopped();
+			} else {
+				// listen to file changes in the workspace
+				addWorkspaceResourceChangeListener();
+				// listen to server lifecycles
+				addServerLifeCycleListener();
+				// set the server status to "Started"
+				setServerStarted();
+			}
 		} catch (TimeoutException e) {
 			setServerStopped();
 			throw new CoreException(new Status(IStatus.ERROR, JBossLiveReloadCoreActivator.PLUGIN_ID, e.getMessage(), e));

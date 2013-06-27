@@ -54,16 +54,24 @@ public class LiveReloadServer extends Server implements Subscriber {
 	 *            the LiveReload configuration to use.
 	 * @throws UnknownHostException
 	 */
-	public LiveReloadServer(final int websocketPort, final boolean enableProxyServer,
+	public LiveReloadServer(final String name, final int websocketPort, final boolean enableProxyServer,
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
 		super();
 		this.websocketPort = websocketPort;
-		configure(websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
+		configure(name, websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
 	}
 
-	private void configure(final int websocketPort, final boolean enableProxyServer,
+	/**
+	 * Configure the Jetty Server with the given parameters
+	 * @param name the server name (same as the Server Adapter)
+	 * @param websocketPort the websockets port
+	 * @param enableProxyServer should proxy be enabled 
+	 * @param allowRemoteConnections should allow remote connections
+	 * @param enableScriptInjection should inject livereload.js script in returned HTML pages
+	 */
+	private void configure(final String name, final int websocketPort, final boolean enableProxyServer,
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
-		setAttribute(JettyServerRunner.NAME, "LiveReload-Server");
+		setAttribute(JettyServerRunner.NAME, name);
 		websocketConnector = new SelectChannelConnector();
 		if (!allowRemoteConnections) {
 			websocketConnector.setHost("localhost");

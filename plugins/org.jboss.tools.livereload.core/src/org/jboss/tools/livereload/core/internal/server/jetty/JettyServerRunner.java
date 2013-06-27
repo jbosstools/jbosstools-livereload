@@ -14,8 +14,11 @@ import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils.TaskMonitor;
@@ -32,29 +35,34 @@ public class JettyServerRunner implements Runnable {
 	public static final String NAME = "serverName";
 
 	private final Server server;
+	
+	private IStatus status = null;
 
 	/**
 	 * Starts the server
 	 * 
 	 * @throws TimeoutException
 	 */
-	public static JettyServerRunner start(final Server jettyServer) throws TimeoutException {
-		final JettyServerRunner runner = new JettyServerRunner(jettyServer);
-		Logger.debug("Starting {} on port {}", jettyServer, runner.getPort());
-		final Thread serverThread = new Thread(runner, (String) jettyServer.getAttribute(JettyServerRunner.NAME));
+	public static JettyServerRunner start(final Server liveReloadServer) throws TimeoutException {
+		final JettyServerRunner runner = new JettyServerRunner(liveReloadServer);
+		Logger.debug("Starting {} on port {}", liveReloadServer, runner.getPort());
+		final Thread serverThread = new Thread(runner, (String) liveReloadServer.getAttribute(JettyServerRunner.NAME));
 		serverThread.start();
 		// wait until server is started
 		final TaskMonitor monitor = new TaskMonitor() {
 			@Override
 			public boolean isComplete() {
-				return runner.isStarted();
+				// task is complete if server started or if the runner status is not OK (ie, an error occurred) 
+				final boolean started = runner.isStarted();
+				final boolean statusOk = runner.status != null && !runner.status.isOK();
+				return started || statusOk;
 			}
 		};
 		if (TimeoutUtils.timeout(monitor, 15, TimeUnit.SECONDS)) {
-			Logger.error("Failed to start " + jettyServer + " within expected time (reason: timeout)");
+			Logger.error("Failed to start " + liveReloadServer + " within expected time (reason: timeout)");
 			// attempt to stop what can be stopped.
 			stop(runner);
-			throw new TimeoutException("Failed to start " + jettyServer + " within expected time (reason: timeout)");
+			throw new TimeoutException("Failed to start " + liveReloadServer + " within expected time (reason: timeout)");
 		}
 		return runner;
 	}
@@ -98,14 +106,14 @@ public class JettyServerRunner implements Runnable {
 			if (!server.isStarted()) { 
 				Logger.debug("Starting {}...", server.getAttribute(NAME));
 				server.start();
-				//server.join();
+				status = Status.OK_STATUS;
 			}
-		} catch (Exception e) {
-			Logger.error("Failed to start '" + server.getAttribute(NAME) + "'", e);
+		} catch (final Exception startException) {
+			status = Logger.error("Failed to start '" + server.getAttribute(NAME) + "'", startException);
 			try {
 				server.stop();
-			} catch (Exception e1) {
-				Logger.error("Failed to stop server '" + server.getAttribute(NAME) + "' after startup failure", e);
+			} catch (Exception stopException) {
+				Logger.error("Failed to stop server '" + server.getAttribute(NAME) + "' after startup failure", stopException);
 			}
 		}
 	}
@@ -121,7 +129,7 @@ public class JettyServerRunner implements Runnable {
 	 * 
 	 * @return
 	 */
-	public boolean isStarted() {
+	boolean isStarted() {
 		boolean started = server.isStarted();
 		for (Connector connector : server.getConnectors()) {
 			started = started && connector.isStarted();
@@ -130,15 +138,24 @@ public class JettyServerRunner implements Runnable {
 	}
 
 	/**
+	 * Returns true if the server was successfully started, false otherwise
+	 * @return
+	 */
+	public boolean isSuccessfullyStarted() {
+		return isStarted() && (status != null && status.isOK());
+	}
+	
+	/**
 	 * Returns true if the underlying Jetty server is stopped.
 	 * 
 	 * @return
 	 */
-	public boolean isStopped() {
+	boolean isStopped() {
 		return server.isStopped();
 	}
-
+	
 	public int getPort() {
 		return server.getConnectors()[0].getPort();
 	}
+
 }

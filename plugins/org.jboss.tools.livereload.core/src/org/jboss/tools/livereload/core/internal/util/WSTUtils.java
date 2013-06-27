@@ -262,7 +262,23 @@ public class WSTUtils {
 	 */
 	public static IServer createLiveReloadServer(final int websocketPort, 
 			final boolean injectScript, final boolean allowRemoteConnections) throws CoreException {
-		final String serverName = "LiveReload Server at localhost";
+		return createLiveReloadServer("LiveReload Server at localhost", websocketPort, injectScript, allowRemoteConnections);
+	}
+	
+	/**
+	 * Create a new LiveReload Server.
+	 * 
+	 * @param serverName the server name (or Id)
+	 * @param websocketPort
+	 *            the web socket port
+	 * @param enableProxy
+	 * @param injectScript
+	 * @param allowRemoteConnections
+	 * @return the server
+	 * @throws CoreException
+	 */
+	public static IServer createLiveReloadServer(final String serverName, final int websocketPort, 
+			final boolean injectScript, final boolean allowRemoteConnections) throws CoreException {
 		IRuntimeType rt = ServerCore.findRuntimeType(LIVERELOAD_RUNTIME_TYPE);
 		IRuntimeWorkingCopy rwc = rt.createRuntime(null, null);
 		IRuntime runtime = rwc.save(true, null);
@@ -331,28 +347,31 @@ public class WSTUtils {
 		return new Job((needsRestart ? "Restarting " : "Starting ") + server.getName() + "...") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				ServerListener listener = new ServerListener(server);
 				try {
 					final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
 					if (needsStop) {
 						server.stop(true);
 					}
 					if(needsStop || isStopping) {
-						while (server.getServerState() != IServer.STATE_STOPPED
-								&& System.currentTimeMillis() < limitTime && !monitor.isCanceled()) {
-							TimeUnit.SECONDS.sleep(1);
+						while (!listener.serverStopped && System.currentTimeMillis() < limitTime
+								&& !monitor.isCanceled()) {
+							TimeUnit.MILLISECONDS.sleep(500);
 						}
 					}
 					if(monitor.isCanceled()) {
 						return Status.CANCEL_STATUS;
 					}
-					
-					final int ticks = (int)TimeUnit.SECONDS.convert(timeout, unit); // the timeout should not be higher that Integer.MAX_VALUE seconds
+					// reset the listener to perform startup
+					listener.reset();
+					// the timeout should not be higher that Integer.MAX_VALUE seconds
+					final int ticks = (int)TimeUnit.SECONDS.convert(timeout, unit); 
 					final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, ticks);
 					server.start(ILaunchManager.RUN_MODE, subMonitor);
-					while (server.getServerState() != IServer.STATE_STARTED && System.currentTimeMillis() < limitTime
-							&& !subMonitor.isCanceled() && !monitor.isCanceled()) {
-						TimeUnit.SECONDS.sleep(1);
-						subMonitor.worked(1);
+					// using a ServerListener to catch start progression (faster than blocking until timetout in case of server startup failure)
+					while (!listener.serverStarted && !(listener.serverStarting && listener.serverStopped) && System.currentTimeMillis() < limitTime
+							&& !monitor.isCanceled()) {
+						TimeUnit.MILLISECONDS.sleep(500);
 					}
 					subMonitor.done();
 					if (server.getServerState() != IServer.STATE_STARTED) {
@@ -370,6 +389,8 @@ public class WSTUtils {
 						Logger.error("Failed to start " + server.getName() + " before timeout", e);
 					}
 					return Status.CANCEL_STATUS;
+				} finally {
+					listener.dispose();
 				}
 			}
 		};
@@ -377,51 +398,116 @@ public class WSTUtils {
 
 	public static void stop(final IServer server, final long duration, final TimeUnit unit) throws TimeoutException {
 		if (server.canStop().isOK()) {
-			final ServerListener listener = new ServerListener();
+			final ServerListener listener = new ServerListener(server);
 			try {
-				server.addServerListener(listener);
 				server.stop(true);
 				TimeoutUtils.timeout(new TaskMonitor() {
 					@Override
 					public boolean isComplete() {
-						return listener.hasStopped;
+						return listener.serverStopped;
 					}
 				}, duration, unit);
 			} finally {
-				server.removeServerListener(listener);
+				listener.dispose();
 			}
 		}
 	}
 	
 	public static void restart(final IServer server, final long duration, final TimeUnit unit) {
-		final ServerListener listener = new ServerListener();
+		final ServerListener listener = new ServerListener(server);
 		try {
-			server.addServerListener(listener);
 			server.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
 			TimeoutUtils.timeout(new TaskMonitor() {
 				@Override
 				public boolean isComplete() {
-					return listener.hasStopped && listener.hasStarted;
+					return listener.serverStopped && listener.serverStarted;
 				}
 			}, duration, unit);
 		} finally {
-			server.removeServerListener(listener);
+			listener.dispose();
 		}
 	}
 	
 	static class ServerListener implements IServerListener {
 
-		public boolean hasStopped = false;
-		public boolean hasStarted = false;
+		private final IServer server;
+		public boolean serverStopped = false;
+		public boolean serverStarted = false;
+		public boolean serverStarting = false;
+		public boolean serverStopping = false;
 		
+		public ServerListener(IServer server) {
+			this.server = server;
+			server.addServerListener(this);
+		}
+
+		public void dispose() {
+			server.removeServerListener(this);
+		}
 		@Override
 		public void serverChanged(ServerEvent event) {
 			if(event.getServer().getServerState() == IServer.STATE_STOPPED) {
-				hasStopped = true;
+				Logger.debug("Server stopped");
+				serverStopped = true;
+			} else if(event.getServer().getServerState() == IServer.STATE_STOPPING) {
+				Logger.debug("Server stopping");
+				serverStopping = true;
+			} else if(event.getServer().getServerState() == IServer.STATE_STARTING) {
+				Logger.debug("Server starting");
+				serverStarting = true;
 			} else if(event.getServer().getServerState() == IServer.STATE_STARTED) {
-				hasStarted = true;
+				Logger.debug("Server started");
+				serverStarted = true;
 			}
 		}
+
+		/**
+		 * Reset all states
+		 */
+		public void reset() {
+			this.serverStopped = false;
+			this.serverStarted = false;
+			this.serverStarting = false;
+			this.serverStopping = false;			
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((server == null) ? 0 : server.hashCode());
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			ServerListener other = (ServerListener) obj;
+			if (server == null) {
+				if (other.server != null) {
+					return false;
+				}
+			} else if (!server.equals(other.server)) {
+				return false;
+			}
+			return true;
+		}
+		
+		
 	}
 	
 }

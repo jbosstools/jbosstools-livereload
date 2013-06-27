@@ -14,8 +14,6 @@ package org.jboss.tools.livereload.internal;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -26,7 +24,7 @@ import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
@@ -157,30 +155,17 @@ public abstract class AbstractCommonTestCase {
 	 * @param server
 	 * @param timeout
 	 * @param unit
+	 * @return 
 	 * @throws CoreException
 	 * @throws TimeoutException
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	public static void startServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
+	public static Job startServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException, CoreException {
-		LOGGER.info("Starting server {}", server.getName());
-		server.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
-
-			@Override
-			public void run() {
-				final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
-				while (server.getServerState() != IServer.STATE_STARTED && System.currentTimeMillis() < limitTime) {
-					try {
-						TimeUnit.MILLISECONDS.sleep(500);
-					} catch (InterruptedException e) {
-						LOGGER.error("Failed to sleep", e);
-					}
-				}
-
-			}
-		});
-		future.get(timeout, unit);
+		final Job job = WSTUtils.startOrRestartServer(server, timeout, unit);
+		job.schedule();
+		job.join();
+		return job;
 	}
 }
