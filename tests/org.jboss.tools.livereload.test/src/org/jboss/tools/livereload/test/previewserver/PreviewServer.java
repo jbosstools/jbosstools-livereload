@@ -25,6 +25,8 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.jboss.tools.livereload.core.internal.server.jetty.JettyServerRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +51,13 @@ public class PreviewServer extends Server {
 		addConnector(connector);
 		ResourceHandler resourceHandler = new ResourceHandler();
 		resourceHandler.setResourceBase(baseLocation);
+		
+		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.setContextPath("/foo");
+		context.addServlet(new ServletHolder(new QueryParamVerifierServlet()), "/bar");
 		LOGGER.info("serving {} on port {}", resourceHandler.getBaseResource(), port );
 		HandlerList handlers = new HandlerList();
-		handlers.setHandlers(new Handler[] { resourceHandler, new DefaultHandler() });
+		handlers.setHandlers(new Handler[] { resourceHandler, context, new DefaultHandler() });
 		setHandler(handlers);
 	}
 	
