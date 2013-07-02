@@ -27,7 +27,7 @@ public class LiveReloadServerConfigurationDialog extends MessageDialog {
 	public LiveReloadServerConfigurationDialog(final LiveReloadServerConfigurationDialogModel model, final String dialogTitle,
 			final String dialogMessage) {
 		super(Display.getDefault().getActiveShell(), dialogTitle, ImageRepository.getInstance().getImage(
-				"livereload_wiz.png"), dialogMessage, MessageDialog.CONFIRM, new String[] { IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }, 0);
+				"livereload_wiz.png"), dialogMessage, MessageDialog.CONFIRM, new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL }, 0);
 		this.model = model;
 	}
 
@@ -39,7 +39,7 @@ public class LiveReloadServerConfigurationDialog extends MessageDialog {
 		GridLayoutFactory.fillDefaults().margins(0, 0).applyTo(container);
 		final GridLayout layout = new GridLayout();
 		container.setLayout(layout);
-		// checkbos to enable script injection
+		// checkbox to enable script injection
 		this.enableScriptInjectionButton = new Button(container, SWT.CHECK);
 		this.enableScriptInjectionButton.setText(LiveReloadServerConfigurationMessages.ENABLE_SCRIPT_INJECTION_LABEL);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(enableScriptInjectionButton);
