@@ -91,11 +91,10 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 			final LiveReloadServerConfigurationDialogModel model = new LiveReloadServerConfigurationDialogModel(
 					shouldEnableScriptInjection, shouldAllowRemoteConnections);
 			final LiveReloadServerConfigurationDialog dialog = new LiveReloadServerConfigurationDialog(model,
-					DialogMessages.LIVERELOAD_SERVER_DIALOG_TITLE, NLS.bind(
-							DialogMessages.LIVERELOAD_SERVER_CREATION_DIALOG_MESSAGE, new Object[] {
-									IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }));
+					DialogMessages.LIVERELOAD_SERVER_DIALOG_TITLE, 
+					DialogMessages.LIVERELOAD_SERVER_DIALOG_MESSAGE);
 			int result = dialog.open();
-			if (result == IDialogConstants.CANCEL_ID) {
+			if (result == IDialogConstants.NO_ID) {
 				return null;
 			}
 			final IServer createdLiveReloadServer = WSTUtils.createLiveReloadServer(
@@ -115,7 +114,7 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 								|| shouldAllowRemoteConnections);
 				final LiveReloadServerConfigurationDialog dialog = new LiveReloadServerConfigurationDialog(model,
 						DialogMessages.LIVERELOAD_SERVER_DIALOG_TITLE, NLS.bind(
-								DialogMessages.LIVERELOAD_SERVER_STARTUP_DIALOG_MESSAGE, new Object[] {
+								DialogMessages.LIVERELOAD_SERVER_DIALOG_MESSAGE, new Object[] {
 										IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }));
 				int result = dialog.open();
 				if (result == IDialogConstants.CANCEL_ID) {

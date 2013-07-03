@@ -25,6 +25,5 @@ public class DialogMessages extends NLS {
 	public static String SCRIPT_INJECTION_DIALOG_MESSAGE;
 	
 	public static String LIVERELOAD_SERVER_DIALOG_TITLE;
-	public static String LIVERELOAD_SERVER_CREATION_DIALOG_MESSAGE;
-	public static String LIVERELOAD_SERVER_STARTUP_DIALOG_MESSAGE;
+	public static String LIVERELOAD_SERVER_DIALOG_MESSAGE;
 }
