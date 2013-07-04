@@ -3,8 +3,13 @@ package org.jboss.tools.livereload.core.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.wst.server.core.IServer;
+import org.jboss.tools.livereload.core.internal.util.Logger;
+import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -38,6 +43,16 @@ public class JBossLiveReloadCoreActivator extends AbstractUIPlugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
+		// stop all servers while the plugin is stopped
+		for (IServer liveReloadServer : WSTUtils.findLiveReloadServers()) {
+			try {
+				WSTUtils.stop(liveReloadServer, 10, TimeUnit.SECONDS);
+			} catch (TimeoutException e) {
+				Logger.error("Failed to stop '" + liveReloadServer.getName() + "' within expected duration.", e);
+			} catch (RuntimeException e) {
+				Logger.error("Failed to stop '" + liveReloadServer.getName() + "'", e);
+			}
+		}
 		plugin = null;
 		super.stop(context);
 	}
