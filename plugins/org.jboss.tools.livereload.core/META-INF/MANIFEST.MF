@@ -37,7 +37,8 @@ Bundle-ClassPath: .,
  lib/jackson-core-2.2.2.jar,
  lib/jackson-databind-2.2.2.jar,
  lib/jericho-html-3.3.jar
-Export-Package: org.jboss.tools.livereload.core.internal.server.jetty;x-friends:="org.jboss.tools.livereload.test,org.jboss.tools.livereload.ui",
+Export-Package: org.jboss.tools.livereload.core.internal;x-friends:="org.jboss.tools.livereload.test",
+ org.jboss.tools.livereload.core.internal.server.jetty;x-friends:="org.jboss.tools.livereload.test,org.jboss.tools.livereload.ui",
  org.jboss.tools.livereload.core.internal.server.wst;x-friends:="org.jboss.tools.livereload.test,org.jboss.tools.livereload.ui",
  org.jboss.tools.livereload.core.internal.service;x-friends:="org.jboss.tools.livereload.test",
  org.jboss.tools.livereload.core.internal.util;x-friends:="org.jboss.tools.livereload.test,org.jboss.tools.livereload.ui"
