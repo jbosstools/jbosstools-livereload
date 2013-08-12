@@ -13,6 +13,8 @@ package org.jboss.tools.livereload.internal.util;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.nio.charset.Charset;
+
 import org.jboss.tools.livereload.core.internal.util.HttpUtils;
 import org.junit.Test;
 
@@ -62,4 +64,33 @@ public class HttpUtilsTestCase {
 		assertThat(isHtmlContentType).isFalse();
 	}
 	
+	@Test
+	public void shouldExtractCharset() {
+		// pre-condition
+		final String contentType = "text/html; charset=UTF-8";
+		// operation
+		final Charset charset = HttpUtils.getContentCharSet(contentType, "ISO-8859-1");
+		// verification
+		assertThat(charset.name()).isEqualTo("UTF-8");
+	}
+	
+	@Test
+	public void shouldReturnDefaultCharset() {
+		// pre-condition
+		final String contentType = "text/css";
+		// operation
+		final Charset charset = HttpUtils.getContentCharSet(contentType, "ISO-8859-1");
+		// verification
+		assertThat(charset.name()).isEqualTo("ISO-8859-1");
+	}
+
+	@Test
+	public void shouldReturnUTF8Charset() {
+		// pre-condition
+		final String contentType = "text/css";
+		// operation
+		final Charset charset = HttpUtils.getContentCharSet(contentType, "foobar");
+		// verification
+		assertThat(charset.name()).isEqualTo("UTF-8");
+	}
 }

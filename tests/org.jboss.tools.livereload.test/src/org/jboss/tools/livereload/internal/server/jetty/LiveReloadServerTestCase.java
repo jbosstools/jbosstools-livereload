@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -300,7 +301,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
+		String responseBody = method.getResponseBodyAsString();
 		assertThat(responseBody).doesNotContain(scriptContent);
 
 	}
@@ -320,10 +321,61 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
+		String responseBody = method.getResponseBodyAsString();
 		assertThat(responseBody).contains(scriptContent);
 	}
+	
+	@Test
+	// @see https://issues.jboss.org/browse/JBIDE-15317
+	public void shouldNotCorruptHtmlContentWhenInjectingScript() throws CoreException, InterruptedException, ExecutionException, TimeoutException, HttpException, IOException {
+		// pre-condition
+		createAndLaunchLiveReloadServer(true);
+		final String scriptContent = new StringBuilder(
+				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
+				.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
+		final IResource chineseHtmlFile = project.findMember("WebContent" + File.separator + "chinese.html");
+		final String chineseDocumentlocation = "http://localhost:" + liveReloadServerPort + "/" + project.getName() + "/"
+				+ chineseHtmlFile.getLocation().makeRelativeTo(project.getLocation()).toOSString();
+				assertThat(chineseHtmlFile).isNotNull();
+		// operation
+		HttpClient client = new HttpClient();
+		HttpMethod method = new GetMethod(chineseDocumentlocation);
+		method.addRequestHeader("Accept", "text/html");
+		int status = client.executeMethod(method);
+		// verification
+		assertThat(status).isEqualTo(HttpStatus.SC_OK);
+		// Read the response body.
+		String responseBody = method.getResponseBodyAsString();
+		assertThat(responseBody).contains(scriptContent);
+		LOGGER.debug(responseBody);
+		assertThat(responseBody).doesNotContain("??");
+		assertThat(responseBody).contains("中文");
+	}
 
+	@Test
+	// @see https://issues.jboss.org/browse/JBIDE-15317
+	public void shouldNotCorruptHtmlContentWhenNotInjectingScript() throws CoreException, InterruptedException, ExecutionException, TimeoutException, HttpException, IOException {
+		// pre-condition
+		createAndLaunchLiveReloadServer(false);
+		final IResource chineseHtmlFile = project.findMember("WebContent" + File.separator + "chinese.html");
+		final String chineseDocumentlocation = "http://localhost:" + liveReloadServerPort + "/" + project.getName() + "/"
+				+ chineseHtmlFile.getLocation().makeRelativeTo(project.getLocation()).toOSString();
+				assertThat(chineseHtmlFile).isNotNull();
+		// operation
+		HttpClient client = new HttpClient();
+		HttpMethod method = new GetMethod(chineseDocumentlocation);
+		method.addRequestHeader("Accept", "text/html");
+		int status = client.executeMethod(method);
+		// verification
+		assertThat(status).isEqualTo(HttpStatus.SC_OK);
+		// Read the response body.
+		String responseBody = method.getResponseBodyAsString();
+		assertThat(responseBody).doesNotContain("<script");
+		LOGGER.debug(responseBody);
+		assertThat(responseBody).doesNotContain("???");
+		assertThat(responseBody).contains("中文");
+	}
+	
 	@Test
 	public void shouldInjectLiveReloadScriptInHtmlPageWithSimpleAcceptedTypeAndcharset() throws Exception {
 		// pre-condition
@@ -339,7 +391,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
+		String responseBody = method.getResponseBodyAsString();
 		assertThat(responseBody).contains(scriptContent);
 	}
 
@@ -358,7 +410,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
+		String responseBody = method.getResponseBodyAsString();
 		assertThat(responseBody).contains(scriptContent);
 	}
 
@@ -374,7 +426,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
+		String responseBody = method.getResponseBodyAsString();
 		assertThat(responseBody).isNotEmpty();
 	}
 
@@ -392,7 +444,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
+		String responseBody = method.getResponseBodyAsString();
 		assertThat(responseBody).doesNotContain(scriptContent);
 	}
 
@@ -657,14 +709,14 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
+		String responseBody = method.getResponseBodyAsString();
 		// verification
 		assertThat(responseBody).contains("Hello, World!");
 		assertThat(responseBody).doesNotContain("livereload.js");
 	}
 
 	@Test(timeout=60*10000)
-	public void shouldForwardRequestOnProxiedServerWithScriptInjection() throws Exception {
+	public void shouldForwardRequestOnProxiedServerWithScriptInjectionAndDefaultCharset() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
@@ -680,7 +732,35 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the response body.
-		String responseBody = new String(method.getResponseBody());
+		// Read the returned content type.
+		assertThat(method.getResponseHeader("Content-Type").getValue()).isEqualTo("text/html;charset=UTF-8");
+		String responseBody = method.getResponseBodyAsString();
+		// verification
+		assertThat(responseBody).contains("Hello, World!");
+		assertThat(responseBody).contains("livereload.js").contains(
+				Integer.toString(liveReloadServerBehaviour.getLiveReloadServer().getPort()));
+	}
+	
+	@Test(timeout=60*10000)
+	public void shouldForwardRequestOnProxiedServerWithScriptInjectionAndCustomCharset() throws Exception {
+		// pre-condition
+		createHttpPreviewServer();
+		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		createAndLaunchLiveReloadServer(true);
+		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
+		// operation
+		int proxyPort = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0].getPort();
+		HttpClient client = new HttpClient();
+		HttpMethod method = new GetMethod("http://localhost:" + proxyPort + "/" + projectName
+				+ "/WebContent/index.html");
+		method.addRequestHeader("Accept", "text/html;charset=ISO-8859-1");
+		int status = client.executeMethod(method);
+		// verification
+		assertThat(status).isEqualTo(HttpStatus.SC_OK);
+		// Read the returned content type.
+		assertThat(method.getResponseHeader("Content-Type").getValue()).isEqualTo("text/html;charset=ISO-8859-1");
+		// Read the response body.
+		String responseBody = method.getResponseBodyAsString();
 		// verification
 		assertThat(responseBody).contains("Hello, World!");
 		assertThat(responseBody).contains("livereload.js").contains(

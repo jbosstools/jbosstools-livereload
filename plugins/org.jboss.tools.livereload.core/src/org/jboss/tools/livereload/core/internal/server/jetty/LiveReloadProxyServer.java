@@ -36,8 +36,12 @@ public class LiveReloadProxyServer extends Server {
 	/**
 	 * Constructor
 	 * 
-	 * @param config
-	 *            the LiveReload configuration to use.
+	 * @param proxyPort
+ 	 * @param targetHost
+	 * @param targetPort
+	 * @param liveReloadPort
+	 * @param allowRemoteConnections
+	 * @param enableScriptInjection
 	 * @throws UnknownHostException
 	 */
 	public LiveReloadProxyServer(final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
