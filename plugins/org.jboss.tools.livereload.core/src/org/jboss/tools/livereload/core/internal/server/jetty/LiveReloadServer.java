@@ -11,7 +11,6 @@
 
 package org.jboss.tools.livereload.core.internal.server.jetty;
 
-import java.net.UnknownHostException;
 import java.util.EventObject;
 
 import org.eclipse.jetty.server.Server;
@@ -49,10 +48,11 @@ public class LiveReloadServer extends Server implements Subscriber {
 
 	/**
 	 * Constructor
-	 * 
-	 * @param config
-	 *            the LiveReload configuration to use.
-	 * @throws UnknownHostException
+	 * @param name the server name (appears in the Servers Views)
+	 * @param websocketPort the websocket port
+	 * @param enableProxyServer flag to enable the proxy server
+	 * @param allowRemoteConnections flag to allow remote connections
+	 * @param enableScriptInjection flag to enable script injection
 	 */
 	public LiveReloadServer(final String name, final int websocketPort, final boolean enableProxyServer,
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {

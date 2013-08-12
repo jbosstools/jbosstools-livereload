@@ -14,7 +14,7 @@ package org.jboss.tools.livereload.internal.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.fest.assertions.Assertions;
+import static org.fest.assertions.Assertions.*;
 import org.jboss.tools.livereload.core.internal.util.ScriptInjectionUtils;
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ public class ScriptInjectionUtilsTestCase {
 		// operation
 		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
 		// verifications
-		Assertions.assertThat(new String(modifiedContent)).contains(addition + "</body>");
+		assertThat(new String(modifiedContent)).contains(addition + "</body>");
 	}
 
 	@Test
@@ -43,7 +43,20 @@ public class ScriptInjectionUtilsTestCase {
 		// operation
 		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
 		// verifications
-		Assertions.assertThat(new String(modifiedContent)).doesNotContain(addition + "</body>");
+		assertThat(new String(modifiedContent)).doesNotContain(addition + "</body>");
 	}
+	
+	@Test
+	public void shouldInjectScriptAtEndOfChineseBody() throws IOException {
+		// pre-conditions
+		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("chinese.html");
+		final String addition = "<script src='foo!'/>";
+		// operation
+		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
+		// verifications
+		assertThat(new String(modifiedContent)).contains(addition + "</body>");
+		assertThat(new String(modifiedContent)).doesNotContain("???");
+	}
+
 
 }
