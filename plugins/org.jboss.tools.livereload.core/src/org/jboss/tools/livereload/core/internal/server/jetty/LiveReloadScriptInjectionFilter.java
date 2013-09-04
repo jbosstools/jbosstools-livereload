@@ -207,7 +207,7 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 			final CharBuffer charBuffer = CharBuffer.wrap(responseContent);
 			final ByteBuffer byteBuffer = charset.encode(charBuffer);
 			((HttpServletResponse) getResponse()).setHeader("Content-length", Integer.toString(byteBuffer.array().length));
-			IOUtils.write(responseContent, getResponse().getOutputStream(), charset.name()); 
+			getResponse().getOutputStream().write(byteBuffer.array());
 			responseOutputStream.close();
 		}
 		
