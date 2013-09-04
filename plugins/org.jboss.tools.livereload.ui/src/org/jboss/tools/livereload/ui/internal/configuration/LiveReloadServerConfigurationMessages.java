@@ -19,7 +19,7 @@ public class LiveReloadServerConfigurationMessages extends NLS {
 
 	public static String WEBSOCKET_SERVER_PORT_LABEL;
 	public static String WEBSOCKET_SERVER_PORT_COMMAND;
-	
+
 	public static String PROXY_SERVER_CONFIGURATION_TITLE;
 	public static String PROXY_CONFIGURATION_DESCRIPTION;
 	

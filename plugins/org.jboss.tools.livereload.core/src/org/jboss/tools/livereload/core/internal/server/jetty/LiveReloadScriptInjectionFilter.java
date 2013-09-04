@@ -14,6 +14,9 @@ package org.jboss.tools.livereload.core.internal.server.jetty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -122,7 +125,8 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 					returnedContentType);
 			final InputStream responseStream = responseWrapper.getResponseAsStream();
 			final char[] modifiedResponseContent = ScriptInjectionUtils.injectContent(responseStream, scriptContent);
-			responseWrapper.terminate(modifiedResponseContent);
+			final Charset charset = HttpUtils.getContentCharSet(returnedContentType, "UTF-8");
+			responseWrapper.terminate(modifiedResponseContent, charset);
 		}
 		// finalize the responseWrapper by copying the wrapper's
 		// outputstream into the response outputstream that will be returned
@@ -184,7 +188,8 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 		public InputStream getResponseAsStream() throws IOException {
 			final byte[] byteArray = responseOutputStream.toByteArray();
 			responseOutputStream.close();
-			return IOUtils.toInputStream(new String(byteArray), getCharacterEncoding());
+			final String characterEncoding = getCharacterEncoding();
+			return IOUtils.toInputStream(new String(byteArray, characterEncoding), characterEncoding);
 		}
 
 		/**
@@ -192,16 +197,20 @@ public class LiveReloadScriptInjectionFilter implements Filter {
 		 * and adjust the 'content-length' response header as well (in case
 		 * content modification occurred in the response entity).
 		 * 
+		 * @param responseContent the content of the response.
+		 * @param encoding the ecnoding to use when writing the char[] content into the response's outputstream.
+		 * 
 		 * @throws IOException
 		 */
-		public void terminate(final char[] responseContent) throws IOException {
-			((HttpServletResponse) getResponse()).setHeader("Content-length", Integer.toString(responseContent.length));
-			IOUtils.write(responseContent, getResponse().getOutputStream());
-			// getResponse().getOutputStream().flush();
-			// getResponse().getOutputStream().close();
+		public void terminate(final char[] responseContent, final Charset charset) throws IOException {
+			// see http://mark.koli.ch/2009/09/remember-kids-an-http-content-length-is-the-number-of-bytes-not-the-number-of-characters.html
+			final CharBuffer charBuffer = CharBuffer.wrap(responseContent);
+			final ByteBuffer byteBuffer = charset.encode(charBuffer);
+			((HttpServletResponse) getResponse()).setHeader("Content-length", Integer.toString(byteBuffer.array().length));
+			IOUtils.write(responseContent, getResponse().getOutputStream(), charset.name()); 
 			responseOutputStream.close();
 		}
-
+		
 		/**
 		 * Writes the content of the internal and temporary
 		 * {@link ByteArrayOutputStream} into the wrapped
