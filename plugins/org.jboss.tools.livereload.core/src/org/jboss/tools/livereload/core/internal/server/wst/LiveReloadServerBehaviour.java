@@ -125,7 +125,6 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			final IServer server = getServer();
 			// retrieve the websocket port, use the default value if it was missing
 			websocketPort = server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT);
-			
 			// fix the new default behaviour: proxy is now always enabled
 			if(!isProxyEnabled()) {
 				setProxyEnabled(true);

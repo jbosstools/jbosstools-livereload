@@ -13,6 +13,7 @@ package org.jboss.tools.livereload.core.internal.server.jetty;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
+import org.jboss.tools.livereload.core.internal.util.HttpUtils;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 
 /**
@@ -33,13 +35,26 @@ public class LiveReloadScriptFileServlet extends HttpServlet {
 	private static final long serialVersionUID = 163695311668462503L;
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Logger.info("Serving embedded /livereload.js");
-		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-		final InputStream scriptContent = JBossLiveReloadCoreActivator.getDefault().getResourceContent("/script/livereload.js");
-		httpServletResponse.getOutputStream().write(IOUtils.toByteArray(scriptContent));
-		httpServletResponse.setStatus(200);
-		httpServletResponse.setContentType("text/javascript");
+	protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+		InputStream scriptContent = null;
+		try {
+			Logger.info("Serving embedded /livereload.js");
+			final HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+			scriptContent = JBossLiveReloadCoreActivator.getDefault().getResourceContent("/script/livereload.js");
+			if(scriptContent == null) {
+				httpServletResponse.setStatus(404);
+			} else {
+				final Charset charset = HttpUtils.getContentCharSet(request.getHeader("accept"), "UTF-8");
+				httpServletResponse.setContentType("text/javascript; charset=" + charset.name());
+				// output content will use the charset defined in the content type above.
+				httpServletResponse.getOutputStream().write(IOUtils.toByteArray(scriptContent));
+				httpServletResponse.setStatus(200);
+			}
+		} finally {
+			if(scriptContent != null) {
+				scriptContent.close();
+			}
+		}
 	}
 
 }

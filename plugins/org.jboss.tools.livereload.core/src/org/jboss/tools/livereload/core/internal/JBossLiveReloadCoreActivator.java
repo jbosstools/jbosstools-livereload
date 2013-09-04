@@ -68,6 +68,9 @@ public class JBossLiveReloadCoreActivator extends AbstractUIPlugin {
 
 	public InputStream getResourceContent(String path) throws IOException {
 		final URL resource = getBundle().getResource(path);
+		if(resource == null) {
+			return null;
+		}
 		return resource.openStream();
 	}
 }
