@@ -71,7 +71,6 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 		// register for Server started and Server stopped events
 		EventService.getInstance().subscribe(this, new ServerStartedAndStoppedFilter());
 		EventService.getInstance().subscribe(this, new LiveReloadClientRefreshFilter());
-		setServerPublishState(IServer.PUBLISH_STATE_NONE);
 	}
 
 	/**
@@ -210,7 +209,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 	private void configureServerAttribute(final String attributeName, boolean attributeValue) throws CoreException {
 		final IServerWorkingCopy workingCopy = getServer().createWorkingCopy();
 		workingCopy.setAttribute(attributeName, attributeValue);
-		setServerRestartState(true);
+		//setServerRestartState(true);
 		workingCopy.save(true, new NullProgressMonitor());
 	}
 
@@ -298,7 +297,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 		} else if (event instanceof ServerStoppedEvent) {
 			stopProxy(((ServerStoppedEvent) event).getServer());
 		} else if (event instanceof LiveReloadClientRefreshingEvent) {
-			setServerPublishState(IServer.PUBLISH_STATE_UNKNOWN);
+			setServerPublishState(IServer.PUBLISH_STATE_INCREMENTAL);
 		} else if (event instanceof LiveReloadClientRefreshedEvent) {
 			setServerPublishState(IServer.PUBLISH_STATE_NONE);
 		}
