@@ -78,6 +78,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 	private String cssDocumentLocation;
 
+	private String asciidocDocumentLocation;
+
 	private String folderDocumentLocation;
 
 	private LiveReloadServerBehaviour liveReloadServerBehaviour;
@@ -105,7 +107,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 				+ index_html_file.getLocation().makeRelativeTo(project.getLocation()).toOSString();
 		unknownServerLocation = "http://localhost:12345/index.html";
 		unknowDocumentLocation = indexDocumentlocation.replace("index.html", "unknown.html");
-		cssDocumentLocation = indexDocumentlocation.replace("index.html", "/styles.css");
+		cssDocumentLocation = indexDocumentlocation.replace("index.html", "styles.css");
+		asciidocDocumentLocation = indexDocumentlocation.replace("index.html", "README.adoc");
 		folderDocumentLocation = indexDocumentlocation.replace("index.html", "");
 	}
 
@@ -438,7 +441,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	}
 
 	@Test
-	public void shouldNotInjectLiveReloadScriptInCssPage() throws Exception {
+	public void shouldNotInjectLiveReloadScriptInCssFile() throws Exception {
 		createAndLaunchLiveReloadServer(false);
 		final String scriptContent = new StringBuilder(
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
@@ -447,6 +450,24 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		HttpClient client = new HttpClient();
 		HttpMethod method = new GetMethod(cssDocumentLocation);
 		method.addRequestHeader("Accept", "text/css");
+		int status = client.executeMethod(method);
+		// verification
+		assertThat(status).isEqualTo(HttpStatus.SC_OK);
+		// Read the response body.
+		String responseBody = method.getResponseBodyAsString();
+		assertThat(responseBody).doesNotContain(scriptContent);
+	}
+
+	@Test
+	public void shouldNotInjectLiveReloadScriptInAsciidoctorFile() throws Exception {
+		createAndLaunchLiveReloadServer(false);
+		final String scriptContent = new StringBuilder(
+				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
+		.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
+		// operation
+		HttpClient client = new HttpClient();
+		HttpMethod method = new GetMethod(asciidocDocumentLocation);
+		method.addRequestHeader("Accept", "text/html");
 		int status = client.executeMethod(method);
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
