@@ -30,7 +30,7 @@ public class WorkspaceResourceChangedEventFilter implements EventFilter {
 	 * to files that are part of HTML pages (HTML, CSS, JS, Images).
 	 */
 	static final List<String> acceptedFileTypes = Arrays.asList("html", "xhtml", "htm", "css", "js", "gif", "png",
-			"jpg", "jpeg", "bmp", "ico");
+			"jpg", "jpeg", "bmp", "ico", "adoc", "asciidoc");
 
 	/**
 	 * The Eclipse project for which this filter should allow events. Events
