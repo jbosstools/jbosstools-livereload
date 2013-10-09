@@ -48,15 +48,16 @@ public class EventService {
 	 */
 	public void publish(final EventObject event) {
 		if (this.subscribers.size() > 0) {
+			Logger.debug("Notifying {} client(s) of event {}", this.subscribers.size(), event.toString());
 			for (Entry<Subscriber, List<EventFilter>> entry: this.subscribers.entrySet()) {
 				final Subscriber subscriber = entry.getKey();
 				final List<EventFilter> filters = entry.getValue();
 				for(EventFilter filter : filters) {
 					if (filter.accept(event)) {
-						Logger.debug("Informing subscriber '{}' of {}", subscriber.getId(), event.getSource());
+						Logger.debug("Informing subscriber '{}' of {}", subscriber.getId(), event.toString());
 						subscriber.inform(event);
 					} else {
-						Logger.debug("Ignored event {} by subscriber {}", event, subscriber.getId());
+						Logger.trace("Ignored event {} by subscriber {}", event, subscriber.getId());
 					}
 				}
 			}

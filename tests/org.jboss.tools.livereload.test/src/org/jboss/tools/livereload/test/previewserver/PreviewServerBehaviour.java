@@ -13,6 +13,7 @@ package org.jboss.tools.livereload.test.previewserver;
 
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.wst.server.core.IServer;
@@ -31,7 +32,7 @@ public class PreviewServerBehaviour extends ServerBehaviourDelegate {
 	/** The LiveReloadServer that embeds a jetty server. */
 	private PreviewServer previewServer;
 	private JettyServerRunner previewServerRunnable;
-
+	
 	/**
 	 * Starts the {@link PreviewServer} which is responsable for the embedded
 	 * web/websocket/proxy server configuration and lifecycle
@@ -90,7 +91,19 @@ public class PreviewServerBehaviour extends ServerBehaviourDelegate {
 
 	@Override
 	public IStatus canPublish() {
-		return Status.CANCEL_STATUS;
+		return Status.OK_STATUS;
+	}
+
+	@Override
+	public IStatus publish(int kind, IProgressMonitor monitor) {
+		setServerPublishState(IServer.PUBLISH_STATE_FULL);
+		IStatus status = super.publish(kind, monitor);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+		}
+		setServerPublishState(IServer.PUBLISH_STATE_NONE);
+		return status;
 	}
 
 	public void setServerStarting() {

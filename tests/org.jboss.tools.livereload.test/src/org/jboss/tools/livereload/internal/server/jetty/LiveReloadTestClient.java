@@ -17,7 +17,7 @@ public class LiveReloadTestClient implements WebSocket.OnTextMessage {
 	private final Properties livereloadMessages;
 	private Connection connection = null;
 	private final String location;
-	private boolean notificationReceived;
+	private int reloadNotificationsCounter = 0;
 	private String receivedNotification;
 	
 	public LiveReloadTestClient(final String location) throws IOException {
@@ -54,7 +54,7 @@ public class LiveReloadTestClient implements WebSocket.OnTextMessage {
 			sendMessage(urlCommand);
 		} else if(message.contains("\"command\":\"reload\"")) {
 			LOGGER.info("*** 'reload' command received ***");
-			this.notificationReceived = true;
+			this.reloadNotificationsCounter++;
 			receivedNotification = message;
 		}
 	}
@@ -71,10 +71,10 @@ public class LiveReloadTestClient implements WebSocket.OnTextMessage {
 	}
 
 	/**
-	 * @return the notificationReceived
+	 * @return the reloadNotificationsCounter
 	 */
-	public boolean isNotificationReceived() {
-		return notificationReceived;
+	public int getNumberOfReloadNotifications() {
+		return reloadNotificationsCounter;
 	}
 
 	public String getReceivedNotification() {

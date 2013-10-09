@@ -51,5 +51,7 @@ private final List<IProject> projects = new ArrayList<IProject>();
 	public void addProject(final IProject project) {
 		projects.add(project);
 	}
+	
+	
 
 }
