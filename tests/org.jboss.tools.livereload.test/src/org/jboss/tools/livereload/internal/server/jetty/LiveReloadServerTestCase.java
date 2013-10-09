@@ -488,7 +488,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 				"Hello, LiveReload !");
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
-		assertThat(client.isNotificationReceived()).isEqualTo(true);
+		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
 		// end
 		connection.close();
 	}
@@ -505,7 +505,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 				"Hello, LiveReload !");
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
-		assertThat(client.isNotificationReceived()).isEqualTo(true);
+		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
 		assertThat(client.getReceivedNotification().contains(unknownServerLocation));
 		// end
 		connection.close();
@@ -526,7 +526,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		((Server) httpPreviewServer).publish(IServer.PUBLISH_AUTO, new NullProgressMonitor());
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
-		assertThat(client.isNotificationReceived()).isEqualTo(true);
+		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
 		assertThat(client.getReceivedNotification()).contains("http://localhost:" + httpPreviewPort);
 		// end
 		connection.close();
@@ -547,7 +547,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		((Server) httpPreviewServer).publish(IServer.PUBLISH_AUTO, new NullProgressMonitor());
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
-		assertThat(client.isNotificationReceived()).isEqualTo(true);
+		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
 		assertThat(client.getReceivedNotification()).doesNotContain("http://localhost:" + this.liveReloadServerPort);
 		// end
 		connection.close();
@@ -567,7 +567,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 				"Hello, LiveReload !");
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
-		assertThat(client.isNotificationReceived()).isEqualTo(false);
+		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(0);
 		// end
 	}
 

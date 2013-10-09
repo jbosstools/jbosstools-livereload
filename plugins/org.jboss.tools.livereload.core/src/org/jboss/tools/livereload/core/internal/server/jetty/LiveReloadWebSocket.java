@@ -1,9 +1,11 @@
 package org.jboss.tools.livereload.core.internal.server.jetty;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.EventObject;
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Path;
@@ -12,8 +14,6 @@ import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientConnectedEvent;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientDisconnectedEvent;
-import org.jboss.tools.livereload.core.internal.service.LiveReloadClientRefreshedEvent;
-import org.jboss.tools.livereload.core.internal.service.LiveReloadClientRefreshingEvent;
 import org.jboss.tools.livereload.core.internal.service.ServerResourcePublishedEvent;
 import org.jboss.tools.livereload.core.internal.service.ServerResourcePublishedFilter;
 import org.jboss.tools.livereload.core.internal.service.Subscriber;
@@ -47,6 +47,7 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	private final String clientId;
 
 	/** The client address. */
+	@SuppressWarnings("unused")
 	private final String clientAddress;
 	
 	/** The underlying jetty/websocket connection. */
@@ -60,7 +61,10 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	 * fallback mode, ie, just sending a 'reload' command with the given
 	 * browserlocation.
 	 */
-	private boolean fallbackMode = false;;
+	private boolean fallbackMode = false;
+	
+	/** Unique ID to identify the server-side Websocket in logs.*/
+	private final UUID id;
 
 	/**
 	 * Constructor
@@ -68,6 +72,7 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	 * @param clientAddress the browser's IP Address
 	 */
 	public LiveReloadWebSocket(final String userAgent, final String clientAddress) {
+		this.id = UUID.randomUUID();
 		this.clientId = new StringBuilder((userAgent != null) ? userAgent : "unknown User-Agent").append(" at ")
 				.append((clientAddress != null) ? clientAddress : "unknown IP Address").toString();
 		this.clientAddress = clientAddress;
@@ -75,33 +80,36 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 
 	@Override
 	public void onOpen(Connection connection) {
-		Logger.debug("Opening connection {}", getId());
+		Logger.debug("Opening connection {} -> {}", id, getId());
 		this.connection = connection;
 	}
 
 	@Override
 	public void onClose(int closeCode, String message) {
+		Logger.debug("LiveReload client connection closed (" + id + ") with code " + closeCode + " and message "
+				+ message);
 		eventService.unsubscribe(this);
-		if(connection != null) {
+		if (connection != null) {
 			eventService.publish(new LiveReloadClientDisconnectedEvent(connection));
 		}
+
 	}
 
 	public void sendMessage(String data) throws IOException {
-		if(!connection.isOpen()) {
+		if (!connection.isOpen()) {
 			Logger.debug("Removing pending closed connection {}", getId());
 			eventService.unsubscribe(this);
 			return;
-		} 
-		Logger.debug("Sending message '{}'", data);
+		}
+		Logger.debug("Sending message from websocket#{}: '{}'", id, data);
 		connection.sendMessage(data);
 	}
 
 	@Override
 	public void onMessage(String data) {
-		Logger.debug("Received message '{}'", data);
+		Logger.debug("Received message on socket #{}: '{}'", id, data);
 		try {
-			JsonNode rootNode = mapper.readTree(data);
+			final JsonNode rootNode = mapper.readTree(data);
 			final String commandValue = rootNode.path("command").asText();
 			final String HELLO_COMMAND = "hello";
 			final String INFO_COMMAND = "info";
@@ -162,28 +170,37 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 				if (fallbackMode) {
 					final String command = ReloadCommandGenerator.generateReloadCommand(browserLocation);
 					sendMessage(command);
-					eventService.publish(new LiveReloadClientRefreshedEvent(clientAddress));
 				} else {
 					WorkspaceResourceChangedEvent event = (WorkspaceResourceChangedEvent) e;
 					List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 					for (String command : commands) {
-						eventService.publish(new LiveReloadClientRefreshingEvent(clientAddress));
 						sendMessage(command);
-						eventService.publish(new LiveReloadClientRefreshedEvent(clientAddress));
 					}
 				}
 			} else if (e instanceof ServerResourcePublishedEvent) {
 				final String command = ReloadCommandGenerator.generateReloadCommand(browserLocation);
 				sendMessage(command);
-				eventService.publish(new LiveReloadClientRefreshedEvent(clientAddress));
 			} else {
 				Logger.debug("Ignoring event " + e);
 			}
-		} catch (Exception ex) {
-			Logger.error("Failed to send reload command to browser", ex);
+		} catch (URISyntaxException ex) {
+			Logger.error("Failed to generate reload command to send to browser", ex);
+		} catch (IOException ex) {
+			Logger.error("Failed to send reload command to browser from socket #" + id, ex);
 		}
 	}
 
+	/**
+	 * Called when by the {@link LiveReloadWebSocketServlet} when this later is destroyed. 
+	 * This is the moment when this websocket should close the connection and unsubscribe to the events.
+	 */
+	public void destroy() {
+		if(connection != null && connection.isOpen()) {
+			connection.close();
+		}
+		eventService.unsubscribe(this);
+		
+	}
 	@Override
 	public String getId() {
 		return clientId + " at " + browserLocation;

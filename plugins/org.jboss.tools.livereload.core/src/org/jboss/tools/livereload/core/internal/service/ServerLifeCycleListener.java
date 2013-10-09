@@ -70,10 +70,10 @@ public class ServerLifeCycleListener implements IServerListener, IServerLifecycl
 			if (server.getServerType().getId().equals(WSTUtils.LIVERELOAD_SERVER_TYPE)) {
 				continue;
 			}
-			Logger.info("Adding ServerListener to existing server: " + server.getName());
+			Logger.info("Removing ServerListener to existing server: " + server.getName());
 			removeServerListener(server);
 			if (server.getServerState() == IServer.STATE_STARTED) {
-				Logger.info("Also adding PublishListener to existing server: " + server.getName());
+				Logger.info("Also removing PublishListener to existing server: " + server.getName());
 				removePublishListener(server);
 			}
 		}
@@ -107,11 +107,11 @@ public class ServerLifeCycleListener implements IServerListener, IServerLifecycl
 	@Override
 	public void serverChanged(ServerEvent event) {
 		final IServer server = event.getServer();
-		if (server.getServerState() == IServer.STATE_STARTED) {
+		if (event.getKind() == (ServerEvent.SERVER_CHANGE + ServerEvent.STATE_CHANGE) && server.getServerState() == IServer.STATE_STARTED) {
 			Logger.debug("Server {} started", server.getName());
 			addPublishListener(server);
 			EventService.getInstance().publish(new ServerStartedEvent(server));
-		} else if (server.getServerState() == IServer.STATE_STOPPED) {
+		} else if (event.getKind() == (ServerEvent.SERVER_CHANGE + ServerEvent.STATE_CHANGE) && server.getServerState() == IServer.STATE_STOPPED) {
 			Logger.debug("Server {} stopped", server.getName());
 			removePublishListener(server);
 			EventService.getInstance().publish(new ServerStoppedEvent(server));
@@ -125,6 +125,7 @@ public class ServerLifeCycleListener implements IServerListener, IServerLifecycl
 
 	@Override
 	public void publishFinished(IServer server, IStatus status) {
+		EventService.getInstance().publish(new LiveReloadClientRefreshedEvent(server.getId()));
 		Logger.trace("Received notification after publish on server '{}' (started={}) finished with status {}",
 				server.getName(), (server.getServerState() == IServer.STATE_STARTED), status.getSeverity());
 		if (server.getServerState() == IServer.STATE_STARTED && status.isOK()) {
