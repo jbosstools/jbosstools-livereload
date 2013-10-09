@@ -180,6 +180,7 @@ public class WSTUtils {
 		} catch (MalformedURLException e) {
 			Logger.error("Unable to parse URL '" + browserLocation + "'", e);
 		}
+		Logger.warn("Could not identify server from client location " + browserLocation);
 		return null;
 	}
 
@@ -219,7 +220,7 @@ public class WSTUtils {
 			}
 		}
 		// default assumption for unknown specific server type...
-		Logger.warn("Assuming that server '" + server.getName() + "' is running on port 8080. LiveReload may not work as expected if it is not the case.");
+		Logger.debug("Assuming that server '" + server.getName() + "' is running on port 8080. LiveReload may not work as expected if it is not the case.");
 		return 8080;
 	}
 

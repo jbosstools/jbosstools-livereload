@@ -11,6 +11,9 @@
 
 package org.jboss.tools.livereload.core.internal.server.jetty;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.jetty.websocket.WebSocket;
@@ -27,11 +30,24 @@ public class LiveReloadWebSocketServlet extends WebSocketServlet {
 	/** serialVersionUID */
 	private static final long serialVersionUID = 2515781694370015615L;
 
+	/** List of the LiveReloadWebSocket created by this LiveReloadWebSocketServlet. */
+	private final List<LiveReloadWebSocket> webSockets = new ArrayList<LiveReloadWebSocket>();
+	
 	@Override
 	public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
-		return new LiveReloadWebSocket((String) request.getHeader("User-Agent"), request.getRemoteAddr());
+		final LiveReloadWebSocket liveReloadWebSocket = new LiveReloadWebSocket((String) request.getHeader("User-Agent"), request.getRemoteAddr());
+		webSockets.add(liveReloadWebSocket);
+		return liveReloadWebSocket;
 	}
 	
-	
+	@Override
+	public void destroy() {
+		super.destroy();
+		for(LiveReloadWebSocket webSocket : webSockets) {
+			webSocket.destroy();
+		}
+		webSockets.clear();
+		
+	}
 
 }

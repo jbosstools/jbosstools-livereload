@@ -38,7 +38,7 @@ public class LiveReloadScriptFileServlet extends HttpServlet {
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 		InputStream scriptContent = null;
 		try {
-			Logger.info("Serving embedded /livereload.js");
+			Logger.debug("Serving embedded /livereload.js");
 			final HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 			scriptContent = JBossLiveReloadCoreActivator.getDefault().getResourceContent("/script/livereload.js");
 			if(scriptContent == null) {
