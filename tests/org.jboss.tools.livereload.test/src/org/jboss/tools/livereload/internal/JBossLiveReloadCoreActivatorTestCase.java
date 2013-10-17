@@ -100,7 +100,7 @@ public class JBossLiveReloadCoreActivatorTestCase extends AbstractCommonTestCase
 	 */
 	private IServer createLiveReloadServer(final String serverName, final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		final IServer server = WSTUtils.createLiveReloadServer(serverName, liveReloadServerPort,
+		final IServer server = WSTUtils.createLiveReloadServer(serverName, "localhost", liveReloadServerPort,
 				injectScript, false);
 		liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(server);
 		assertThat(liveReloadServerBehaviour).isNotNull();
