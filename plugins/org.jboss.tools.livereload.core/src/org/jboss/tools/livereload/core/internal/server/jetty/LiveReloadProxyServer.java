@@ -29,13 +29,17 @@ import org.eclipse.jetty.servlet.ServletHolder;
  */
 public class LiveReloadProxyServer extends Server {
 
+	/** The underlying connector. */
 	private SelectChannelConnector connector;
 
+	/** network settings. */
+	private final String proxyHost, targetHost;
 	private final int proxyPort, targetPort;
 
 	/**
 	 * Constructor
 	 * 
+	 * @param proxyHost
 	 * @param proxyPort
  	 * @param targetHost
 	 * @param targetPort
@@ -44,20 +48,27 @@ public class LiveReloadProxyServer extends Server {
 	 * @param enableScriptInjection
 	 * @throws UnknownHostException
 	 */
-	public LiveReloadProxyServer(final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
+	public LiveReloadProxyServer(final String proxyHost, final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
 			final boolean enableScriptInjection) {
 		super();
+		this.proxyHost = proxyHost;
 		this.proxyPort = proxyPort;
+		this.targetHost = targetHost;
 		this.targetPort = targetPort;
-		configure(proxyPort, targetHost, targetPort, liveReloadPort, allowRemoteConnections, enableScriptInjection);
+		configure(proxyHost, proxyPort, targetHost, targetPort, liveReloadPort, allowRemoteConnections, enableScriptInjection);
 	}
 
-	private void configure(final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
+	private void configure(final String proxyHost, final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
 			final boolean enableScriptInjection) {
 		setAttribute(JettyServerRunner.NAME, "LiveReload-Proxy-Server-" + proxyPort + ":" + targetPort);
 		final SelectChannelConnector connector = new SelectChannelConnector();
+		// restrict access to clients on the same host
 		if (!allowRemoteConnections) {
-			connector.setHost("localhost");
+			connector.setHost(proxyHost);
+		} 
+		// allow remote connections
+		else {
+			connector.setHost(null);
 		}
 		connector.setPort(proxyPort);
 		connector.setMaxIdleTime(0);
@@ -83,6 +94,13 @@ public class LiveReloadProxyServer extends Server {
 	}
 	
 	/**
+	 * @return the proxyHost
+	 */
+	public String getProxyHost() {
+		return proxyHost;
+	}
+	
+	/**
 	 * @return the proxyPort
 	 */
 	public int getProxyPort() {
@@ -96,13 +114,16 @@ public class LiveReloadProxyServer extends Server {
 		return targetPort;
 	}
 
+	/**
+	 * @return the targetHost
+	 */
+	public String getTargetHost() {
+		return targetHost;
+	}
+	
 	@Override
 	public String toString() {
 		return "Proxy Server (" + proxyPort + " -> " + targetPort + ")";
-	}
-
-	public String getProxyHost() {
-		return "localhost";
 	}
 
 }

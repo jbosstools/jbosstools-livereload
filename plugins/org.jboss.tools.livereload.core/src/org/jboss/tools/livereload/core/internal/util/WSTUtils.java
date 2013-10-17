@@ -263,7 +263,7 @@ public class WSTUtils {
 	 */
 	public static IServer createLiveReloadServer(final int websocketPort, 
 			final boolean injectScript, final boolean allowRemoteConnections) throws CoreException {
-		return createLiveReloadServer("LiveReload Server at localhost", websocketPort, injectScript, allowRemoteConnections);
+		return createLiveReloadServer("LiveReload Server at localhost", "localhost", websocketPort, injectScript, allowRemoteConnections);
 	}
 	
 	/**
@@ -278,7 +278,7 @@ public class WSTUtils {
 	 * @return the server
 	 * @throws CoreException
 	 */
-	public static IServer createLiveReloadServer(final String serverName, final int websocketPort, 
+	public static IServer createLiveReloadServer(final String serverName, final String hostname, final int websocketPort, 
 			final boolean injectScript, final boolean allowRemoteConnections) throws CoreException {
 		IRuntimeType rt = ServerCore.findRuntimeType(LIVERELOAD_RUNTIME_TYPE);
 		IRuntimeWorkingCopy rwc = rt.createRuntime(null, null);
@@ -287,6 +287,7 @@ public class WSTUtils {
 		IServerWorkingCopy swc = (IServerWorkingCopy) st.createServer(serverName, null, null);
 		swc.setServerConfiguration(null);
 		swc.setName(serverName);
+		swc.setHost(hostname);
 		swc.setRuntime(runtime);
 		swc.setAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, websocketPort);
 		swc.setAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, true);

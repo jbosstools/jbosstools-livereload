@@ -15,8 +15,10 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +40,7 @@ import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.internal.Server;
 import org.eclipse.wst.server.core.util.SocketUtil;
+import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.ServerLifeCycleListener;
@@ -119,16 +122,15 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	 * @throws InterruptedException
 	 * 
 	 */
-	private IServer createAndLaunchLiveReloadServer(final String serverName, final boolean injectScript)
+	private IServer createAndLaunchLiveReloadServer(final String serverName, final String hostname, final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		final IServer server = WSTUtils.createLiveReloadServer(serverName, liveReloadServerPort,
+		final IServer server = WSTUtils.createLiveReloadServer(serverName, hostname, liveReloadServerPort,
 				injectScript, false);
 		liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(server);
 		assertThat(liveReloadServerBehaviour).isNotNull();
 		liveReloadServer = liveReloadServerBehaviour.getServer();
 		assertThat(liveReloadServer).isNotNull();
 		assertThat(liveReloadServer.canStart(ILaunchManager.RUN_MODE).isOK()).isTrue();
-
 		startServer(liveReloadServer, 60, TimeUnit.SECONDS);
 		return server;
 	}
@@ -142,7 +144,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	 */
 	private IServer createAndLaunchLiveReloadServer(final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		return createAndLaunchLiveReloadServer("LiveReload Test Server at localhost", injectScript);
+		return createAndLaunchLiveReloadServer("LiveReload Test Server at localhost", "localhost", injectScript);
 	}
 	
 	/**
@@ -880,13 +882,31 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldNotStartIfPortAlreadyInUse() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		// pre-condition: create a first server (no need for script injection)
-		final IServer firstServer = createAndLaunchLiveReloadServer("Server 1", false);
+		final IServer firstServer = createAndLaunchLiveReloadServer("Server 1", "localhost", false);
 		assertThat(firstServer.getServerState()).isEqualTo(IServer.STATE_STARTED);
 		// operation: create a second server (no need for script injection
 		// either) and attempt to start it on the same port -> should not start
-		final IServer secondServer = createAndLaunchLiveReloadServer("Server 2", false);
+		final IServer secondServer = createAndLaunchLiveReloadServer("Server 2", "localhost", false);
 		// verification
 		assertThat(secondServer.getServerState()).isEqualTo(IServer.STATE_STOPPED);
+	}
+	
+	@Test
+	public void shouldUseACustomHostName() throws CoreException, InterruptedException, ExecutionException, TimeoutException, UnknownHostException {
+		final String hostname = InetAddress.getLocalHost().getHostName();
+		final IServer server = createAndLaunchLiveReloadServer("foo.server", hostname, true);
+		assertThat(server.getServerState()).isEqualTo(IServer.STATE_STARTED);
+		assertThat(server.getHost()).isEqualTo(hostname);
+		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getHost()).isEqualTo(hostname);
+		// operation: create a custom PreviewServer and start it
+		createHttpPreviewServer();
+		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		// verification: the proxy server associated with this custom PreviewServer should have the same hostname as 
+		// the livereload server
+		final LiveReloadProxyServer proxyServer = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer);
+		assertThat(proxyServer).isNotNull();
+		assertThat(proxyServer.getProxyHost()).isEqualTo(server.getHost());
+		
 	}
 
 }
