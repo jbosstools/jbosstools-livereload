@@ -130,7 +130,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			}
 			final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
 			final boolean enableScriptInjection = isScriptInjectionEnabled();
-			this.liveReloadServer = new LiveReloadServer(server.getName(), websocketPort, true, allowRemoteConnections,
+			this.liveReloadServer = new LiveReloadServer(server.getName(), server.getHost(), websocketPort, true, allowRemoteConnections,
 					enableScriptInjection);
 			this.liveReloadServerRunnable = JettyServerRunner.start(liveReloadServer);
 			if(!this.liveReloadServerRunnable.isSuccessfullyStarted()) { 
@@ -325,8 +325,9 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 					// server attributes
 					final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
 					final boolean enableScriptInjection = isScriptInjectionEnabled();
+					final String proxyHost = getProxyHost();
 					final int proxyPort = getProxyPort(startedServer);
-					final LiveReloadProxyServer proxyServer = new LiveReloadProxyServer(proxyPort, startedServer.getHost(), targetPort,
+					final LiveReloadProxyServer proxyServer = new LiveReloadProxyServer(proxyHost, proxyPort, startedServer.getHost(), targetPort,
 							websocketPort, allowRemoteConnections, enableScriptInjection);
 					proxyServers.put(startedServer, proxyServer);
 					final JettyServerRunner proxyRunner = JettyServerRunner.start(proxyServer);
@@ -338,9 +339,16 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			}
 		}
 	}
+	
+	/**
+	 * @return the hostname configured for this LiveReload server
+	 */
+	private String getProxyHost() {
+		return getServer().getHost();
+	}
 
 	/**
-	 * Checks if thsi started server has already a configured proxy and returns
+	 * Checks if this started server has already a configured proxy and returns
 	 * the associated port if it is still free, or associate a new port if the
 	 * previous port is not avaiable anymore, or create a new port if none
 	 * existed before.

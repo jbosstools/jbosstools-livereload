@@ -44,6 +44,8 @@ public class LiveReloadServer extends Server implements Subscriber {
 
 	private final int websocketPort;
 
+	private final String hostname;
+
 	private int connectedClients = 0;
 
 	/**
@@ -54,11 +56,12 @@ public class LiveReloadServer extends Server implements Subscriber {
 	 * @param allowRemoteConnections flag to allow remote connections
 	 * @param enableScriptInjection flag to enable script injection
 	 */
-	public LiveReloadServer(final String name, final int websocketPort, final boolean enableProxyServer,
+	public LiveReloadServer(final String name, final String hostname, final int websocketPort, final boolean enableProxyServer,
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
 		super();
 		this.websocketPort = websocketPort;
-		configure(name, websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
+		this.hostname = hostname;
+		configure(name, hostname, websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
 	}
 
 	/**
@@ -69,12 +72,12 @@ public class LiveReloadServer extends Server implements Subscriber {
 	 * @param allowRemoteConnections should allow remote connections
 	 * @param enableScriptInjection should inject livereload.js script in returned HTML pages
 	 */
-	private void configure(final String name, final int websocketPort, final boolean enableProxyServer,
+	private void configure(final String name, final String hostname, final int websocketPort, final boolean enableProxyServer,
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
 		setAttribute(JettyServerRunner.NAME, name);
 		websocketConnector = new SelectChannelConnector();
 		if (!allowRemoteConnections) {
-			websocketConnector.setHost("localhost");
+			websocketConnector.setHost(hostname);
 		}
 		websocketConnector.setStatsOn(true);
 		websocketConnector.setPort(websocketPort);
@@ -109,10 +112,14 @@ public class LiveReloadServer extends Server implements Subscriber {
 		return connectedClients;
 	}
 
+	public String getHost() {
+		return hostname;
+	}
+
 	public int getPort() {
 		return websocketPort;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "LiveReload Server";
