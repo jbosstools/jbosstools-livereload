@@ -26,9 +26,9 @@ import net.htmlparser.jericho.StreamedSource;
 public class ScriptInjectionUtils {
 	
 	/**
-	 * Inject the given 'addition' into the gievne source, just before the
-	 * <code>&lt;/body&gt;</code> ent tag. If no such end tag is found, the
-	 * return value equals the given source.
+	 * Inject the given 'addition' into the given source, just before the
+	 * <code>&lt;/head&gt;</code> end tag (or the <code>&lt;/body&gt;</code> end tag if not {@code head} element exists). 
+	 * If none pf those tags are found, the return value equals the given source.
 	 * 
 	 * @param source
 	 * @param addition
@@ -36,11 +36,17 @@ public class ScriptInjectionUtils {
 	 * @throws IOException
 	 */
 	public static char[] injectContent(final InputStream source, final String addition) throws IOException {
+		boolean tagFound = false;
 		final StreamedSource streamedSource = new StreamedSource(source);
 		CharArrayWriter writer = new CharArrayWriter();
 		for (Segment segment : streamedSource) {
-			if (segment instanceof EndTag && ((EndTag) segment).getName().equals("body")) {
+			if (segment instanceof EndTag && ((EndTag) segment).getName().equals("head")) {
 				writer.write(addition);
+				tagFound = true;
+			}
+			else if (!tagFound && segment instanceof EndTag && ((EndTag) segment).getName().equals("body")) {
+				writer.write(addition);
+				tagFound = true;
 			}
 			writer.write(segment.toString());
 		}
