@@ -25,14 +25,14 @@ import org.junit.Test;
 public class ScriptInjectionUtilsTestCase {
 	
 	@Test
-	public void shouldInjectScriptAtEndOfBody() throws IOException {
+	public void shouldInjectScriptAtEndOfHead() throws IOException {
 		// pre-conditions
 		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("aerogear-index.txt");
 		final String addition = "<script src='foo!'/>";
 		// operation
 		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
 		// verifications
-		assertThat(new String(modifiedContent)).contains(addition + "</body>");
+		assertThat(new String(modifiedContent)).contains(addition + "</head>");
 	}
 
 	@Test
@@ -47,9 +47,21 @@ public class ScriptInjectionUtilsTestCase {
 	}
 	
 	@Test
-	public void shouldInjectScriptAtEndOfChineseBody() throws IOException {
+	public void shouldInjectScriptAtEndOfChineseHead() throws IOException {
 		// pre-conditions
 		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("chinese.html");
+		final String addition = "<script src='foo!'/>";
+		// operation
+		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
+		// verifications
+		assertThat(new String(modifiedContent)).contains(addition + "</head>");
+		assertThat(new String(modifiedContent)).doesNotContain("???");
+	}
+
+	@Test
+	public void shouldInjectScriptAtEndOfChineseBody() throws IOException {
+		// pre-conditions
+		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("chinese-no-head.html");
 		final String addition = "<script src='foo!'/>";
 		// operation
 		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
@@ -58,5 +70,27 @@ public class ScriptInjectionUtilsTestCase {
 		assertThat(new String(modifiedContent)).doesNotContain("???");
 	}
 
+	@Test
+	public void shouldInjectScriptInHeadWhenBodyElementMissing() throws IOException {
+		// pre-conditions
+		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("no-body.html");
+		final String addition = "<script src='foo!'/>";
+		// operation
+		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
+		// verifications
+		assertThat(new String(modifiedContent)).contains(addition + "</head>");
+	}
+
+	@Test
+	public void shouldInjectScriptInBodyWhenHeadElementMissing() throws IOException {
+		// pre-conditions
+		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("no-head.html");
+		final String addition = "<script src='foo!'/>";
+		// operation
+		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
+		// verifications
+		assertThat(new String(modifiedContent)).contains(addition + "</body>");
+	}
+	
 
 }
