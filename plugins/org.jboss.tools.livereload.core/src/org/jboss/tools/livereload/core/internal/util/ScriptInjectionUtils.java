@@ -40,15 +40,22 @@ public class ScriptInjectionUtils {
 		final StreamedSource streamedSource = new StreamedSource(source);
 		CharArrayWriter writer = new CharArrayWriter();
 		for (Segment segment : streamedSource) {
-			if (segment instanceof EndTag && ((EndTag) segment).getName().equals("head")) {
+			if (segment instanceof EndTag && ((EndTag) segment).getName().equalsIgnoreCase("head")) { //$NON-NLS-1$
 				writer.write(addition);
 				tagFound = true;
 			}
-			else if (!tagFound && segment instanceof EndTag && ((EndTag) segment).getName().equals("body")) {
+			else if (!tagFound && segment instanceof EndTag && ((EndTag) segment).getName().equalsIgnoreCase("body")) { //$NON-NLS-1$
+				writer.write(addition);
+				tagFound = true;
+			}
+			else if (!tagFound && segment instanceof EndTag && ((EndTag) segment).getName().equalsIgnoreCase("html")) { //$NON-NLS-1$
 				writer.write(addition);
 				tagFound = true;
 			}
 			writer.write(segment.toString());
+		}
+		if(!tagFound){
+			writer.write(addition);
 		}
 		writer.close();
 		streamedSource.close();

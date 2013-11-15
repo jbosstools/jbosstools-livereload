@@ -92,5 +92,25 @@ public class ScriptInjectionUtilsTestCase {
 		assertThat(new String(modifiedContent)).contains(addition + "</body>");
 	}
 	
-
+	@Test
+	public void shouldInjectScriptInHtmlWhenHeadAndBodyElementsMissing() throws IOException {
+		// pre-conditions
+		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("no-head-body.html");
+		final String addition = "<script src='foo!'/>";
+		// operation
+		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
+		// verifications
+		assertThat(new String(modifiedContent)).contains(addition + "</html>");
+	}
+	
+	@Test
+	public void shouldInjectScriptInTheEndWhenHeadBodyHtmlElementsMissing() throws IOException {
+		// pre-conditions
+		final InputStream sourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("no-head-body-html.html");
+		final String addition = "<script src='foo!'/>";
+		// operation
+		final char[] modifiedContent = ScriptInjectionUtils.injectContent(sourceStream, addition);
+		// verifications
+		assertThat(new String(modifiedContent)).endsWith(addition);
+	}
 }
