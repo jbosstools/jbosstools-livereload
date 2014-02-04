@@ -164,7 +164,7 @@ public class WSTUtils {
 				}
 				// special case for LiveReload Server that may run Proxy Servers
 				// as well:
-				if (server.getServerType().getId().equals(LIVERELOAD_SERVER_TYPE)) {
+				if (server.getServerType() != null && server.getServerType().getId().equals(LIVERELOAD_SERVER_TYPE)) {
 					@SuppressWarnings("unchecked")
 					final Map<String, Integer> proxyPorts = (Map<String, Integer>) server.getAttribute(
 							LiveReloadServerBehaviour.PROXY_PORTS, Collections.emptyMap());

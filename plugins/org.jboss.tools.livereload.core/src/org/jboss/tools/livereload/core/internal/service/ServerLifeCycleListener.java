@@ -53,7 +53,7 @@ public class ServerLifeCycleListener implements IServerListener, IServerLifecycl
 
 	private void start() {
 		for (IServer server : ServerCore.getServers()) {
-			if (server.getServerType().getId().equals(WSTUtils.LIVERELOAD_SERVER_TYPE)) {
+			if (server.getServerType() == null || WSTUtils.LIVERELOAD_SERVER_TYPE.equals(server.getServerType().getId())) {
 				continue;
 			}
 			Logger.info("Adding ServerListener to existing server: " + server.getName());
@@ -67,7 +67,7 @@ public class ServerLifeCycleListener implements IServerListener, IServerLifecycl
 
 	public void stop() {
 		for (IServer server : ServerCore.getServers()) {
-			if (server.getServerType().getId().equals(WSTUtils.LIVERELOAD_SERVER_TYPE)) {
+			if (server.getServerType() == null || WSTUtils.LIVERELOAD_SERVER_TYPE.equals(server.getServerType().getId())) {
 				continue;
 			}
 			Logger.info("Removing ServerListener to existing server: " + server.getName());
