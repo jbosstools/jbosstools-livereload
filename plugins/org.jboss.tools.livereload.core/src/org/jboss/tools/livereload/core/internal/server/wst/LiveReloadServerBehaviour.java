@@ -265,8 +265,10 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 	 * when a server is started and stopped
 	 */
 	private void removeServerLifeCycleListener() {
-		ServerCore.removeServerLifecycleListener(serverLifeCycleListener);
-		serverLifeCycleListener.stop();
+		if(serverLifeCycleListener != null) {
+			ServerCore.removeServerLifecycleListener(serverLifeCycleListener);
+			serverLifeCycleListener.stop();
+		}
 	}
 
 	/**
