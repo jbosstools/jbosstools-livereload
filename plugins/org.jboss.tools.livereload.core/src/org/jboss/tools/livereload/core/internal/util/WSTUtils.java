@@ -78,7 +78,7 @@ public class WSTUtils {
 	public static List<IServer> findLiveReloadServers() {
 		final List<IServer> liveReloadServers = new ArrayList<IServer>();
 		for (IServer server : ServerCore.getServers()) {
-			if (server.getServerType().getId().equals(LIVERELOAD_SERVER_TYPE)) {
+			if (isLiveReloadServer(server)) {
 				liveReloadServers.add(server);
 			}
 		}
@@ -93,7 +93,7 @@ public class WSTUtils {
 	 */
 	public static IServer findLiveReloadServer() {
 		for (IServer server : ServerCore.getServers()) {
-			if (server.getServerType().getId().equals(LIVERELOAD_SERVER_TYPE)) {
+			if (isLiveReloadServer(server)) {
 				return server;
 			}
 		}
@@ -164,7 +164,7 @@ public class WSTUtils {
 				}
 				// special case for LiveReload Server that may run Proxy Servers
 				// as well:
-				if (server.getServerType() != null && server.getServerType().getId().equals(LIVERELOAD_SERVER_TYPE)) {
+				if (isLiveReloadServer(server)) {
 					@SuppressWarnings("unchecked")
 					final Map<String, Integer> proxyPorts = (Map<String, Integer>) server.getAttribute(
 							LiveReloadServerBehaviour.PROXY_PORTS, Collections.emptyMap());
@@ -186,14 +186,14 @@ public class WSTUtils {
 
 	/**
 	 * Returns the Web Port for the given {@link IServer}, <code>8080</code> if the server is of an unknown type or <code>-1</code> if
-	 * the server is not started.
+	 * the server is not started or if the server type is unknown.
 	 * 
 	 * @param server
 	 * @return
 	 */
 	public static int getWebPort(final IServer server) {
-		// ignore not-started servers
-		if(server.getServerState() != IServer.STATE_STARTED) {
+		// ignore not-started servers and unknown server types
+		if(server.getServerState() != IServer.STATE_STARTED || server.getServerType() == null) {
 			return -1;
 		}
 		final String serverType = server.getServerType().getId();
@@ -225,13 +225,12 @@ public class WSTUtils {
 	}
 
 	/**
-	 * Returns true if the given server type is LiveReload
+	 * @return true if the given server type is LiveReload, false otherwise (null server, wrong or unknown server type)
 	 * 
-	 * @param server
-	 * @return
+	 * @param server the server to check
 	 */
 	public static boolean isLiveReloadServer(final IServer server) {
-		return server != null && server.getServerType().getId().equals(LIVERELOAD_SERVER_TYPE);
+		return server != null && server.getServerType() != null && LIVERELOAD_SERVER_TYPE.equals(server.getServerType().getId());
 	}
 
 	/**
