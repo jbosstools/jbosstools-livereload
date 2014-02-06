@@ -32,13 +32,17 @@ public class LiveReloadLaunchConfiguration implements ILaunchConfigurationDelega
 
 	public static final String WEBSOCKET_PORT = JBossLiveReloadCoreActivator.PLUGIN_ID + ".websocket_port";
 
+	public static final int DEFAULT_WEBSOCKET_PORT = 35729;
+	
 	public static final String ENABLE_PROXY_SERVER = JBossLiveReloadCoreActivator.PLUGIN_ID + ".enable_proxy_server";
 
 	public static final String ALLOW_REMOTE_CONNECTIONS = JBossLiveReloadCoreActivator.PLUGIN_ID + ".allow_remote_connections";
 
 	public static final String ENABLE_SCRIPT_INJECTION = JBossLiveReloadCoreActivator.PLUGIN_ID + ".enable_script_injection";
 
-	public static final int DEFAULT_WEBSOCKET_PORT = 35729;
+	public static final String NOTIFICATION_DELAY = JBossLiveReloadCoreActivator.PLUGIN_ID + ".notification_delay";
+	
+	public static final int DEFAULT_NOTIFICATION_DELAY = 0;
 
 
 	@Override

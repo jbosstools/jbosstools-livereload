@@ -29,5 +29,8 @@ public class LiveReloadServerConfigurationMessages extends NLS {
 	public static String ALLOW_REMOTE_CONNECTIONS_COMMAND;
 	public static String ENABLE_SCRIPT_INJECTION_LABEL;
 	public static String ENABLE_SCRIPT_INJECTION_COMMAND;
+	public static String SET_NOTIFICATION_DELAY_LABEL;
+	public static String SET_NOTIFICATION_DELAY_TOOLTIP;
+	public static String SET_NOTIFICATION_DELAY_COMMAND;
 
 }

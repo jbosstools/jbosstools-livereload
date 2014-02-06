@@ -249,7 +249,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 	 * and stopped
 	 */
 	private void addServerLifeCycleListener() {
-		this.serverLifeCycleListener = new ServerLifeCycleListener();
+		this.serverLifeCycleListener = new ServerLifeCycleListener(getServer());
 		ServerCore.addServerLifecycleListener(serverLifeCycleListener);
 	}
 
