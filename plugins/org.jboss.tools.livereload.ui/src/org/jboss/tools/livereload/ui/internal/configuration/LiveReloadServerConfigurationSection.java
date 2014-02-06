@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IFormColors;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
@@ -46,6 +47,7 @@ public class LiveReloadServerConfigurationSection extends ServerEditorSection {
 	private Text websocketPortText;
 	private Button remoteConnectionsEnablementButton;
 	private Button scriptInjectionEnablementButton;
+	private Spinner notificationDelaySpinner;
 	private ControlDecoration websocketPortDecoration;
 
 	public void createSection(Composite parent) {
@@ -87,6 +89,28 @@ public class LiveReloadServerConfigurationSection extends ServerEditorSection {
 		};
 		websocketPortText.addModifyListener(websocketPortModifyListener);
 		
+		// notification delay (in seconds)
+		Label notificationDelayLabel = toolkit.createLabel(composite,
+				LiveReloadServerConfigurationMessages.SET_NOTIFICATION_DELAY_LABEL);
+		notificationDelayLabel.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
+		notificationDelaySpinner = new Spinner(composite, SWT.BORDER);
+		notificationDelaySpinner.setSelection(server.getAttribute(LiveReloadLaunchConfiguration.NOTIFICATION_DELAY,
+				LiveReloadLaunchConfiguration.DEFAULT_NOTIFICATION_DELAY));
+		notificationDelaySpinner.setMinimum(0);
+		notificationDelaySpinner.setMaximum(60);
+		notificationDelaySpinner.setToolTipText(LiveReloadServerConfigurationMessages.SET_NOTIFICATION_DELAY_TOOLTIP);
+		d = new GridData();
+		d.grabExcessHorizontalSpace = true;
+		d.widthHint = 20;
+		d.horizontalIndent = 10;
+		notificationDelaySpinner.setLayoutData(d);
+		
+		notificationDelaySpinner.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				execute(new SetServerNotificationDelayCommand(server));
+			}
+		});
+				
 		// livereload.js script injection enablement
 		scriptInjectionEnablementButton = toolkit.createButton(composite,
 				LiveReloadServerConfigurationMessages.ENABLE_SCRIPT_INJECTION_LABEL, SWT.CHECK);
@@ -209,6 +233,28 @@ public class LiveReloadServerConfigurationSection extends ServerEditorSection {
 			scriptInjectionEnablementButton.setSelection(originalValue);
 		}
 
+	}
+
+	public class SetServerNotificationDelayCommand extends ServerCommand {
+		
+		public SetServerNotificationDelayCommand(final IServerWorkingCopy server) {
+			super(server, LiveReloadServerConfigurationMessages.SET_NOTIFICATION_DELAY_COMMAND);
+		}
+		
+		@Override
+		public void execute() {
+			server.setAttribute(LiveReloadLaunchConfiguration.NOTIFICATION_DELAY,
+					notificationDelaySpinner.getSelection());
+		}
+		
+		@Override
+		public void undo() {
+			final int originalValue = server.getOriginal().getAttribute(
+					LiveReloadLaunchConfiguration.NOTIFICATION_DELAY, 0);
+			server.setAttribute(LiveReloadLaunchConfiguration.NOTIFICATION_DELAY, originalValue);
+			notificationDelaySpinner.setSelection(originalValue);
+		}
+		
 	}
 
 }

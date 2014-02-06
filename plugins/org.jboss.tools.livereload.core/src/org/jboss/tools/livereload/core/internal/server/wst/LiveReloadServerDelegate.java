@@ -47,6 +47,11 @@ public class LiveReloadServerDelegate extends ServerDelegate {
 			setAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT,
 					LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT);
 		}
+		if (getAttribute(LiveReloadLaunchConfiguration.NOTIFICATION_DELAY, -1) == -1) {
+			setAttribute(LiveReloadLaunchConfiguration.NOTIFICATION_DELAY,
+					LiveReloadLaunchConfiguration.DEFAULT_NOTIFICATION_DELAY);
+		}
+		
 	}
 
 	public IStatus canModifyModules(IModule[] add, IModule[] remove) {

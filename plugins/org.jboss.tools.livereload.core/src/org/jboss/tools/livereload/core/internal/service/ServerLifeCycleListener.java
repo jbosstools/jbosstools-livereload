@@ -17,13 +17,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.wst.server.core.IPublishListener;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerLifecycleListener;
 import org.eclipse.wst.server.core.IServerListener;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.ServerEvent;
+import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
 
@@ -47,7 +51,10 @@ public class ServerLifeCycleListener implements IServerListener, IServerLifecycl
 
 	private final Map<IServer, Integer> supervisedServers = new HashMap<IServer, Integer>();
 
-	public ServerLifeCycleListener() {
+	private final IServer liveReloadServer;
+	
+	public ServerLifeCycleListener(final IServer liveReloadServer) {
+		this.liveReloadServer = liveReloadServer;
 		start();
 	}
 
@@ -129,9 +136,46 @@ public class ServerLifeCycleListener implements IServerListener, IServerLifecycl
 		Logger.trace("Received notification after publish on server '{}' (started={}) finished with status {}",
 				server.getName(), (server.getServerState() == IServer.STATE_STARTED), status.getSeverity());
 		if (server.getServerState() == IServer.STATE_STARTED && status.isOK()) {
+			waitBeforeNotifying();
 			EventService.getInstance().publish(new ServerResourcePublishedEvent(server));
 		} else {
 			Logger.debug("Ignoring this publish notification..");
+		}
+	}
+
+	/**
+	 * Runs a {@link Job} that will block for the configured amount of time before
+	 * notifying the clients that a resource was published on the monitored
+	 * server. The job will check every second if it was cancelled before carrying on the wait time.
+	 */
+	private void waitBeforeNotifying() {
+		final int notificationDelay = liveReloadServer.getAttribute(LiveReloadLaunchConfiguration.NOTIFICATION_DELAY, LiveReloadLaunchConfiguration.DEFAULT_NOTIFICATION_DELAY);
+		if(notificationDelay > 0) {
+			final Job waitJob = new Job("Waiting before notifying clients...") {
+
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					try {
+						for(int i = 0; i< notificationDelay; i++) {
+							Thread.sleep(1000);
+							if (monitor.isCanceled()) {
+								cancel();
+								return Status.CANCEL_STATUS;
+							}
+						}
+					} catch (InterruptedException e) {
+						Logger.error("Failed to wait to " + notificationDelay + " seconds before notifying the clients", e);
+						return Status.CANCEL_STATUS;
+					}
+					return Status.OK_STATUS;
+				}
+			};
+			waitJob.schedule();
+			try {
+				waitJob.join();
+			} catch (InterruptedException e) {
+				Logger.error("Failed to wait to " + notificationDelay + " seconds before notifying the clients", e);
+			}
 		}
 	}
 

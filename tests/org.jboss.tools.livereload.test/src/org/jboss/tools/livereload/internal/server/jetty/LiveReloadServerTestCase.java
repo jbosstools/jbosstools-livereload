@@ -37,10 +37,12 @@ import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.WebSocketClient;
 import org.eclipse.jetty.websocket.WebSocketClientFactory;
 import org.eclipse.wst.server.core.IServer;
+import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.internal.Server;
 import org.eclipse.wst.server.core.util.SocketUtil;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
+import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.ServerLifeCycleListener;
@@ -124,15 +126,17 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	 */
 	private IServer createAndLaunchLiveReloadServer(final String serverName, final String hostname, final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		final IServer server = WSTUtils.createLiveReloadServer(serverName, hostname, liveReloadServerPort,
+		final IServer livereloadServer = WSTUtils.createLiveReloadServer(serverName, hostname, liveReloadServerPort,
 				injectScript, false);
-		liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(server);
+		// ensure notification delay is set to '0'
+		setNotificationDelay(livereloadServer, 0);
+		liveReloadServerBehaviour = (LiveReloadServerBehaviour) WSTUtils.findServerBehaviour(livereloadServer);
 		assertThat(liveReloadServerBehaviour).isNotNull();
 		liveReloadServer = liveReloadServerBehaviour.getServer();
 		assertThat(liveReloadServer).isNotNull();
 		assertThat(liveReloadServer.canStart(ILaunchManager.RUN_MODE).isOK()).isTrue();
 		startServer(liveReloadServer, 60, TimeUnit.SECONDS);
-		return server;
+		return livereloadServer;
 	}
 
 	/**
@@ -147,6 +151,12 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		return createAndLaunchLiveReloadServer("LiveReload Test Server at localhost", "localhost", injectScript);
 	}
 	
+	private void setNotificationDelay(final IServer livereloadServer, final int seconds) throws CoreException, InterruptedException, ExecutionException, TimeoutException {
+		final IServerWorkingCopy livereloadServerWorkingCopy = livereloadServer.createWorkingCopy();
+		livereloadServerWorkingCopy.setAttribute(LiveReloadLaunchConfiguration.NOTIFICATION_DELAY, seconds);
+		livereloadServerWorkingCopy.save(true, null);
+	}
+
 	/**
 	 * Creates an HTTP Preview Server but does not start it.
 	 * 
@@ -159,6 +169,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		this.httpPreviewServer = PreviewServerFactory.createServer(project);
 		return httpPreviewServer.getAttribute(PreviewServerBehaviour.PORT, -1);
 	}
+	
+	
 
 	/**
 	 * @return
@@ -535,7 +547,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	}
 
 	@Test
-	public void shouldBeNotifiedWhenRemoteResourceDeployedWithProxyEnabledAndUsed() throws Exception {
+	public void shouldBeNotifiedWhenRemoteResourceDeployedWithProxyEnabledAndUsedAndNoDelay() throws Exception {
 		// pre-condition
 		final int httpPreviewPort = createHttpPreviewServer();
 		createAndLaunchLiveReloadServer(true);
@@ -546,14 +558,43 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
 		final Connection connection = connectFrom(client);
 		// operation: simulate HTTP preview server publish
+		final long start = System.currentTimeMillis();
 		((Server) httpPreviewServer).publish(IServer.PUBLISH_AUTO, new NullProgressMonitor());
+		final long end = System.currentTimeMillis();
+		// should take less than 1s
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
 		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
 		assertThat(client.getReceivedNotification()).doesNotContain("http://localhost:" + this.liveReloadServerPort);
+		assertThat(end - start).isLessThan(2000);
 		// end
 		connection.close();
+	}
 
+	@Test
+	public void shouldBeNotifiedWhenRemoteResourceDeployedWithProxyEnabledAndUsedAnd5sDelay() throws Exception {
+		// pre-condition
+		final int httpPreviewPort = createHttpPreviewServer();
+		final IServer livereloadServer = createAndLaunchLiveReloadServer(true);
+		setNotificationDelay(livereloadServer, 5);
+		
+		final String indexRemoteDocumentlocation = "http://localhost:" + httpPreviewPort + "/" + project.getName()
+				+ "/index.html";
+		final LiveReloadTestClient client = new LiveReloadTestClient(indexRemoteDocumentlocation);
+		// operation: start server and connect to it
+		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		final Connection connection = connectFrom(client);
+		// operation: simulate HTTP preview server publish
+		final long start = System.currentTimeMillis();
+		((Server) httpPreviewServer).publish(IServer.PUBLISH_AUTO, new NullProgressMonitor());
+		final long end = System.currentTimeMillis();
+		Thread.sleep(200);
+		// verification: client should have been notified with a reload message
+		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
+		assertThat(client.getReceivedNotification()).doesNotContain("http://localhost:" + this.liveReloadServerPort);
+		assertThat(end - start).isGreaterThan(5000);
+		// end
+		connection.close();
 	}
 
 	@Test
