@@ -180,7 +180,7 @@ public class WSTUtils {
 		} catch (MalformedURLException e) {
 			Logger.error("Unable to parse URL '" + browserLocation + "'", e);
 		}
-		Logger.warn("Could not identify server from client location " + browserLocation);
+		Logger.debug("Could not identify server from client location " + browserLocation);
 		return null;
 	}
 
