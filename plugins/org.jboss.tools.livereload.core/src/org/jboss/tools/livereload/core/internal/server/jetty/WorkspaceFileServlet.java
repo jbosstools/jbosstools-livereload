@@ -53,7 +53,7 @@ public class WorkspaceFileServlet extends HttpServlet {
 					httpServletResponse.getOutputStream().write(scriptContent);
 					httpServletResponse.setStatus(200);
 					
-					final Charset charset = HttpUtils.getContentCharSet(request.getHeader("accept"), workspaceFile.getCharset());
+					final Charset charset = HttpUtils.getContentCharSet(request.getHeader("Accept"), workspaceFile.getCharset());
 					String guessedContentType = URLConnection.guessContentTypeFromName(resource.getName());
 					if(guessedContentType != null && !guessedContentType.contains("charset")) {
 						guessedContentType = guessedContentType.concat("; charset=").concat(charset.name());

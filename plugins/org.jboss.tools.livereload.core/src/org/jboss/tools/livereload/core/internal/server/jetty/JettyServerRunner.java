@@ -17,6 +17,7 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils;
@@ -154,7 +155,7 @@ public class JettyServerRunner implements Runnable {
 	}
 	
 	public int getPort() {
-		return server.getConnectors()[0].getPort();
+		return ((NetworkConnector)server.getConnectors()[0]).getPort();
 	}
 
 }

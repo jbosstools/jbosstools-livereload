@@ -14,10 +14,12 @@ package org.jboss.tools.livereload.core.internal.server.jetty;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 
-import org.eclipse.jetty.websocket.WebSocket;
-import org.eclipse.jetty.websocket.WebSocketServlet;
+import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 /**
  * This Servlet allows for WebSocket connections.
@@ -25,6 +27,7 @@ import org.eclipse.jetty.websocket.WebSocketServlet;
  * @author xcoulon
  * 
  */
+@WebServlet(name="Livereload WebSocker Servlet", urlPatterns={"/livereload"})
 public class LiveReloadWebSocketServlet extends WebSocketServlet {
 
 	/** serialVersionUID */
@@ -34,10 +37,21 @@ public class LiveReloadWebSocketServlet extends WebSocketServlet {
 	private final List<LiveReloadWebSocket> webSockets = new ArrayList<LiveReloadWebSocket>();
 	
 	@Override
-	public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
-		final LiveReloadWebSocket liveReloadWebSocket = new LiveReloadWebSocket((String) request.getHeader("User-Agent"), request.getRemoteAddr());
-		webSockets.add(liveReloadWebSocket);
-		return liveReloadWebSocket;
+	public void init() throws ServletException {
+		// see http://stackoverflow.com/questions/29099699/osgi-bundle-in-felix-classnotfoundexception-for-jetty-class-loaded-by-name
+		final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+		// Find the classloader used by the bundle providing jetty
+		final ClassLoader jettyClassLoader = WebSocketServerFactory.class.getClassLoader();
+		// Set the classloader
+		Thread.currentThread().setContextClassLoader(jettyClassLoader);
+		super.init();
+		// Restore the classloader
+		Thread.currentThread().setContextClassLoader(ccl);
+	}
+	
+	@Override
+	public void configure(final WebSocketServletFactory factory) {
+        factory.setCreator(new LiveReloadWebSocketCreator());
 	}
 	
 	@Override
@@ -47,7 +61,5 @@ public class LiveReloadWebSocketServlet extends WebSocketServlet {
 			webSocket.destroy();
 		}
 		webSockets.clear();
-		
 	}
-
 }

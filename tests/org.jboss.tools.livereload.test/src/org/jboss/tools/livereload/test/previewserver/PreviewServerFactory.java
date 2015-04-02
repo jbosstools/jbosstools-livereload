@@ -80,11 +80,11 @@ public class PreviewServerFactory {
 	private static IServer createHttpPreviewServer() throws CoreException {
 		LOGGER.info("Creating a new HTTP Preview Server");
 		final String serverName = "HttpPreview Test Server";
-		IRuntimeType rt = ServerCore.findRuntimeType(HTTP_PREVIEW_RUNTIME_TYPE);
-		IRuntimeWorkingCopy rwc = rt.createRuntime(null, null);
-		IRuntime runtime = rwc.save(true, null);
-		IServerType st = ServerCore.findServerType(HTTP_PREVIEW_SERVER_TYPE);
-		IServerWorkingCopy swc = (IServerWorkingCopy) st.createServer(serverName, null, null);
+		final IRuntimeType rt = ServerCore.findRuntimeType(HTTP_PREVIEW_RUNTIME_TYPE);
+		final IRuntimeWorkingCopy rwc = rt.createRuntime(null, null);
+		final IRuntime runtime = rwc.save(true, null);
+		final IServerType st = ServerCore.findServerType(HTTP_PREVIEW_SERVER_TYPE);
+		final IServerWorkingCopy swc = (IServerWorkingCopy) st.createServer(serverName, null, null);
 		swc.setServerConfiguration(null);
 		swc.setName(serverName);
 		swc.setRuntime(runtime);

@@ -9,7 +9,10 @@ import java.util.UUID;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jetty.websocket.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientConnectedEvent;
@@ -35,7 +38,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author xcoulon
  * 
  */
-public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber {
+@org.eclipse.jetty.websocket.api.annotations.WebSocket
+public class LiveReloadWebSocket implements Subscriber {
 
 	private static final String helloServerToClientHandShakeMessage = "{\"command\":\"hello\",\"protocols\":[\"http://livereload.com/protocols/official-7\"]}";
 
@@ -50,8 +54,8 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	@SuppressWarnings("unused")
 	private final String clientAddress;
 	
-	/** The underlying jetty/websocket connection. */
-	private Connection connection;
+	/** The underlying jetty/websocket session. */
+	private Session session;
 	
 	/** The location that the browser sends in an 'info' message to the server. */
 	private String browserLocation = null;
@@ -71,45 +75,43 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	 * @param userAgent the browser's user-agent sent in the HTTP request header
 	 * @param clientAddress the browser's IP Address
 	 */
-	public LiveReloadWebSocket(final String userAgent, final String clientAddress) {
+	public LiveReloadWebSocket(final String clientAddress) {
 		this.id = UUID.randomUUID();
-		this.clientId = new StringBuilder((userAgent != null) ? userAgent : "unknown User-Agent").append(" at ")
-				.append((clientAddress != null) ? clientAddress : "unknown IP Address").toString();
+		this.clientId = (clientAddress != null) ? clientAddress : "unknown IP Address";
 		this.clientAddress = clientAddress;
 	}
 
-	@Override
-	public void onOpen(Connection connection) {
-		Logger.debug("Opening connection {} -> {}", id, getId());
-		this.connection = connection;
+	@OnWebSocketConnect
+	public void onOpen(final Session session) {
+		Logger.debug("Opening websocket session {} -> {}", id, getId());
+		this.session = session;
 	}
 
-	@Override
-	public void onClose(int closeCode, String message) {
-		Logger.debug("LiveReload client connection closed (" + id + ") with code " + closeCode + " and message "
-				+ message);
+	@OnWebSocketClose
+	public void onClose(int closeCode, String closeReason) {
+		Logger.debug("LiveReload client connection closed (" + id + ") with code " + closeCode + " and reason "
+				+ closeReason);
 		eventService.unsubscribe(this);
-		if (connection != null) {
-			eventService.publish(new LiveReloadClientDisconnectedEvent(connection));
+		if (session != null) {
+			eventService.publish(new LiveReloadClientDisconnectedEvent(session));
 		}
-
 	}
 
-	public void sendMessage(String data) throws IOException {
-		if (!connection.isOpen()) {
+	public void sendMessage(final String text) throws IOException {
+		if (!session.isOpen()) {
 			Logger.debug("Removing pending closed connection {}", getId());
 			eventService.unsubscribe(this);
 			return;
 		}
-		Logger.debug("Sending message from websocket#{}: '{}'", id, data);
-		connection.sendMessage(data);
+		Logger.debug("Sending message from websocket#{}: '{}'", id, text);
+		session.getRemote().sendString(text);
 	}
 
-	@Override
-	public void onMessage(String data) {
-		Logger.debug("Received message on socket #{}: '{}'", id, data);
+	@OnWebSocketMessage
+	public void onMessage(final String text) {
+		Logger.debug("Received message on socket #{}: '{}'", id, text);
 		try {
-			final JsonNode rootNode = mapper.readTree(data);
+			final JsonNode rootNode = mapper.readTree(text);
 			final String commandValue = rootNode.path("command").asText();
 			final String HELLO_COMMAND = "hello";
 			final String INFO_COMMAND = "info";
@@ -154,7 +156,7 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 				}
 				// close connection from this client
 				else {
-					connection.close();
+					session.close();
 				}
 				
 			}
@@ -195,12 +197,13 @@ public class LiveReloadWebSocket implements WebSocket.OnTextMessage, Subscriber 
 	 * This is the moment when this websocket should close the connection and unsubscribe to the events.
 	 */
 	public void destroy() {
-		if(connection != null && connection.isOpen()) {
-			connection.close();
+		if(session != null && session.isOpen()) {
+			session.close();
 		}
 		eventService.unsubscribe(this);
 		
 	}
+	
 	@Override
 	public String getId() {
 		return clientId + " at " + browserLocation;

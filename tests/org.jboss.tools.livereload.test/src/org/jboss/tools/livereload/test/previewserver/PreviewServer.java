@@ -18,13 +18,12 @@
 
 package org.jboss.tools.livereload.test.previewserver;
 
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -45,23 +44,21 @@ public class PreviewServer extends Server {
 
 	public void configure(final int port, final String baseLocation) throws Exception {
 		setAttribute(JettyServerRunner.NAME, "Test Preview Server");
-		Connector connector = new SelectChannelConnector();
+		final ServerConnector connector = new ServerConnector(this);
 		connector.setHost("localhost");
-		connector.setStatsOn(true);
 		connector.setPort(port);
-		connector.setMaxIdleTime(0);
 		addConnector(connector);
-		ResourceHandler resourceHandler = new ResourceHandler();
+		final ResourceHandler resourceHandler = new ResourceHandler();
 		resourceHandler.setResourceBase(baseLocation);
 		
-		ServletHandler workspaceServletHandler = new ServletHandler();
+		final ServletHandler workspaceServletHandler = new ServletHandler();
 		workspaceServletHandler.addServletWithMapping(new ServletHolder(new WorkspaceFileServlet()), "/");
 		
-		ServletContextHandler fooHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
+		final ServletContextHandler fooHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         fooHandler.setContextPath("/foo");
 		fooHandler.addServlet(new ServletHolder(new QueryParamVerifierServlet()), "/bar");
 		LOGGER.info("serving {} on port {}", resourceHandler.getBaseResource(), port );
-		HandlerList handlers = new HandlerList();
+		final HandlerList handlers = new HandlerList();
 		handlers.setHandlers(new Handler[] {fooHandler, workspaceServletHandler, new DefaultHandler() });
 		setHandler(handlers);
 	}

@@ -10,46 +10,56 @@
  ******************************************************************************/
 package org.jboss.tools.livereload.core.internal.server.jetty;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.eclipse.jetty.http.HttpURI;
-import org.eclipse.jetty.servlets.ProxyServlet;
+import org.eclipse.jetty.proxy.ProxyServlet;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.URIUtils;
 
 /**
- * Application Proxy Servlet: forward all incoming requests on this proxy to the associated host/port
+ * Application Proxy Servlet: forward all incoming requests on this proxy to the
+ * associated host/port
+ * 
  * @author xcoulon
  *
  */
 public class ApplicationsProxyServlet extends ProxyServlet {
 
+	private static final long serialVersionUID = -743475231540209788L;
+
 	private final int targetPort;
-	
+
 	private final String targetHost;
-	
+
 	public ApplicationsProxyServlet(final String targetHost, final int targetPort) {
 		this.targetHost = targetHost;
 		this.targetPort = targetPort;
 	}
-
+	
 	@Override
-	protected HttpURI proxyHttpURI(HttpServletRequest request, String uri) throws MalformedURLException {
+	public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+		super.service(request, response);
+	}
+	
+	@Override
+	protected URI rewriteURI(HttpServletRequest request) {
 		try {
-			final URI requestURI = new URI(uri);
-			final URI originalURI = new URI(request.getScheme(), requestURI.getUserInfo(), request.getServerName(), request.getLocalPort(), requestURI.getPath(), requestURI.getQuery(), requestURI.getFragment());
+			final URI requestURI = new URI(request.getRequestURI());
+			final URI originalURI = new URI(request.getScheme(), requestURI.getUserInfo(), request.getServerName(),
+					request.getLocalPort(), requestURI.getPath(), request.getQueryString(), requestURI.getFragment());
 			final String proxiedURI = URIUtils.convert(originalURI).toHost(targetHost).toPort(targetPort);
-			return new HttpURI(proxiedURI);
+			return new URI(proxiedURI);
 		} catch (URISyntaxException e) {
 			Logger.error("Failed to parse the requested URI", e);
 		}
 		return null;
 	}
-	
-	
 
 }

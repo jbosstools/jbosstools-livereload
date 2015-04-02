@@ -1,26 +1,31 @@
 package org.jboss.tools.livereload.internal.server.jetty;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.eclipse.jetty.websocket.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LiveReloadTestClient implements WebSocket.OnTextMessage {
+import static org.junit.Assert.fail;
 
-	private final static Logger LOGGER = LoggerFactory.getLogger(LiveReloadTestClient.class);
+@WebSocket(maxTextMessageSize = 64 * 1024)
+public class LiveReloadTestSocket {
+
+	private final static Logger LOGGER = LoggerFactory.getLogger(LiveReloadTestSocket.class);
 
 	private final Properties livereloadMessages;
-	private Connection connection = null;
+	private Session session = null;
 	private final String location;
 	private int reloadNotificationsCounter = 0;
 	private String receivedNotification;
 	
-	public LiveReloadTestClient(final String location) throws IOException {
+	public LiveReloadTestSocket(final String location) throws IOException {
 		this.location = location;
 		livereloadMessages = new Properties();
 		livereloadMessages.load(Thread
@@ -30,23 +35,23 @@ public class LiveReloadTestClient implements WebSocket.OnTextMessage {
 						LiveReloadServerTestCase.class.getPackage().getName().replaceAll("\\.", File.separator)
 								+ File.separator + "messages.properties"));
 	}
-
-	@Override
-	public void onClose(int arg0, String arg1) {
-		LOGGER.debug("Closing connection");
-		if(connection != null && connection.isOpen()) { 
-			connection.close();
+ 
+	@OnWebSocketClose
+	public void onClose(int statusCode, final String reason) {
+		LOGGER.debug("Closing connection with status=" + statusCode + " / reason=" + reason);
+		if(session != null && session.isOpen()) { 
+			session.close();
 		}
 	}
 
-	@Override
-	public void onOpen(final Connection connection) {
-		LOGGER.debug("Opening connection");
-		this.connection = connection;
+	@OnWebSocketConnect
+    public void onConnect(final Session session) {
+    	LOGGER.debug("Opening connection");
+		this.session = session;
 		sendMessage(livereloadMessages.getProperty("hello_command"));
 	}
 
-	@Override
+	@OnWebSocketMessage
 	public void onMessage(final String message) {
 		LOGGER.debug("Received a message: {}", message);
 		if(message.contains("\"command\":\"hello\"")) {
@@ -60,10 +65,10 @@ public class LiveReloadTestClient implements WebSocket.OnTextMessage {
 	}
 
 	public void sendMessage(final String message) {
-		if (connection != null) {
+		if (session != null) {
 			try {
 				LOGGER.debug("Sending message {}", message);
-				connection.sendMessage(message);
+				session.getRemote().sendString(message);
 			} catch (IOException e) {
 				fail("Failed to send message to server: " + e.getMessage());
 			}

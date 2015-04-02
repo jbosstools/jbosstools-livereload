@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
@@ -313,7 +314,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			try {
 				proxyServer.start();
 			} catch (Exception e) {
-				Logger.error("Failed to start LiveReload Proxy on port " + proxyServer.getConnectors()[0].getPort()
+				Logger.error("Failed to start LiveReload Proxy on port " + ((NetworkConnector)proxyServer.getConnectors()[0]).getPort()
 						+ " for server " + startedServer.getName(), e);
 			}
 		}

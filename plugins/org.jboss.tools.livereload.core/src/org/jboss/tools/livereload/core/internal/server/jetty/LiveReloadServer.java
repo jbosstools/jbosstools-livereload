@@ -14,8 +14,7 @@ package org.jboss.tools.livereload.core.internal.server.jetty;
 import java.util.EventObject;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -33,14 +32,13 @@ import org.jboss.tools.livereload.core.internal.service.Subscriber;
  * @author xcoulon
  * 
  */
-@SuppressWarnings("unchecked")
 public class LiveReloadServer extends Server implements Subscriber {
 
 	private static final String MIN_WEB_SOCKET_PROTOCOL_VERSION = "minVersion";
 
 	private static final String MIN_WEB_SOCKET_PROTOCOL_VERSION_VALUE = "-1";
 
-	private SelectChannelConnector websocketConnector;
+	private ServerConnector websocketConnector;
 
 	private final int websocketPort;
 
@@ -75,20 +73,14 @@ public class LiveReloadServer extends Server implements Subscriber {
 	private void configure(final String name, final String hostname, final int websocketPort, final boolean enableProxyServer,
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
 		setAttribute(JettyServerRunner.NAME, name);
-		websocketConnector = new SelectChannelConnector();
+		websocketConnector = new ServerConnector(this);
 		if (!allowRemoteConnections) {
 			websocketConnector.setHost(hostname);
 		}
-		websocketConnector.setStatsOn(true);
 		websocketConnector.setPort(websocketPort);
-		websocketConnector.setMaxIdleTime(0);
 		addConnector(websocketConnector);
-		final HandlerCollection handlers = new HandlerCollection();
-		setHandler(handlers);
-		final ServletContextHandler context = new ServletContextHandler(handlers, "/",
-				ServletContextHandler.NO_SESSIONS);
-		context.setConnectorNames(new String[] { websocketConnector.getName() });
-		ServletHolder liveReloadServletHolder = new ServletHolder(new LiveReloadWebSocketServlet());
+		final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+		final ServletHolder liveReloadServletHolder = new ServletHolder("ws-events", new LiveReloadWebSocketServlet());
 		// Fix for BrowserSim (Safari) due to check in WebSocketFactory
 		liveReloadServletHolder
 				.setInitParameter(MIN_WEB_SOCKET_PROTOCOL_VERSION, MIN_WEB_SOCKET_PROTOCOL_VERSION_VALUE);
@@ -100,6 +92,7 @@ public class LiveReloadServer extends Server implements Subscriber {
 				context.addFilter(new FilterHolder(new LiveReloadScriptInjectionFilter(websocketPort)), "/*", null);
 			}
 		}
+		setHandler(context);
 		EventService.getInstance().subscribe(this, new LiveReloadClientConnectionFilter());
 	}
 
@@ -135,7 +128,6 @@ public class LiveReloadServer extends Server implements Subscriber {
 				connectedClients = 0;
 			}
 		}
-
 	}
 
 	@Override

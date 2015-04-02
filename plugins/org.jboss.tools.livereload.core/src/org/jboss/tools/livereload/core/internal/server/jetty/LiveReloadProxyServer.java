@@ -14,7 +14,7 @@ package org.jboss.tools.livereload.core.internal.server.jetty;
 import java.net.UnknownHostException;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -30,7 +30,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 public class LiveReloadProxyServer extends Server {
 
 	/** The underlying connector. */
-	private SelectChannelConnector connector;
+	private ServerConnector connector;
 
 	/** network settings. */
 	private final String proxyHost, targetHost;
@@ -61,7 +61,7 @@ public class LiveReloadProxyServer extends Server {
 	private void configure(final String proxyHost, final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
 			final boolean enableScriptInjection) {
 		setAttribute(JettyServerRunner.NAME, "LiveReload-Proxy-Server-" + proxyPort + ":" + targetPort);
-		final SelectChannelConnector connector = new SelectChannelConnector();
+		final ServerConnector connector = new ServerConnector(this);
 		// restrict access to clients on the same host
 		if (!allowRemoteConnections) {
 			connector.setHost(proxyHost);
@@ -71,13 +71,15 @@ public class LiveReloadProxyServer extends Server {
 			connector.setHost(null);
 		}
 		connector.setPort(proxyPort);
-		connector.setMaxIdleTime(0);
+		//connector.setMaxIdleTime(0);
 		addConnector(connector);
 
 		final ServletContextHandler context = new ServletContextHandler();
-		context.setConnectorNames(new String[] { connector.getName() });
-		ServletHolder servletHolder = new ServletHolder(new ApplicationsProxyServlet(targetHost, targetPort));
-		context.addServlet(servletHolder, "/*");
+		//context.setConnectorNames(new String[] { connector.getName() });
+		final ServletHolder proxyServletHolder = new ServletHolder(new ApplicationsProxyServlet(targetHost, targetPort));
+		//proxyServletHolder.setAsyncSupported(true);
+		proxyServletHolder.setInitParameter("maxThreads", "256"); //$NON-NLS-1$ //$NON-NLS-2$
+		context.addServlet(proxyServletHolder, "/*");
 		setHandler(context);
 		if (enableScriptInjection) {
 			context.addFilter(new FilterHolder(new LiveReloadScriptInjectionFilter(liveReloadPort)), "/*", null);
@@ -90,7 +92,7 @@ public class LiveReloadProxyServer extends Server {
 	 * @return the number of connections on the websocket connector.
 	 */
 	public int getNumberOfConnectedClients() {
-		return connector.getConnections();
+		return connector.getConnectedEndPoints().size();
 	}
 	
 	/**

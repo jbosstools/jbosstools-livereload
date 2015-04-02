@@ -140,7 +140,7 @@ public abstract class AbstractCommonTestCase {
 	
 	@Before
 	@After
-	public void stopandDestroyAllServers() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
+	public void stopAndDestroyAllServers() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		for(IServer server : ServerCore.getServers()) {
 			if(server.getServerState() != IServer.STATE_STOPPED) {
 				WSTUtils.stop(server, TIMEOUT_STOP, TimeUnit.SECONDS);
