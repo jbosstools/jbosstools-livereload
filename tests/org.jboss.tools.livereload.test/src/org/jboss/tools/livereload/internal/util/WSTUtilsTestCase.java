@@ -69,14 +69,15 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		final TomcatServerBehaviour tomcat6ServerBehaviour = mock(TomcatServerBehaviour.class, RETURNS_DEEP_STUBS);
 		when(tomcat6ServerBehaviour.getTomcatServer().getServerPorts()).thenReturn(new ServerPort[]{new ServerPort("foo", "foo", 8086, "HTTP"), new ServerPort("foo", "foo", 8009, "AJP")});
 		when(tomcat6Server.getServerState()).thenReturn(IServer.STATE_STARTED);
-		when(tomcat6Server.getAdapter(ServerBehaviourDelegate.class)).thenReturn(tomcat6ServerBehaviour);
+		// upcasting to the return value to Object to avoid ClassCastException as mentionned on http://stackoverflow.com/questions/10324063/mockito-classcastexception
+		when((Object)tomcat6Server.getAdapter(ServerBehaviourDelegate.class)).thenReturn(tomcat6ServerBehaviour);
 		
 		tomcat7Server = mock(IServer.class, RETURNS_DEEP_STUBS);
 		when(tomcat7Server.getServerType().getId()).thenReturn(WSTUtils.TOMCAT_70_SERVER_TYPE);
 		when(tomcat7Server.getHost()).thenReturn("localhost");
 		final TomcatServerBehaviour tomcat7ServerBehaviour = mock(TomcatServerBehaviour.class, RETURNS_DEEP_STUBS);
 		when(tomcat7ServerBehaviour.getTomcatServer().getServerPorts()).thenReturn(new ServerPort[]{new ServerPort("foo", "foo", 8087, "HTTP"), new ServerPort("foo", "foo", 8009, "AJP")});
-		when(tomcat7Server.getAdapter(ServerBehaviourDelegate.class)).thenReturn(tomcat7ServerBehaviour);
+		when((Object)tomcat7Server.getAdapter(ServerBehaviourDelegate.class)).thenReturn(tomcat7ServerBehaviour);
 		when(tomcat7Server.getServerState()).thenReturn(IServer.STATE_STARTED);
 		
 		servers = Arrays.asList(jbossasServer, tomcat6Server, tomcat7Server);
