@@ -103,17 +103,6 @@
 							<artifactId>org.eclipse.platform</artifactId>
 							<version>0.0.0</version>
 						</dependency>
-						<!-- http://www.jmock.org/maven.html -->
-						<dependency>
-							<groupId>org.jmock</groupId>
-							<artifactId>jmock-legacy</artifactId>
-							<version>2.5.1</version>
-						</dependency>
-						<dependency>
-							<groupId>org.jmock</groupId>
-							<artifactId>jmock-junit4</artifactId>
-							<version>2.5.1</version>
-						</dependency>
 					</dependencies>
 					<includes>
 						<include>**/*TestCase.class</include>
