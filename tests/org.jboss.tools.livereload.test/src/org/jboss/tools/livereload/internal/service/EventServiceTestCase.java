@@ -21,7 +21,6 @@ import java.util.Arrays;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.wst.server.core.IServer;
-import org.fest.assertions.Assertions;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.ServerResourcePublishedEvent;
 import org.jboss.tools.livereload.core.internal.service.ServerResourcePublishedFilter;

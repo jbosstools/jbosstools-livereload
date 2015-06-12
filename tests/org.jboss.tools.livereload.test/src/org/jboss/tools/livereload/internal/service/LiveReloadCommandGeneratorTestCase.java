@@ -11,7 +11,7 @@
 
 package org.jboss.tools.livereload.internal.service;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,7 +25,6 @@ import org.eclipse.core.resources.IResource;
 import org.jboss.tools.livereload.core.internal.service.WorkspaceResourceChangedEvent;
 import org.jboss.tools.livereload.core.internal.util.ReloadCommandGenerator;
 import org.junit.Test;
-
 /**
  * @author xcoulon
  * 

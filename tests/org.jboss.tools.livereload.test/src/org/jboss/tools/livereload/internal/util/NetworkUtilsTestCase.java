@@ -11,7 +11,7 @@
 
 package org.jboss.tools.livereload.internal.util;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -21,7 +21,6 @@ import java.util.Map.Entry;
 
 import org.jboss.tools.livereload.core.internal.util.NetworkUtils;
 import org.junit.Test;
-
 /**
  * @author xcoulon
  *

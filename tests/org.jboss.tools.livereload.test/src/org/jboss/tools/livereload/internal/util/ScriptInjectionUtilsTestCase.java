@@ -11,13 +11,13 @@
 
 package org.jboss.tools.livereload.internal.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.fest.assertions.Assertions.*;
 import org.jboss.tools.livereload.core.internal.util.ScriptInjectionUtils;
 import org.junit.Test;
-
 /**
  * @author xcoulon
  *

@@ -3,9 +3,6 @@
  */
 package org.jboss.tools.livereload.internal;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -36,6 +33,9 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author xcoulon

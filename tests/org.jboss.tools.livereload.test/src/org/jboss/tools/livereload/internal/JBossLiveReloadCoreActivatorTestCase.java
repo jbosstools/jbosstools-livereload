@@ -11,7 +11,7 @@
 
 package org.jboss.tools.livereload.internal;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
-
 /**
  * @author xcoulon
  *

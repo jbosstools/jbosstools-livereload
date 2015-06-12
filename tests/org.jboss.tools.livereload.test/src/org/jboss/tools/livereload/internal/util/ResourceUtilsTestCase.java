@@ -11,13 +11,12 @@
 
 package org.jboss.tools.livereload.internal.util;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.eclipse.core.resources.IResource;
 import org.jboss.tools.livereload.core.internal.util.ResourceUtils;
 import org.jboss.tools.livereload.internal.AbstractCommonTestCase;
 import org.junit.Test;
-
 /**
  * @author xcoulon
  *

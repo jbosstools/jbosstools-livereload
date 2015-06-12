@@ -35,11 +35,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.wst.web,
  org.slf4j.api;bundle-version="1.6.4",
  ch.qos.logback.classic;bundle-version="1.0.0",
- ch.qos.logback.core;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+ ch.qos.logback.core;bundle-version="1.0.0",
+ org.jboss.tools.locus.mockito;bundle-version="1.9.5",
+ org.assertj.core;bundle-version="2.1.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .,
- lib/fest-assert-1.4.jar,
- lib/fest-util-1.1.6.jar,
- lib/objenesis-1.0.jar,
- lib/mockito-core-1.9.5.jar
+Bundle-ClassPath: .

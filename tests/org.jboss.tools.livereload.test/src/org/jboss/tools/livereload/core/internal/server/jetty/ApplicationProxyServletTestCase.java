@@ -11,13 +11,11 @@
 
 package org.jboss.tools.livereload.core.internal.server.jetty;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
 import org.mockito.Mockito;
-
+import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author xcoulon
  *

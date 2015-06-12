@@ -11,7 +11,7 @@
 
 package org.jboss.tools.livereload.internal.util;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,7 +38,6 @@ import org.jboss.tools.livereload.internal.AbstractCommonTestCase;
 import org.jboss.tools.livereload.test.previewserver.PreviewServerFactory;
 import org.junit.Before;
 import org.junit.Test;
-
 /**
  * @author xcoulon
  * 

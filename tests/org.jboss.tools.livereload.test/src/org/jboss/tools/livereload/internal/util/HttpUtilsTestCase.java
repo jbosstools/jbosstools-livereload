@@ -11,13 +11,12 @@
 
 package org.jboss.tools.livereload.internal.util;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.Charset;
 
 import org.jboss.tools.livereload.core.internal.util.HttpUtils;
 import org.junit.Test;
-
 /**
  * @author xcoulon
  *
