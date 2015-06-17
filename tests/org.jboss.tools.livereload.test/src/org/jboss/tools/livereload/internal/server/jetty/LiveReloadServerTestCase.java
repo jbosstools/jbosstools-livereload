@@ -944,7 +944,25 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final LiveReloadProxyServer proxyServer = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer);
 		assertThat(proxyServer).isNotNull();
 		assertThat(proxyServer.getProxyHost()).isEqualTo(server.getHost());
-		
 	}
 
+	
+	@Test
+	public void shouldRetrieveCustomLocationResponseHeader() throws URISyntaxException, Exception {
+		createHttpPreviewServer();
+		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		createAndLaunchLiveReloadServer(true);
+		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
+		// operation: send a request and expect a 302 response with a 'Location' header using the proxy port
+		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
+		final int proxyPort = connector.getPort();
+		final HttpClient client = new HttpClient();
+		final HttpMethod method = new GetMethod("http://localhost:" + proxyPort + "/foo/baz");
+		method.setFollowRedirects(false);
+		final int status = client.executeMethod(method);
+		// verification
+		assertThat(status).isEqualTo(302);
+		assertThat(method.getResponseHeader("Location").getValue()).isEqualTo("http://localhost:" + proxyPort + "/foo/baz/");
+		
+	}
 }

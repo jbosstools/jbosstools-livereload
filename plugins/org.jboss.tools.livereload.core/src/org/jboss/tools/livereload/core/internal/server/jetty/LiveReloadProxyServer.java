@@ -76,7 +76,7 @@ public class LiveReloadProxyServer extends Server {
 
 		final ServletContextHandler context = new ServletContextHandler();
 		//context.setConnectorNames(new String[] { connector.getName() });
-		final ServletHolder proxyServletHolder = new ServletHolder(new ApplicationsProxyServlet(targetHost, targetPort));
+		final ServletHolder proxyServletHolder = new ServletHolder(new ApplicationsProxyServlet(proxyPort, targetHost, targetPort));
 		//proxyServletHolder.setAsyncSupported(true);
 		proxyServletHolder.setInitParameter("maxThreads", "256"); //$NON-NLS-1$ //$NON-NLS-2$
 		context.addServlet(proxyServletHolder, "/*");

@@ -54,12 +54,13 @@ public class PreviewServer extends Server {
 		final ServletHandler workspaceServletHandler = new ServletHandler();
 		workspaceServletHandler.addServletWithMapping(new ServletHolder(new WorkspaceFileServlet()), "/");
 		
-		final ServletContextHandler fooHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        fooHandler.setContextPath("/foo");
-		fooHandler.addServlet(new ServletHolder(new QueryParamVerifierServlet()), "/bar");
+		final ServletContextHandler webHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        webHandler.setContextPath("/foo");
+        webHandler.addServlet(new ServletHolder(new RedirectServlet()), "/baz");
+		webHandler.addServlet(new ServletHolder(new QueryParamVerifierServlet()), "/bar");
 		LOGGER.info("serving {} on port {}", resourceHandler.getBaseResource(), port );
 		final HandlerList handlers = new HandlerList();
-		handlers.setHandlers(new Handler[] {fooHandler, workspaceServletHandler, new DefaultHandler() });
+		handlers.setHandlers(new Handler[] {webHandler, workspaceServletHandler, new DefaultHandler() });
 		setHandler(handlers);
 	}
 	

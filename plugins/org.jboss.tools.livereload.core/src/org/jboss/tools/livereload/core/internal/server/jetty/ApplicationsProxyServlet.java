@@ -19,6 +19,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.URIUtils;
@@ -34,11 +35,14 @@ public class ApplicationsProxyServlet extends ProxyServlet {
 
 	private static final long serialVersionUID = -743475231540209788L;
 
+	private final int proxyPort;
+	
 	private final int targetPort;
 
 	private final String targetHost;
 
-	public ApplicationsProxyServlet(final String targetHost, final int targetPort) {
+	public ApplicationsProxyServlet(final int proxyPort, final String targetHost, final int targetPort) {
+		this.proxyPort = proxyPort;
 		this.targetHost = targetHost;
 		this.targetPort = targetPort;
 	}
@@ -60,6 +64,21 @@ public class ApplicationsProxyServlet extends ProxyServlet {
 			Logger.error("Failed to parse the requested URI", e);
 		}
 		return null;
+	}
+	
+	/**
+	 * Customize the returned 'location' header to replace the app server port with the proxy port
+	 */
+	@Override
+	protected String filterResponseHeader(HttpServletRequest request, String headerName, String headerValue) {
+		if("Location".equals(headerName)) {
+			try {
+				return URIUtils.convert(headerValue).toPort(proxyPort);
+			} catch (URISyntaxException e) {
+				Logger.error("Failed to rewrite the 'Location' response header value '" + headerValue + "'",e);
+			}
+		}
+		return super.filterResponseHeader(request, headerName, headerValue);
 	}
 
 }
