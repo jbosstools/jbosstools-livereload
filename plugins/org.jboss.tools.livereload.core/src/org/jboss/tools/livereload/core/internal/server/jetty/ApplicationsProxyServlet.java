@@ -19,7 +19,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.URIUtils;
@@ -35,21 +34,26 @@ public class ApplicationsProxyServlet extends ProxyServlet {
 
 	private static final long serialVersionUID = -743475231540209788L;
 
+	private final String proxyHost;
+
 	private final int proxyPort;
 	
 	private final int targetPort;
 
 	private final String targetHost;
 
-	public ApplicationsProxyServlet(final int proxyPort, final String targetHost, final int targetPort) {
+	/**
+	 * Constructor
+	 * @param proxyHost name of the host running the proxy  
+	 * @param proxyPort port of the proxy
+	 * @param targetHost name or address of the host running the actual app server
+	 * @param targetPort port of the actual app server
+	 */
+	public ApplicationsProxyServlet(final String proxyHost, final int proxyPort, final String targetHost, final int targetPort) {
+		this.proxyHost = proxyHost;
 		this.proxyPort = proxyPort;
 		this.targetHost = targetHost;
 		this.targetPort = targetPort;
-	}
-	
-	@Override
-	public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
-		super.service(request, response);
 	}
 	
 	@Override
@@ -70,10 +74,10 @@ public class ApplicationsProxyServlet extends ProxyServlet {
 	 * Customize the returned 'location' header to replace the app server port with the proxy port
 	 */
 	@Override
-	protected String filterResponseHeader(HttpServletRequest request, String headerName, String headerValue) {
+	public String filterResponseHeader(HttpServletRequest request, String headerName, String headerValue) {
 		if("Location".equals(headerName)) {
 			try {
-				return URIUtils.convert(headerValue).toPort(proxyPort);
+				return URIUtils.convert(headerValue).toHost(this.proxyHost).toPort(this.proxyPort);
 			} catch (URISyntaxException e) {
 				Logger.error("Failed to rewrite the 'Location' response header value '" + headerValue + "'",e);
 			}

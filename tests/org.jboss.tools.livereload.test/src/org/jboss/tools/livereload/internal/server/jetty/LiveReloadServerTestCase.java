@@ -955,14 +955,15 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation: send a request and expect a 302 response with a 'Location' header using the proxy port
 		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
+		final String proxyHost = connector.getHost();
 		final int proxyPort = connector.getPort();
 		final HttpClient client = new HttpClient();
-		final HttpMethod method = new GetMethod("http://localhost:" + proxyPort + "/foo/baz");
+		final HttpMethod method = new GetMethod("http://" + proxyHost + ":" + proxyPort + "/foo/baz");
 		method.setFollowRedirects(false);
 		final int status = client.executeMethod(method);
 		// verification
 		assertThat(status).isEqualTo(302);
-		assertThat(method.getResponseHeader("Location").getValue()).isEqualTo("http://localhost:" + proxyPort + "/foo/baz/");
+		assertThat(method.getResponseHeader("Location").getValue()).isEqualTo("http://" + proxyHost + ":" + proxyPort + "/foo/baz/");
 		
 	}
 }
