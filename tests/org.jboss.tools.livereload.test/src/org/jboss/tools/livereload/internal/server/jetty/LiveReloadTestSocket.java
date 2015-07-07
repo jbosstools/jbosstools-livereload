@@ -2,6 +2,7 @@ package org.jboss.tools.livereload.internal.server.jetty;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.eclipse.jetty.websocket.api.Session;
@@ -28,12 +29,9 @@ public class LiveReloadTestSocket {
 	public LiveReloadTestSocket(final String location) throws IOException {
 		this.location = location;
 		livereloadMessages = new Properties();
-		livereloadMessages.load(Thread
-				.currentThread()
-				.getContextClassLoader()
-				.getResourceAsStream(
-						LiveReloadServerTestCase.class.getPackage().getName().replaceAll("\\.", File.separator)
-								+ File.separator + "messages.properties"));
+		final InputStream messagesStream = getClass().getResourceAsStream("messages.properties");
+		livereloadMessages.load(messagesStream);
+
 	}
  
 	@OnWebSocketClose
