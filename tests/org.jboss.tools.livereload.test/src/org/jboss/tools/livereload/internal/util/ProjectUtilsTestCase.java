@@ -32,7 +32,7 @@ public class ProjectUtilsTestCase extends AbstractCommonTestCase {
 	public void shouldExtractProjectFromAbsoluteLocation() {
 		// pre-condition
 		final IResource index_html_file = project.findMember("WebContent" + File.separator + "index.html");
-		final String location = "file://" + index_html_file.getLocation().toOSString();
+		final String location = "file://" + index_html_file.getLocation().toString();
 		// operation
 		IProject project = ProjectUtils.extractProject(location);
 		// verification

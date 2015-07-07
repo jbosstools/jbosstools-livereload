@@ -110,7 +110,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final IResource index_html_file = project.findMember("WebContent" + File.separator + "index.html");
 		indexFileLocation = "file://" + index_html_file.getLocation().toOSString();
 		indexDocumentlocation = "http://localhost:" + liveReloadServerPort + "/" + project.getName() + "/"
-				+ index_html_file.getLocation().makeRelativeTo(project.getLocation()).toOSString();
+				+ index_html_file.getLocation().makeRelativeTo(project.getLocation()).toString();
 		unknownServerLocation = "http://localhost:12345/index.html";
 		unknowDocumentLocation = indexDocumentlocation.replace("index.html", "unknown.html");
 		cssDocumentLocation = indexDocumentlocation.replace("index.html", "styles.css");
