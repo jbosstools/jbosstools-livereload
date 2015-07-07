@@ -1,6 +1,5 @@
 package org.jboss.tools.livereload.internal.server.jetty;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;

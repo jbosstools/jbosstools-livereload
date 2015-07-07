@@ -57,6 +57,8 @@ import org.jboss.tools.livereload.test.previewserver.PreviewServerFactory;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.fail;
+
 /**
  * @author xcoulon
  * 
@@ -90,6 +92,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 	private LiveReloadServerBehaviour liveReloadServerBehaviour;
 
+	final String hostname = resolveHostname();
+	
 	@Before
 	public void setup() throws IOException, CoreException {
 		// remove all servers
@@ -109,9 +113,9 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		liveReloadServerPort = SocketUtil.findUnusedPort(50000, 55000);
 		final IResource index_html_file = project.findMember("WebContent" + File.separator + "index.html");
 		indexFileLocation = "file://" + index_html_file.getLocation().toOSString();
-		indexDocumentlocation = "http://localhost:" + liveReloadServerPort + "/" + project.getName() + "/"
+		indexDocumentlocation = "http://" + hostname + ":" + liveReloadServerPort + "/" + project.getName() + "/"
 				+ index_html_file.getLocation().makeRelativeTo(project.getLocation()).toString();
-		unknownServerLocation = "http://localhost:12345/index.html";
+		unknownServerLocation = "http://" + hostname + ":12345/index.html";
 		unknowDocumentLocation = indexDocumentlocation.replace("index.html", "unknown.html");
 		cssDocumentLocation = indexDocumentlocation.replace("index.html", "styles.css");
 		asciidocDocumentLocation = indexDocumentlocation.replace("index.html", "README.adoc");
@@ -123,9 +127,10 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	 * @throws TimeoutException
 	 * @throws ExecutionException
 	 * @throws InterruptedException
+	 * @throws UnknownHostException 
 	 * 
 	 */
-	private IServer createAndLaunchLiveReloadServer(final String serverName, final String hostname, final boolean injectScript)
+	private IServer createAndLaunchLiveReloadServer(final String serverName, final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		final IServer livereloadServer = WSTUtils.createLiveReloadServer(serverName, hostname, liveReloadServerPort,
 				injectScript, false);
@@ -140,6 +145,17 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		return livereloadServer;
 	}
 
+	private static String resolveHostname() {
+		try {
+			return InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			fail("Unable to retrieve local host name: " + e.getMessage());
+		}
+		// never reached
+		return null;
+	}
+
 	/**
 	 * @throws CoreException
 	 * @throws TimeoutException
@@ -149,7 +165,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	 */
 	private IServer createAndLaunchLiveReloadServer(final boolean injectScript)
 			throws CoreException, InterruptedException, ExecutionException, TimeoutException {
-		return createAndLaunchLiveReloadServer("LiveReload Test Server at localhost", "localhost", injectScript);
+		return createAndLaunchLiveReloadServer("LiveReload Test Server at localhost", injectScript);
 	}
 	
 	private void setNotificationDelay(final IServer livereloadServer, final int seconds) throws CoreException, InterruptedException, ExecutionException, TimeoutException {
@@ -188,8 +204,9 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final WebSocketClient webSocketClient = new WebSocketClient();
 		webSocketClient.start();
 		final ClientUpgradeRequest upgradeRequest = new ClientUpgradeRequest();
-        final Future<Session> future = webSocketClient.connect(client, new URI("ws://localhost:" + liveReloadServerPort
-				+ "/livereload"), upgradeRequest);
+        final URI uri = new URI("ws://" + hostname + ":" + this.liveReloadServerPort
+				+ "/livereload");
+		final Future<Session> future = webSocketClient.connect(client, uri, upgradeRequest);
 		// final Connection session = future.get(5, TimeUnit.SECONDS);
 		final Session session = future.get();
 		Thread.sleep(200);
@@ -342,8 +359,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
 				.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
 		final IResource chineseHtmlFile = project.findMember("WebContent" + File.separator + "chinese.html");
-		final String chineseDocumentlocation = "http://localhost:" + liveReloadServerPort + "/" + project.getName() + "/"
-				+ chineseHtmlFile.getLocation().makeRelativeTo(project.getLocation()).toOSString();
+		final String chineseDocumentlocation = "http://" + hostname + ":" + liveReloadServerPort + "/" + project.getName() + "/"
+				+ chineseHtmlFile.getLocation().makeRelativeTo(project.getLocation()).toString();
 				assertThat(chineseHtmlFile).isNotNull();
 		// operation
 		HttpClient client = new HttpClient();
@@ -373,8 +390,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		createAndLaunchLiveReloadServer(false);
 		final IResource chineseHtmlFile = project.findMember("WebContent" + File.separator + "chinese.html");
-		final String chineseDocumentlocation = "http://localhost:" + liveReloadServerPort + "/" + project.getName() + "/"
-				+ chineseHtmlFile.getLocation().makeRelativeTo(project.getLocation()).toOSString();
+		final String chineseDocumentlocation = "http://" + hostname + ":" + liveReloadServerPort + "/" + project.getName() + "/"
+				+ chineseHtmlFile.getLocation().makeRelativeTo(project.getLocation()).toString();
 				assertThat(chineseHtmlFile).isNotNull();
 		// operation
 		HttpClient client = new HttpClient();
@@ -435,7 +452,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		createAndLaunchLiveReloadServer(true);
 		// operation
 		HttpClient client = new HttpClient();
-		HttpMethod method = new GetMethod("http://localhost:" + liveReloadServerPort + "/livereload.js");
+		HttpMethod method = new GetMethod("http://" + hostname + ":" + liveReloadServerPort + "/livereload.js");
 		method.addRequestHeader("Accept", "text/javascript");
 		int status = client.executeMethod(method);
 		// verification
@@ -521,7 +538,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		final int httpPreviewPort = createHttpPreviewServer();
 		createAndLaunchLiveReloadServer(true);
-		final String indexRemoteDocumentlocation = "http://localhost:" + httpPreviewPort + "/" + project.getName()
+		final String indexRemoteDocumentlocation = "http://" + hostname + ":" + httpPreviewPort + "/" + project.getName()
 				+ "/index.html";
 		final LiveReloadTestSocket client = new LiveReloadTestSocket(indexRemoteDocumentlocation);
 		// operation: start server and connect to it
@@ -532,7 +549,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
 		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
-		assertThat(client.getReceivedNotification()).contains("http://localhost:" + httpPreviewPort);
+		assertThat(client.getReceivedNotification()).contains("http://" + hostname + ":" + httpPreviewPort);
 		// end
 		session.close();
 	}
@@ -542,7 +559,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// pre-condition
 		final int httpPreviewPort = createHttpPreviewServer();
 		createAndLaunchLiveReloadServer(true);
-		final String indexRemoteDocumentlocation = "http://localhost:" + httpPreviewPort + "/" + project.getName()
+		final String indexRemoteDocumentlocation = "http://" + hostname + ":" + httpPreviewPort + "/" + project.getName()
 				+ "/index.html";
 		final LiveReloadTestSocket client = new LiveReloadTestSocket(indexRemoteDocumentlocation);
 		// operation: start server and connect to it
@@ -556,7 +573,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
 		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
-		assertThat(client.getReceivedNotification()).doesNotContain("http://localhost:" + this.liveReloadServerPort);
+		assertThat(client.getReceivedNotification()).doesNotContain("http://" + hostname + ":" + this.liveReloadServerPort);
 		assertThat(end - start).isLessThan(2000);
 		// end
 		session.close();
@@ -569,7 +586,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final IServer livereloadServer = createAndLaunchLiveReloadServer(true);
 		setNotificationDelay(livereloadServer, 5);
 		
-		final String indexRemoteDocumentlocation = "http://localhost:" + httpPreviewPort + "/" + project.getName()
+		final String indexRemoteDocumentlocation = "http://" + hostname + ":" + httpPreviewPort + "/" + project.getName()
 				+ "/index.html";
 		final LiveReloadTestSocket client = new LiveReloadTestSocket(indexRemoteDocumentlocation);
 		// operation: start server and connect to it
@@ -582,7 +599,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		Thread.sleep(200);
 		// verification: client should have been notified with a reload message
 		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
-		assertThat(client.getReceivedNotification()).doesNotContain("http://localhost:" + this.liveReloadServerPort);
+		assertThat(client.getReceivedNotification()).doesNotContain("http://" + hostname + ":" + this.liveReloadServerPort);
 		assertThat(end - start).isGreaterThan(5000);
 		// end
 		session.close();
@@ -765,7 +782,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
 		final int proxyPort = connector.getPort();
 		HttpClient client = new HttpClient();
-		HttpMethod method = new GetMethod("http://localhost:" + proxyPort + "/" + projectName
+		HttpMethod method = new GetMethod("http://" + hostname + ":" + proxyPort + "/" + projectName
 				+ "/WebContent/index.html");
 		method.addRequestHeader("Accept", "text/html");
 		int status = client.executeMethod(method);
@@ -789,7 +806,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
 		final int proxyPort = connector.getPort();
 		final HttpClient client = new HttpClient();
-		final HttpMethod method = new GetMethod("http://localhost:" + proxyPort + "/" + projectName
+		final HttpMethod method = new GetMethod("http://" + hostname + ":" + proxyPort + "/" + projectName
 				+ "/WebContent/index.html");
 		method.addRequestHeader("Accept", "text/html");
 		int status = client.executeMethod(method);
@@ -817,7 +834,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
 		final int proxyPort = connector.getPort();
 		HttpClient client = new HttpClient();
-		HttpMethod method = new GetMethod("http://localhost:" + proxyPort + "/" + projectName
+		HttpMethod method = new GetMethod("http://" + hostname + ":" + proxyPort + "/" + projectName
 				+ "/WebContent/index.html");
 		method.addRequestHeader("Accept", "text/html; charset=ISO-8859-1");
 		int status = client.executeMethod(method);
@@ -844,7 +861,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
 		final int proxyPort = connector.getPort();
 		final HttpClient client = new HttpClient();
-		final HttpMethod method = new GetMethod("http://localhost:" + proxyPort + "/foo/bar?w00t=true");
+		final HttpMethod method = new GetMethod("http://" + hostname + ":" + proxyPort + "/foo/bar?w00t=true");
 		final int status = client.executeMethod(method);
 		// verification
 		assertThat(status).isEqualTo(200);
@@ -860,7 +877,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// operation
 		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
 		final int proxyPort = connector.getPort();
-		final LiveReloadTestSocket client = new LiveReloadTestSocket("http://localhost:" + proxyPort + "/"
+		final LiveReloadTestSocket client = new LiveReloadTestSocket("http://" + hostname + ":" + proxyPort + "/"
 				+ projectName + "/WebContent/index.html");
 		// operation
 		final Session session = connectFrom(client);
@@ -880,7 +897,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// operation
 		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
 		final int proxyPort = connector.getPort();
-		final LiveReloadTestSocket client = new LiveReloadTestSocket("http://localhost:" + proxyPort + "/"
+		final LiveReloadTestSocket client = new LiveReloadTestSocket("http://" + hostname + ":" + proxyPort + "/"
 				+ projectName + "/WebContent/index.html");
 		// operation
 		final Session session = connectFrom(client);
@@ -904,7 +921,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// operation
 		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
 		final int proxyPort = connector.getPort();
-		final LiveReloadTestSocket client = new LiveReloadTestSocket("http://localhost:" + proxyPort + "/"
+		final LiveReloadTestSocket client = new LiveReloadTestSocket("http://" + hostname + ":" + proxyPort + "/"
 				+ projectName + "/WebContent/index.html");
 		// operation
 		connectFrom(client);
@@ -920,19 +937,18 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldNotStartIfPortAlreadyInUse() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		// pre-condition: create a first server (no need for script injection)
-		final IServer firstServer = createAndLaunchLiveReloadServer("Server 1", "localhost", false);
+		final IServer firstServer = createAndLaunchLiveReloadServer("Server 1", false);
 		assertThat(firstServer.getServerState()).isEqualTo(IServer.STATE_STARTED);
 		// operation: create a second server (no need for script injection
 		// either) and attempt to start it on the same port -> should not start
-		final IServer secondServer = createAndLaunchLiveReloadServer("Server 2", "localhost", false);
+		final IServer secondServer = createAndLaunchLiveReloadServer("Server 2", false);
 		// verification
 		assertThat(secondServer.getServerState()).isEqualTo(IServer.STATE_STOPPED);
 	}
 	
 	@Test
 	public void shouldUseACustomHostName() throws CoreException, InterruptedException, ExecutionException, TimeoutException, UnknownHostException {
-		final String hostname = InetAddress.getLocalHost().getHostName();
-		final IServer server = createAndLaunchLiveReloadServer("foo.server", hostname, true);
+		final IServer server = createAndLaunchLiveReloadServer("foo.server", true);
 		assertThat(server.getServerState()).isEqualTo(IServer.STATE_STARTED);
 		assertThat(server.getHost()).isEqualTo(hostname);
 		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getHost()).isEqualTo(hostname);

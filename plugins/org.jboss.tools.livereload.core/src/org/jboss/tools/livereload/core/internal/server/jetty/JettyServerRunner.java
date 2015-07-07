@@ -48,6 +48,7 @@ public class JettyServerRunner implements Runnable {
 		Logger.debug("Starting {} on port {}", liveReloadServer, runner.getPort());
 		final Thread serverThread = new Thread(runner, (String) liveReloadServer.getAttribute(JettyServerRunner.NAME));
 		serverThread.start();
+		
 		// wait until server is started
 		final TaskMonitor monitor = new TaskMonitor() {
 			@Override
@@ -107,6 +108,7 @@ public class JettyServerRunner implements Runnable {
 				Logger.debug("Starting {}...", server.getAttribute(NAME));
 				server.start();
 				status = Status.OK_STATUS;
+				server.join();
 			}
 		} catch (final Exception startException) {
 			status = Logger.error("Failed to start '" + server.getAttribute(NAME) + "'", startException);

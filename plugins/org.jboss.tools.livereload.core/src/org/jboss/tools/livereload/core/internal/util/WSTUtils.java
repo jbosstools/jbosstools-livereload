@@ -345,7 +345,8 @@ public class WSTUtils {
 		final boolean isStopping = (server.getServerState() == IServer.STATE_STOPPING);
 		final boolean needsStop = (server.getServerState() == IServer.STATE_STARTING || server.getServerState() == IServer.STATE_STARTED );
 		final boolean needsRestart = isStopping || needsStop;
-		return new Job((needsRestart ? "Restarting " : "Starting ") + server.getName() + "...") {
+		final String jobMessage = (needsRestart ? "Restarting " : "Starting ") + server.getName() + "...";
+		return new Job(jobMessage) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				ServerListener listener = new ServerListener(server);
@@ -377,17 +378,22 @@ public class WSTUtils {
 					subMonitor.done();
 					if (server.getServerState() != IServer.STATE_STARTED) {
 						if (needsRestart) {
-							Logger.error("Failed to restart " + server.getName() + " before timeout");
+							final String errorMessage = "Failed to restart " + server.getName() + " before timeout";
+							Logger.error(errorMessage);
 						} else {
-							Logger.error("Failed to start " + server.getName() + " before timeout");
+							final String errorMessage = "Failed to start " + server.getName() + " before timeout"; 
+							Logger.error(errorMessage);
 						}
+						return Status.CANCEL_STATUS;
 					}
 					return Status.OK_STATUS;
 				} catch (Exception e) {
 					if (needsRestart) {
-						Logger.error("Failed to restart " + server.getName() + " before timeout", e);
+						final String errorMessage = "Failed to restart " + server.getName() + " before timeout";
+						Logger.error(errorMessage);
 					} else {
-						Logger.error("Failed to start " + server.getName() + " before timeout", e);
+						final String errorMessage = "Failed to start " + server.getName() + " before timeout"; 
+						Logger.error(errorMessage);
 					}
 					return Status.CANCEL_STATUS;
 				} finally {
@@ -445,6 +451,7 @@ public class WSTUtils {
 		public void dispose() {
 			server.removeServerListener(this);
 		}
+		
 		@Override
 		public void serverChanged(ServerEvent event) {
 			if(event.getServer().getServerState() == IServer.STATE_STOPPED) {
@@ -472,9 +479,6 @@ public class WSTUtils {
 			this.serverStopping = false;			
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -483,9 +487,6 @@ public class WSTUtils {
 			return result;
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj) {
@@ -502,7 +503,7 @@ public class WSTUtils {
 				if (other.server != null) {
 					return false;
 				}
-			} else if (!server.equals(other.server)) {
+			} else if (!server.getName().equals(other.server)) {
 				return false;
 			}
 			return true;

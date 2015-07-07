@@ -39,7 +39,7 @@ public class ProjectUtils {
 	 */
 	public static IProject extractProject(final String fileLocation) {
 		try {
-			URI fileURI = new URI(fileLocation);
+			final URI fileURI = new URI(fileLocation.replace("\\", "/"));
 			final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 			final IFile[] filesForLocation = root.findFilesForLocationURI(fileURI);
 			for (IFile file : filesForLocation) {

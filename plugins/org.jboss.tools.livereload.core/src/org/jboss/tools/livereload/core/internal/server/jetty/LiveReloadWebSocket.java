@@ -111,7 +111,7 @@ public class LiveReloadWebSocket implements Subscriber {
 	public void onMessage(final String text) {
 		Logger.debug("Received message on socket #{}: '{}'", id, text);
 		try {
-			final JsonNode rootNode = mapper.readTree(text);
+			final JsonNode rootNode = mapper.readTree(text.replace("\\", "\\\\"));
 			final String commandValue = rootNode.path("command").asText();
 			final String HELLO_COMMAND = "hello";
 			final String INFO_COMMAND = "info";
@@ -129,7 +129,7 @@ public class LiveReloadWebSocket implements Subscriber {
 				if(browserLocation == null) {
 					return;
 				}
-				if(browserLocation.startsWith("file:///")) {
+				if(browserLocation.startsWith("file://")) {
 					final IProject project = ProjectUtils.extractProject(browserLocation);
 					eventService.subscribe(this, new WorkspaceResourceChangedEventFilter(project));
 					eventService.publish(new LiveReloadClientConnectedEvent(project));
@@ -156,6 +156,7 @@ public class LiveReloadWebSocket implements Subscriber {
 				}
 				// close connection from this client
 				else {
+					Logger.error("Cloding session because client command is unsupported: " + commandValue);
 					session.close();
 				}
 				

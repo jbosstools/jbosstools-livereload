@@ -118,20 +118,23 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 	 */
 	public void startServer() throws CoreException {
 		try {
+			if(SocketUtil.isPortInUse(websocketPort)) {
+				throw new CoreException(new Status(IStatus.ERROR, JBossLiveReloadCoreActivator.PLUGIN_ID, "Cannot start LiveReload server because port " + websocketPort + " is already in use."));
+			}
 			// set the server status to "Starting"
 			setServerStarting();
 			// now, let's init and start the embedded jetty server from the
 			// server attributes
 			final IServer server = getServer();
 			// retrieve the websocket port, use the default value if it was missing
-			websocketPort = server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT);
+			this.websocketPort = server.getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, LiveReloadLaunchConfiguration.DEFAULT_WEBSOCKET_PORT);
 			// fix the new default behaviour: proxy is now always enabled
 			if(!isProxyEnabled()) {
 				setProxyEnabled(true);
 			}
 			final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
 			final boolean enableScriptInjection = isScriptInjectionEnabled();
-			this.liveReloadServer = new LiveReloadServer(server.getName(), server.getHost(), websocketPort, true, allowRemoteConnections,
+			this.liveReloadServer = new LiveReloadServer(server.getName(), server.getHost(), this.websocketPort, true, allowRemoteConnections,
 					enableScriptInjection);
 			this.liveReloadServerRunnable = JettyServerRunner.start(liveReloadServer);
 			if(!this.liveReloadServerRunnable.isSuccessfullyStarted()) { 
