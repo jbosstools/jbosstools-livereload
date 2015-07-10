@@ -33,21 +33,6 @@
 									<artifactId>jericho-html</artifactId>
 									<version>3.3</version>
 								</artifactItem>
-								<artifactItem>
-									<groupId>com.fasterxml.jackson.core</groupId>
-									<artifactId>jackson-databind</artifactId>
-									<version>2.2.2</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>com.fasterxml.jackson.core</groupId>
-									<artifactId>jackson-annotations</artifactId>
-									<version>2.2.2</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>com.fasterxml.jackson.core</groupId>
-									<artifactId>jackson-core</artifactId>
-									<version>2.2.2</version>
-								</artifactItem>
 							</artifactItems>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>
@@ -57,7 +42,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.5</version>
 				<configuration>
 					<filesets>
 						<fileset>
