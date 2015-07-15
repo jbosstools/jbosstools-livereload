@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jboss.tools.livereload.test.feature"
-     label="%featureName" version="1.3.0.qualifier" provider-name="%featureProvider">
+   id="org.jboss.tools.livereload.test.feature"
+   label="%featureName"
+   version="1.3.0.qualifier"
+   provider-name="%featureProvider"
+   license-feature="org.jboss.tools.foundation.license.feature"
+   license-feature-version="0.0.0">
 
    <description>
       %description
@@ -11,7 +15,7 @@
       %copyright
    </copyright>
 
-	<license url="%licenseURL">
+	<license>
       %license
    </license>
 
