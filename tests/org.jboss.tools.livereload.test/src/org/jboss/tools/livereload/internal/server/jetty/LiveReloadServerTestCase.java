@@ -19,6 +19,8 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -45,8 +47,10 @@ import org.eclipse.wst.server.core.util.SocketUtil;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
+import org.jboss.tools.livereload.core.internal.service.EventFilter;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.ServerLifeCycleListener;
+import org.jboss.tools.livereload.core.internal.service.Subscriber;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils.TaskMonitor;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
@@ -82,7 +86,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	
 	private String unknownServerLocation;
 
-	private String unknowDocumentLocation;
+	private String unknownDocumentLocation;
 
 	private String cssDocumentLocation;
 
@@ -116,7 +120,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		indexDocumentlocation = "http://" + hostname + ":" + liveReloadServerPort + "/" + project.getName() + "/"
 				+ index_html_file.getLocation().makeRelativeTo(project.getLocation()).toString();
 		unknownServerLocation = "http://" + hostname + ":12345/index.html";
-		unknowDocumentLocation = indexDocumentlocation.replace("index.html", "unknown.html");
+		unknownDocumentLocation = "http://" + hostname + ":" + liveReloadServerPort + "/unknownProject/index.html";
 		cssDocumentLocation = indexDocumentlocation.replace("index.html", "styles.css");
 		asciidocDocumentLocation = indexDocumentlocation.replace("index.html", "README.adoc");
 		folderDocumentLocation = indexDocumentlocation.replace("index.html", "");
@@ -209,7 +213,9 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final Future<Session> future = webSocketClient.connect(client, uri, upgradeRequest);
 		// final Connection session = future.get(5, TimeUnit.SECONDS);
 		final Session session = future.get();
-		Thread.sleep(200);
+		while(!client.isHandshakeComplete()) {
+			Thread.sleep(100);
+		}
 		return session;
 	}
 
@@ -249,6 +255,23 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(session.isOpen()).isTrue();
 		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(1);
+		session.close();
+	}
+	
+	@Test
+	public void shouldNotAcceptWebsocketConnexionForUnknownFileLocation() throws Exception {
+		// pre-condition
+		createAndLaunchLiveReloadServer(false);
+		final LiveReloadTestSocket client = new LiveReloadTestSocket(unknownDocumentLocation);
+		final Map<Subscriber, List<EventFilter>> eventSubscribers = EventService.getInstance().getSubscribers();
+		final int subscribersCounter = eventSubscribers.size();
+		// operation
+		final Session session = connectFrom(client);
+		// verification
+		assertThat(session.isOpen()).isTrue();
+		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(0);
+		// unchanged number of subscribers
+		assertThat(eventSubscribers.size()).isEqualTo(subscribersCounter);
 		session.close();
 	}
 	
@@ -294,7 +317,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		createAndLaunchLiveReloadServer(true);
 		// operation
 		HttpClient client = new HttpClient();
-		HttpMethod method = new GetMethod(unknowDocumentLocation);
+		HttpMethod method = new GetMethod(unknownDocumentLocation);
 		int status = client.executeMethod(method);
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_NOT_FOUND);
@@ -627,7 +650,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		createAndLaunchLiveReloadServer(false);
 		// operation
 		HttpClient client = new HttpClient();
-		HttpMethod method = new GetMethod(unknowDocumentLocation);
+		HttpMethod method = new GetMethod(unknownDocumentLocation);
 		method.addRequestHeader("Accept", "text/css");
 		int status = client.executeMethod(method);
 		// verification

@@ -25,12 +25,13 @@ public class LiveReloadTestSocket {
 	private int reloadNotificationsCounter = 0;
 	private String receivedNotification;
 	
+	private boolean handshakeComplete = false;
+	
 	public LiveReloadTestSocket(final String location) throws IOException {
 		this.location = location;
 		livereloadMessages = new Properties();
 		final InputStream messagesStream = getClass().getResourceAsStream("messages.properties");
 		livereloadMessages.load(messagesStream);
-
 	}
  
 	@OnWebSocketClose
@@ -54,6 +55,7 @@ public class LiveReloadTestSocket {
 		if(message.contains("\"command\":\"hello\"")) {
 			final String urlCommand = livereloadMessages.getProperty("url_command").replace("{}", location);
 			sendMessage(urlCommand);
+			this.handshakeComplete = true;
 		} else if(message.contains("\"command\":\"reload\"")) {
 			LOGGER.info("*** 'reload' command received ***");
 			this.reloadNotificationsCounter++;
@@ -61,7 +63,7 @@ public class LiveReloadTestSocket {
 		}
 	}
 
-	public void sendMessage(final String message) {
+	private void sendMessage(final String message) {
 		if (session != null) {
 			try {
 				LOGGER.debug("Sending message {}", message);
@@ -72,6 +74,10 @@ public class LiveReloadTestSocket {
 		}
 	}
 
+	public boolean isHandshakeComplete() {
+		return handshakeComplete;
+	}
+	
 	/**
 	 * @return the reloadNotificationsCounter
 	 */

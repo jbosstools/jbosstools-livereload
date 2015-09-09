@@ -131,8 +131,10 @@ public class LiveReloadWebSocket implements Subscriber {
 				}
 				if(browserLocation.startsWith("file://")) {
 					final IProject project = ProjectUtils.extractProject(browserLocation);
-					eventService.subscribe(this, new WorkspaceResourceChangedEventFilter(project));
-					eventService.publish(new LiveReloadClientConnectedEvent(project));
+					if(project != null) {
+						eventService.subscribe(this, new WorkspaceResourceChangedEventFilter(project));
+						eventService.publish(new LiveReloadClientConnectedEvent(project));
+					}
 				} 
 				// register with a ServerResourcePublishedFilter unless the target server is the LiveReload server,
 				// in which case, the 
@@ -140,12 +142,15 @@ public class LiveReloadWebSocket implements Subscriber {
 					final IServer server = WSTUtils.extractServer(browserLocation);
 					if(server != null && WSTUtils.isLiveReloadServer(server)) {
 						final IProject project = ProjectUtils.findProjectFromResourceLocation(new Path(new URL(browserLocation).getFile()));
-						eventService.subscribe(this, new WorkspaceResourceChangedEventFilter(project));
-						eventService.publish(new LiveReloadClientConnectedEvent(project));
+						if(project != null) {
+							eventService.subscribe(this, new WorkspaceResourceChangedEventFilter(project));
+							eventService.publish(new LiveReloadClientConnectedEvent(project));
+						}
 					} else if(server != null) {
 						eventService.subscribe(this, new ServerResourcePublishedFilter(server));
 						eventService.publish(new LiveReloadClientConnectedEvent(server));
-					} else {
+					} 
+					else {
 						this.fallbackMode = true;
 						eventService.subscribe(this, new WorkspaceResourceChangedEventFallbackFilter());
 						eventService.publish(new LiveReloadClientConnectedEvent(browserLocation));

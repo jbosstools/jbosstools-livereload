@@ -12,6 +12,7 @@ package org.jboss.tools.livereload.core.internal.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
@@ -80,14 +81,14 @@ public class EventService {
 	}
 
 	public void resetSubscribers() {
-		getSubscribers().clear();
+		this.subscribers.clear();
 	}
 
 	/**
 	 * @return the subscribers
 	 */
-	public Collection<Subscriber> getSubscribers() {
-		return subscribers.keySet();
+	public Map<Subscriber, List<EventFilter>> getSubscribers() {
+		return Collections.unmodifiableMap(this.subscribers);
 	}
 
 }
