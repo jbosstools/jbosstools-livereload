@@ -42,8 +42,7 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeCommandHandler extends Abstr
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final IServerModule appModule = retrieveServerModuleFromSelectedElement(HandlerUtil.getCurrentSelection(event));
 		try {
-			final Pair<IServer, Boolean> result = OpenInWebBrowserViaLiveReloadUtils.openWithLiveReloadServer(
-					appModule, true, true);
+			final Pair<IServer, Boolean> result = OpenInWebBrowserViaLiveReloadUtils.getLiveReloadServer(true, true);
 			if (result != null) {
 				final IServer liveReloadServer = result.left;
 				final boolean needsStartOrRestart = result.right;

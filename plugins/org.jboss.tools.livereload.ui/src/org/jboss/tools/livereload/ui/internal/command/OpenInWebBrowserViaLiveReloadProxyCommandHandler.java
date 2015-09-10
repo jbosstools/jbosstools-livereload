@@ -42,7 +42,7 @@ public class OpenInWebBrowserViaLiveReloadProxyCommandHandler extends AbstractHa
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final IServerModule appModule = retrieveServerModuleFromSelectedElement(HandlerUtil.getCurrentSelection(event));
 		try {
-			final Pair<IServer, Boolean> result = OpenInWebBrowserViaLiveReloadUtils.openWithLiveReloadServer(appModule, true, false);
+			final Pair<IServer, Boolean> result = OpenInWebBrowserViaLiveReloadUtils.getLiveReloadServer(true, false);
 			if(result != null) {
 				final IServer liveReloadServer = result.left;
 				final boolean needsStartOrRestart = result.right;
@@ -71,12 +71,7 @@ public class OpenInWebBrowserViaLiveReloadProxyCommandHandler extends AbstractHa
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					OpenInWebBrowserViaLiveReloadUtils.openInBrowser(appModule);
-				} catch (Exception e) {
-					Logger.error("Failed to Open in Web Browser via LiveReload", e);
-				}
-				
+				OpenInWebBrowserViaLiveReloadUtils.openInWebBrowser(appModule);
 			}
 		});
 	}

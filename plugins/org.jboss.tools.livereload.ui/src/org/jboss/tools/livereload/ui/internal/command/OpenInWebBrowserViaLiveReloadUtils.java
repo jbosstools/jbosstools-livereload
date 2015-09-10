@@ -13,16 +13,16 @@ package org.jboss.tools.livereload.ui.internal.command;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.wst.server.core.IServer;
@@ -70,21 +70,15 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 
 	/**
 	 * Returns a {@link Pair} containing the found/created LiveReload
-	 * {@link IServer} and a {@link Boolean} indicateing whether this server
+	 * {@link IServer} and a {@link Boolean} indicating whether this server
 	 * should be started or restarted (because the user changed its
 	 * configuration).
 	 * 
-	 * @param location
 	 * @param shouldEnableScriptInjection
 	 * @param shouldAllowRemoteConnections
-	 * @param callback
 	 * @throws CoreException
-	 * @throws InterruptedException
-	 * @throws ExecutionException
-	 * @throws TimeoutException
-	 * @throws MalformedURLException
 	 */
-	public static Pair<IServer, Boolean> openWithLiveReloadServer(final Object location, final boolean shouldEnableScriptInjection,
+	public static Pair<IServer, Boolean> getLiveReloadServer(final boolean shouldEnableScriptInjection,
 			final boolean shouldAllowRemoteConnections) throws CoreException {
 		final IServer liveReloadServer = WSTUtils.findLiveReloadServer();
 		if (liveReloadServer == null) {
@@ -139,7 +133,7 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	 * @throws PartInitException
 	 * @throws MalformedURLException
 	 */
-	public static void openInBrowser(final URL url) throws PartInitException, MalformedURLException {
+	public static void openInWebBrowser(final URL url) throws PartInitException, MalformedURLException {
 		PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
 	}
 
@@ -147,14 +141,23 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	 * Opens the given {@link IPath} using the given LiveReload {@link IServer}
 	 * in an external browser
 	 * 
-	 * @param module
+	 * @param location the {@link IPath} location to display in the Web browser
+	 * @param liveReloadServer the LiveReload Server to use
 	 * @throws PartInitException
 	 * @throws MalformedURLException
 	 */
-	public static void openInBrowser(final IPath location, final IServer liveReloadServer) throws PartInitException,
-			MalformedURLException {
-		PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-				.openURL(computeURL(location, liveReloadServer));
+	public static void openInWebBrowser(final IPath location, final IServer liveReloadServer)  {
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+							.openURL(computeURL(location, liveReloadServer));
+				} catch (Exception e) {
+					Logger.error("Failed to open selected Server Module in external Web Browser...");
+				}
+			}
+		});
 	}
 
 	/**
@@ -164,13 +167,18 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 	 * @throws PartInitException
 	 * @throws MalformedURLException
 	 */
-	public static void openInBrowser(final IServerModule module) throws PartInitException, MalformedURLException {
-		final URL url = computeURL(module);
-		if (url != null) {
-			PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
-		} else {
-			final String moduleName = (module != null && module.getModule().length > 0) ? module.getModule()[0].getName() : "unknown";
-			Logger.warn("Unable to open the selected module '" + moduleName + "' in an external browser.");
+	public static void openInWebBrowser(final IServerModule module) {
+		try {
+			final URL url = computeURL(module);
+			if (url != null) {
+				PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
+			} else {
+				final String moduleName = (module != null && module.getModule().length > 0)
+						? module.getModule()[0].getName() : "unknown";
+				MessageDialog.openError(Display.getDefault().getActiveShell(), "LiveReload", "Unable to open the selected module '" + moduleName + "' in an external browser.");
+			}
+		} catch (MalformedURLException | PartInitException e) {
+			Logger.error("Failed to Open in Web Browser via LiveReload", e);
 		}
 	}
 

@@ -392,7 +392,7 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeDialog extends TitleAreaDial
 	
 		public void handleEvent(Event event) {
 			try {
-				OpenInWebBrowserViaLiveReloadUtils.openInBrowser(new URL(serverModuleURL));
+				OpenInWebBrowserViaLiveReloadUtils.openInWebBrowser(new URL(serverModuleURL));
 			} catch (Exception e) {
 				Logger.error("Failed to open URL '" + serverModuleURL + "' in an external Browser", e);
 			}
