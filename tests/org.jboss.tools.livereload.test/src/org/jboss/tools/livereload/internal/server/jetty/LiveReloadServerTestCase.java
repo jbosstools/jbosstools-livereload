@@ -586,7 +586,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 				+ "/index.html";
 		final LiveReloadTestSocket client = new LiveReloadTestSocket(indexRemoteDocumentlocation);
 		// operation: start server and connect to it
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		final Session session = connectFrom(client);
 		// operation: simulate HTTP preview server publish
 		final long start = System.currentTimeMillis();
@@ -613,13 +613,14 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 				+ "/index.html";
 		final LiveReloadTestSocket client = new LiveReloadTestSocket(indexRemoteDocumentlocation);
 		// operation: start server and connect to it
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
+		//httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
 		final Session session = connectFrom(client);
 		// operation: simulate HTTP preview server publish
 		final long start = System.currentTimeMillis();
 		((Server) httpPreviewServer).publish(IServer.PUBLISH_AUTO, new NullProgressMonitor());
 		final long end = System.currentTimeMillis();
-		Thread.sleep(200);
+		Thread.sleep(1000);
 		// verification: client should have been notified with a reload message
 		assertThat(client.getNumberOfReloadNotifications()).isEqualTo(1);
 		assertThat(client.getReceivedNotification()).doesNotContain("http://" + hostname + ":" + this.liveReloadServerPort);
@@ -938,7 +939,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldReuseSameProxyPortAfterLiveReloadServerRestart() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		//httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
@@ -949,8 +951,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// operation
 		connectFrom(client);
 		// operation: restart the LiveReload Server
+		//liveReloadServer.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
 		WSTUtils.restart(liveReloadServer, 30, TimeUnit.SECONDS);
-		liveReloadServer.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
 		// verification
 		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(0);
 		final int newProxyPort = connector.getPort();
@@ -977,7 +979,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getHost()).isEqualTo(hostname);
 		// operation: create a custom PreviewServer and start it
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		// verification: the proxy server associated with this custom PreviewServer should have the same hostname as 
 		// the livereload server
 		final LiveReloadProxyServer proxyServer = liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer);

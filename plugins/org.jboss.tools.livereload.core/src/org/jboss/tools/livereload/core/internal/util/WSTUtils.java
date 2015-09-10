@@ -349,7 +349,7 @@ public class WSTUtils {
 		return new Job(jobMessage) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				ServerListener listener = new ServerListener(server);
+				final ServerListener listener = new ServerListener(server);
 				try {
 					final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
 					if (needsStop) {
@@ -371,7 +371,7 @@ public class WSTUtils {
 					final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, ticks);
 					server.start(ILaunchManager.RUN_MODE, subMonitor);
 					// using a ServerListener to catch start progression (faster than blocking until timetout in case of server startup failure)
-					while (!listener.serverStarted && !(listener.serverStarting && listener.serverStopped) && System.currentTimeMillis() < limitTime
+					while (!listener.serverStarted && System.currentTimeMillis() < limitTime
 							&& !monitor.isCanceled()) {
 						TimeUnit.MILLISECONDS.sleep(500);
 					}

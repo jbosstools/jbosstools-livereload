@@ -57,6 +57,7 @@ public class LiveReloadTestSocket {
 			sendMessage(urlCommand);
 			this.handshakeComplete = true;
 		} else if(message.contains("\"command\":\"reload\"")) {
+			//System.err.println("*** 'reload' command received ***");
 			LOGGER.info("*** 'reload' command received ***");
 			this.reloadNotificationsCounter++;
 			receivedNotification = message;
