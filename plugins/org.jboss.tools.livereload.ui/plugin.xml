@@ -11,6 +11,10 @@
             id="org.jboss.tools.livereload.openInExternalDeviceWebBrowserViaQRCode"
             name="%open_in_devicebrowser_via_qrcode">
       </command>
+      <command
+            id="org.jboss.tools.livereload.launchLiveReloadServer"
+            name="%launch_livereload_server">
+      </command>
    </extension>
    <extension point="org.eclipse.ui.menus">
      <menuContribution
@@ -114,6 +118,10 @@
            </with>
           </activeWhen>
       </handler>
+      <handler
+            class="org.jboss.tools.livereload.ui.internal.command.LaunchLiveReloadServerCommandHandler"
+            commandId="org.jboss.tools.livereload.launchLiveReloadServer">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
@@ -130,7 +138,7 @@
             namespace="org.jboss.tools.livereload"
             properties="localServer"
             type="org.eclipse.jface.viewers.ITreeSelection">
-      </propertyTester> 
+      </propertyTester>
    </extension>
    
    <extension point="org.eclipse.ui.editors">
