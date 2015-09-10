@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerCore;
@@ -209,9 +208,8 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 				false, false);
 		assertThat(liveReloadServer.getServerState()).isEqualTo(IServer.STATE_STOPPED);
 		// operation
-		final Job job = startServer(liveReloadServer, 30, TimeUnit.SECONDS);
+		startServer(liveReloadServer, 30, TimeUnit.SECONDS);
 		// verification
-		assertThat(job.getResult().isOK()).isTrue();
 		assertThat(liveReloadServer.getServerState()).isEqualTo(IServer.STATE_STARTED);
 	}
 

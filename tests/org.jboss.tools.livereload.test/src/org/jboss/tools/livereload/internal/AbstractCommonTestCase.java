@@ -11,6 +11,8 @@
 
 package org.jboss.tools.livereload.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
@@ -161,11 +163,10 @@ public abstract class AbstractCommonTestCase {
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	public static Job startServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
+	public static void startServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException, CoreException {
 		final Job job = WSTUtils.startOrRestartServer(server, timeout, unit);
 		job.schedule();
 		job.join();
-		return job;
 	}
 }

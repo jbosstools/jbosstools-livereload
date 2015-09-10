@@ -342,21 +342,18 @@ public class WSTUtils {
 		if (server == null) {
 			return null;
 		}
-		final boolean isStopping = (server.getServerState() == IServer.STATE_STOPPING);
-		final boolean needsStop = (server.getServerState() == IServer.STATE_STARTING || server.getServerState() == IServer.STATE_STARTED );
-		final boolean needsRestart = isStopping || needsStop;
+		final boolean needsRestart = server.getServerState() == IServer.STATE_STOPPING || server.getServerState() == IServer.STATE_STARTING || server.getServerState() == IServer.STATE_STARTED;
 		final String jobMessage = (needsRestart ? "Restarting " : "Starting ") + server.getName() + "...";
 		return new Job(jobMessage) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				final ServerListener listener = new ServerListener(server);
 				try {
 					final Long limitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, unit);
-					if (needsStop) {
+					if (server.getServerState() == IServer.STATE_STARTING || server.getServerState() == IServer.STATE_STARTED) {
 						server.stop(true);
 					}
-					if(needsStop || isStopping) {
-						while (!listener.serverStopped && System.currentTimeMillis() < limitTime
+					if(server.getServerState() == IServer.STATE_STARTING || server.getServerState() == IServer.STATE_STARTED || server.getServerState() == IServer.STATE_STOPPING) {
+						while (server.getServerState() != IServer.STATE_STOPPED && System.currentTimeMillis() < limitTime
 								&& !monitor.isCanceled()) {
 							TimeUnit.MILLISECONDS.sleep(500);
 						}
@@ -364,14 +361,12 @@ public class WSTUtils {
 					if(monitor.isCanceled()) {
 						return Status.CANCEL_STATUS;
 					}
-					// reset the listener to perform startup
-					listener.reset();
 					// the timeout should not be higher that Integer.MAX_VALUE seconds
 					final int ticks = (int)TimeUnit.SECONDS.convert(timeout, unit); 
 					final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, ticks);
 					server.start(ILaunchManager.RUN_MODE, subMonitor);
 					// using a ServerListener to catch start progression (faster than blocking until timetout in case of server startup failure)
-					while (!listener.serverStarted && System.currentTimeMillis() < limitTime
+					while (server.getServerState() != IServer.STATE_STARTED && System.currentTimeMillis() < limitTime
 							&& !monitor.isCanceled()) {
 						TimeUnit.MILLISECONDS.sleep(500);
 					}
@@ -396,8 +391,6 @@ public class WSTUtils {
 						Logger.error(errorMessage);
 					}
 					return Status.CANCEL_STATUS;
-				} finally {
-					listener.dispose();
 				}
 			}
 		};
