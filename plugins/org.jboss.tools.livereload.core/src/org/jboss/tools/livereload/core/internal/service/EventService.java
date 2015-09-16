@@ -11,7 +11,6 @@
 package org.jboss.tools.livereload.core.internal.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;

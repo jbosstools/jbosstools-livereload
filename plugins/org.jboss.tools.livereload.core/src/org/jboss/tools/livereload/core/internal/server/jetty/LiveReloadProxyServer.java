@@ -71,6 +71,7 @@ public class LiveReloadProxyServer extends Server {
 			connector.setHost(null);
 		}
 		connector.setPort(proxyPort);
+		connector.setReuseAddress(true);
 		//connector.setMaxIdleTime(0);
 		addConnector(connector);
 
