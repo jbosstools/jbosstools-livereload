@@ -614,7 +614,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		final LiveReloadTestSocket client = new LiveReloadTestSocket(indexRemoteDocumentlocation);
 		// operation: start server and connect to it
 		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
-		//httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		//startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		final Session session = connectFrom(client);
 		// operation: simulate HTTP preview server publish
 		final long start = System.currentTimeMillis();
@@ -755,7 +755,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).isEmpty();
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		// operation
 		httpPreviewServer.stop(true);
 		// give it a little time to actually stop (in a separate thread)
@@ -799,7 +799,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldForwardRequestOnProxiedServerWithoutScriptInjection() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(false);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
@@ -823,7 +823,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldForwardRequestOnProxiedServerWithScriptInjectionAndDefaultCharset() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
@@ -851,7 +851,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldForwardRequestOnProxiedServerWithScriptInjectionAndCustomCharset() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
@@ -877,7 +877,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldForwardRequestWithQueryParams() throws IOException, CoreException, InterruptedException, ExecutionException, TimeoutException {
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation: send a request with a query param. The Preview server has a special servlet that will return a 400 error if the 
@@ -895,7 +895,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldAllowWebSocketConnectionFromProxiedLocation() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
@@ -915,7 +915,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldReuseSameProxyPortAfterServerRestart() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
@@ -939,7 +939,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldReuseSameProxyPortAfterLiveReloadServerRestart() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
-		//httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		//startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
@@ -991,7 +991,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldRetrieveCustomLocationResponseHeader() throws URISyntaxException, Exception {
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation: send a request and expect a 302 response with a 'Location' header using the proxy port
@@ -1010,7 +1010,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldRestartLiveReloadServerWithProxyWithoutHttpClientConnection() throws InterruptedException, CoreException, ExecutionException, TimeoutException, HttpException, IOException {
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation: restart the server (should be a very fast operation)
@@ -1022,7 +1022,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldRestartLiveReloadServerWithProxyAfterHttpClientConnection() throws InterruptedException, CoreException, ExecutionException, TimeoutException, HttpException, IOException {
 		createHttpPreviewServer();
-		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		assertThat(liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getState()).isEqualTo(org.eclipse.jetty.server.Server.STARTED);
