@@ -74,8 +74,7 @@ public class LiveReloadServer extends Server implements Subscriber {
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
 		setAttribute(JettyServerRunner.NAME, name);
 		websocketConnector = new ServerConnector(this);
-		// see http://stackoverflow.com/questions/12352935/how-are-two-processes-listening-to-the-same-port-in-windows-7
-		websocketConnector.setReuseAddress(false); // prevent server to start on a used port.
+		websocketConnector.setReuseAddress(true);
 		if (!allowRemoteConnections) {
 			websocketConnector.setHost(hostname);
 		}

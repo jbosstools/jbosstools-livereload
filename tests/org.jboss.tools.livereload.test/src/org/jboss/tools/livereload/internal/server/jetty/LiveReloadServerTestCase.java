@@ -1005,6 +1005,41 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(302);
 		assertThat(method.getResponseHeader("Location").getValue()).isEqualTo("http://" + proxyHost + ":" + proxyPort + "/foo/baz/");
-		
+	}
+	
+	@Test
+	public void shouldRestartLiveReloadServerWithProxyWithoutHttpClientConnection() throws InterruptedException, CoreException, ExecutionException, TimeoutException, HttpException, IOException {
+		createHttpPreviewServer();
+		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		createAndLaunchLiveReloadServer(true);
+		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
+		// operation: restart the server (should be a very fast operation)
+		WSTUtils.restart(liveReloadServer, 5, TimeUnit.SECONDS);
+		// verification
+		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getState()).isEqualTo(org.eclipse.jetty.server.Server.STARTED);
+	}
+
+	@Test
+	public void shouldRestartLiveReloadServerWithProxyAfterHttpClientConnection() throws InterruptedException, CoreException, ExecutionException, TimeoutException, HttpException, IOException {
+		createHttpPreviewServer();
+		httpPreviewServer.start(ILaunchManager.RUN_MODE, new NullProgressMonitor());
+		createAndLaunchLiveReloadServer(true);
+		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
+		assertThat(liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getState()).isEqualTo(org.eclipse.jetty.server.Server.STARTED);
+		final NetworkConnector connector = (NetworkConnector) liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getConnectors()[0];
+		final String proxyHost = connector.getHost();
+		final int proxyPort = connector.getPort();
+		final HttpClient client = new HttpClient();
+		final HttpMethod method = new GetMethod("http://" + proxyHost + ":" + proxyPort + "/"
+				+ projectName + "/WebContent/index.html");
+		method.setFollowRedirects(false);
+		final int status = client.executeMethod(method);
+		assertThat(status).isEqualTo(200);
+		// operation: restart the server (should be a very fast operation)
+		WSTUtils.restart(liveReloadServer, 60, TimeUnit.SECONDS);
+		// verification
+		assertThat(liveReloadServerBehaviour.getServer().getServerState()).isEqualTo(IServer.STATE_STARTED);
+		assertThat(liveReloadServerBehaviour.getProxyServers().get(httpPreviewServer).getState()).isEqualTo(org.eclipse.jetty.server.Server.STARTED);
+
 	}
 }

@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.wst.server.core.util.SocketUtil;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils.TaskMonitor;
@@ -47,8 +48,6 @@ public class JettyServerRunner implements Runnable {
 		final JettyServerRunner runner = new JettyServerRunner(liveReloadServer);
 		Logger.debug("Starting {} on port {}", liveReloadServer, runner.getPort());
 		final Thread serverThread = new Thread(runner, (String) liveReloadServer.getAttribute(JettyServerRunner.NAME));
-		serverThread.start();
-		
 		// wait until server is started
 		final TaskMonitor monitor = new TaskMonitor() {
 			@Override
@@ -59,18 +58,22 @@ public class JettyServerRunner implements Runnable {
 				return started || statusOk;
 			}
 		};
+		serverThread.start();
+		
 		if (TimeoutUtils.timeout(monitor, 15, TimeUnit.SECONDS)) {
 			Logger.error("Failed to start " + liveReloadServer + " within expected time (reason: timeout)");
 			// attempt to stop what can be stopped.
 			stop(runner);
 			throw new TimeoutException("Failed to start " + liveReloadServer + " within expected time (reason: timeout)");
 		}
+		Logger.debug("Server {} started (success={})", liveReloadServer, runner.status.isOK());
 		return runner;
 	}
 
 	public static void stop(final JettyServerRunner runner) {
 		if (runner != null) {
 			try {
+				Logger.debug("Stopping {}...", runner.server.getAttribute(NAME));
 				runner.stop();
 				final TaskMonitor monitor = new TaskMonitor() {
 					@Override
@@ -84,6 +87,7 @@ public class JettyServerRunner implements Runnable {
 					throw new TimeoutException(
 							"Failed to stop LiveReload Server within expected time (reason: timeout)");
 				}
+				Logger.debug("{} fully stopped: {}", runner.server.getAttribute(NAME), !SocketUtil.isPortInUse(runner.getPort()));
 			} catch (Exception e) {
 				Logger.error("Failed to stop LiveReload Server", e);
 			}
