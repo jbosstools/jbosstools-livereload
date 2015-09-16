@@ -10,15 +10,18 @@
  ******************************************************************************/
 package org.jboss.tools.livereload.core.internal.server.jetty;
 
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.wst.server.core.util.SocketUtil;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.TimeoutUtils;
@@ -107,6 +110,17 @@ public class JettyServerRunner implements Runnable {
 	@Override
 	public void run() {
 		try {
+			// verifies that address/port is available.
+			for (Connector connector : server.getConnectors()) {
+				try (final ServerConnector websocketConnector = (ServerConnector) connector) {
+					if (SocketUtil.isPortInUse(InetAddress.getByName(websocketConnector.getHost()),
+							websocketConnector.getPort(), 0)) {
+						throw new ExecutionException("Cannot start LiveReload Server: port "
+								+ websocketConnector.getPort() + " is already in use.");
+					}
+				}
+			}
+			
 			// avoids starting the server if it was already started before
 			if (!server.isStarted()) { 
 				Logger.debug("Starting {}...", server.getAttribute(NAME));
