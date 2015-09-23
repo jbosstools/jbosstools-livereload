@@ -2,7 +2,7 @@
 <feature
    id="org.jboss.tools.livereload.feature"
    label="%featureName"
-   version="1.3.0.qualifier"
+   version="1.4.0.SNAPSHOT"
    provider-name="%featureProvider"
    license-feature="org.jboss.tools.foundation.license.feature"
    license-feature-version="0.0.0">
