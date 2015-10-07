@@ -839,7 +839,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// Read the response body.
 		// Read the returned content type.
 		assertThat(method.getResponseHeader("Content-Type")).isNotNull();
-		assertThat(method.getResponseHeader("Content-Type").getValue()).isEqualTo("text/html; charset=UTF-8");
+		ContentTypeAssert.assertThat(method.getResponseHeader("Content-Type").getValue()).isEqualTo("text/html; charset=UTF-8");
 		String responseBody = method.getResponseBodyAsString();
 		// verification
 		assertThat(responseBody).contains("Hello, World!");
@@ -865,7 +865,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// verification
 		assertThat(status).isEqualTo(HttpStatus.SC_OK);
 		// Read the returned content type.
-		assertThat(method.getResponseHeader("Content-Type").getValue()).isEqualTo("text/html; charset=ISO-8859-1");
+		ContentTypeAssert.assertThat(method.getResponseHeader("Content-Type").getValue()).isEqualTo("text/html; charset=ISO-8859-1");
 		// Read the response body.
 		String responseBody = method.getResponseBodyAsString();
 		// verification

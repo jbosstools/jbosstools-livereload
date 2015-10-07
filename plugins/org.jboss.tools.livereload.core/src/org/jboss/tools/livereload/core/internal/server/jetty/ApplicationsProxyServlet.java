@@ -19,6 +19,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.jboss.tools.livereload.core.internal.util.Logger;
 import org.jboss.tools.livereload.core.internal.util.URIUtils;
@@ -57,13 +58,12 @@ public class ApplicationsProxyServlet extends ProxyServlet {
 	}
 	
 	@Override
-	protected URI rewriteURI(HttpServletRequest request) {
+	protected String rewriteTarget(HttpServletRequest request) {
 		try {
 			final URI requestURI = new URI(request.getRequestURI());
 			final URI originalURI = new URI(request.getScheme(), requestURI.getUserInfo(), request.getServerName(),
 					request.getLocalPort(), requestURI.getPath(), request.getQueryString(), requestURI.getFragment());
-			final String proxiedURI = URIUtils.convert(originalURI).toHost(targetHost).toPort(targetPort);
-			return new URI(proxiedURI);
+			return URIUtils.convert(originalURI).toHost(targetHost).toPort(targetPort);
 		} catch (URISyntaxException e) {
 			Logger.error("Failed to parse the requested URI", e);
 		}
@@ -74,7 +74,7 @@ public class ApplicationsProxyServlet extends ProxyServlet {
 	 * Customize the returned 'location' header to replace the app server port with the proxy port
 	 */
 	@Override
-	public String filterResponseHeader(HttpServletRequest request, String headerName, String headerValue) {
+	public String filterServerResponseHeader(HttpServletRequest request, Response serverResponse, String headerName, String headerValue) {
 		if("Location".equals(headerName)) {
 			try {
 				return URIUtils.convert(headerValue).toHost(this.proxyHost).toPort(this.proxyPort);
@@ -82,7 +82,7 @@ public class ApplicationsProxyServlet extends ProxyServlet {
 				Logger.error("Failed to rewrite the 'Location' response header value '" + headerValue + "'",e);
 			}
 		}
-		return super.filterResponseHeader(request, headerName, headerValue);
+		return super.filterServerResponseHeader(request, serverResponse, headerName, headerValue);
 	}
 
 }
