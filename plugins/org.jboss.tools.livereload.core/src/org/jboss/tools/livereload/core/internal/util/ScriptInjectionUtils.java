@@ -30,15 +30,15 @@ public class ScriptInjectionUtils {
 	 * <code>&lt;/head&gt;</code> end tag (or the <code>&lt;/body&gt;</code> end tag if not {@code head} element exists). 
 	 * If none pf those tags are found, the return value equals the given source.
 	 * 
-	 * @param source
-	 * @param addition
+	 * @param content the initial content
+	 * @param addition the addition to the content
 	 * @return the modified source (or equal if not end tag was found in the source)
 	 * @throws IOException
 	 */
-	public static char[] injectContent(final InputStream source, final String addition) throws IOException {
+	public static char[] injectContent(final InputStream content, final String addition) throws IOException {
 		boolean tagFound = false;
-		final StreamedSource streamedSource = new StreamedSource(source);
-		CharArrayWriter writer = new CharArrayWriter();
+		final StreamedSource streamedSource = new StreamedSource(content);
+		final CharArrayWriter writer = new CharArrayWriter();
 		for (Segment segment : streamedSource) {
 			if (segment instanceof EndTag && ((EndTag) segment).getName().equalsIgnoreCase("head")) { //$NON-NLS-1$
 				writer.write(addition);

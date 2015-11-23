@@ -21,12 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author xcoulon
  *
  */
-public class ApplicationProxyServletTestCase {
+public class LiveReloadScriptInjectionMiddleManServletTestCase {
 	
 	@Test
 	public void shouldFilterLocation() throws Exception {
 		// given
-		final ApplicationsProxyServlet proxyServlet = new ApplicationsProxyServlet("localhost", 54321, "dockerhost", 8080);
+		final LiveReloadScriptInjectionMiddleManServlet proxyServlet = new LiveReloadScriptInjectionMiddleManServlet("localhost", 54321, "/", "dockerhost", 8080, "/", 35729, false);
 		final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		final Response response = Mockito.mock(Response.class);
 		// when

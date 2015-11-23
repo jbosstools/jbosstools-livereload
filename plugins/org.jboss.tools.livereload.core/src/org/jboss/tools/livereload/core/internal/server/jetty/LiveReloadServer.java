@@ -15,7 +15,6 @@ import java.util.EventObject;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.jboss.tools.livereload.core.internal.service.EventService;
@@ -50,27 +49,25 @@ public class LiveReloadServer extends Server implements Subscriber {
 	 * Constructor
 	 * @param name the server name (appears in the Servers Views)
 	 * @param websocketPort the websocket port
-	 * @param enableProxyServer flag to enable the proxy server
 	 * @param allowRemoteConnections flag to allow remote connections
 	 * @param enableScriptInjection flag to enable script injection
 	 */
-	public LiveReloadServer(final String name, final String hostname, final int websocketPort, final boolean enableProxyServer,
+	public LiveReloadServer(final String name, final String hostname, final int websocketPort, 
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
 		super();
 		this.websocketPort = websocketPort;
 		this.hostname = hostname;
-		configure(name, hostname, websocketPort, enableProxyServer, allowRemoteConnections, enableScriptInjection);
+		configure(name, hostname, websocketPort, allowRemoteConnections, enableScriptInjection);
 	}
 
 	/**
 	 * Configure the Jetty Server with the given parameters
 	 * @param name the server name (same as the Server Adapter)
 	 * @param websocketPort the websockets port
-	 * @param enableProxyServer should proxy be enabled 
 	 * @param allowRemoteConnections should allow remote connections
 	 * @param enableScriptInjection should inject livereload.js script in returned HTML pages
 	 */
-	private void configure(final String name, final String hostname, final int websocketPort, final boolean enableProxyServer,
+	private void configure(final String name, final String hostname, final int websocketPort, 
 			final boolean allowRemoteConnections, final boolean enableScriptInjection) {
 		setAttribute(JettyServerRunner.NAME, name);
 		websocketConnector = new ServerConnector(this);
@@ -87,12 +84,13 @@ public class LiveReloadServer extends Server implements Subscriber {
 				.setInitParameter(MIN_WEB_SOCKET_PROTOCOL_VERSION, MIN_WEB_SOCKET_PROTOCOL_VERSION_VALUE);
 		context.addServlet(liveReloadServletHolder, "/livereload");
 		context.addServlet(new ServletHolder(new LiveReloadScriptFileServlet()), "/livereload.js");
-		if (enableProxyServer) {
-			context.addServlet(new ServletHolder(new WorkspaceFileServlet()), "/*");
-			if (enableScriptInjection) {
-				context.addFilter(new FilterHolder(new LiveReloadScriptInjectionFilter(websocketPort)), "/*", null);
-			}
-		}
+		final ServletHolder servlet = new ServletHolder(new WorkspaceFileServlet());
+		servlet.setInitParameter(WorkspaceFileServlet.BASE_PATH, "/_workspace");
+		context.addServlet(servlet, servlet.getInitParameter(WorkspaceFileServlet.BASE_PATH) + "/*");
+		final LiveReloadScriptInjectionMiddleManServlet middleManServlet = new LiveReloadScriptInjectionMiddleManServlet(
+				websocketConnector.getHost(), websocketPort, "/", websocketConnector.getHost(), websocketPort,
+				servlet.getInitParameter(WorkspaceFileServlet.BASE_PATH), websocketPort, enableScriptInjection);
+		context.addServlet(new ServletHolder(middleManServlet), "/");
 		setHandler(context);
 		EventService.getInstance().subscribe(this, new LiveReloadClientConnectionFilter());
 	}

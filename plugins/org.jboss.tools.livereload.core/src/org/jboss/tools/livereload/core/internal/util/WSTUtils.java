@@ -28,7 +28,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
@@ -363,7 +363,7 @@ public class WSTUtils {
 					}
 					// the timeout should not be higher that Integer.MAX_VALUE seconds
 					final int ticks = (int)TimeUnit.SECONDS.convert(timeout, unit); 
-					final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, ticks);
+					final SubMonitor subMonitor = SubMonitor.convert(monitor, ticks);
 					server.start(ILaunchManager.RUN_MODE, subMonitor);
 					// using a ServerListener to catch start progression (faster than blocking until timetout in case of server startup failure)
 					while (server.getServerState() != IServer.STATE_STARTED && System.currentTimeMillis() < limitTime

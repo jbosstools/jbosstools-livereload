@@ -15,7 +15,6 @@ import java.net.UnknownHostException;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
@@ -60,7 +59,7 @@ public class LiveReloadProxyServer extends Server {
 
 	private void configure(final String proxyHost, final int proxyPort, final String targetHost, final int targetPort, final int liveReloadPort, final boolean allowRemoteConnections,
 			final boolean enableScriptInjection) {
-		setAttribute(JettyServerRunner.NAME, "LiveReload-Proxy-Server-" + proxyPort + ":" + targetPort);
+		setAttribute(JettyServerRunner.NAME, "LiveReload-Proxy-Server-" + proxyPort + ":" + targetPort); //$NON-NLS-1$ //$NON-NLS-2$
 		final ServerConnector connector = new ServerConnector(this);
 		// restrict access to clients on the same host
 		if (!allowRemoteConnections) {
@@ -72,19 +71,13 @@ public class LiveReloadProxyServer extends Server {
 		}
 		connector.setPort(proxyPort);
 		connector.setReuseAddress(true);
-		//connector.setMaxIdleTime(0);
 		addConnector(connector);
-
 		final ServletContextHandler context = new ServletContextHandler();
-		//context.setConnectorNames(new String[] { connector.getName() });
-		final ServletHolder proxyServletHolder = new ServletHolder(new ApplicationsProxyServlet(proxyHost, proxyPort, targetHost, targetPort));
-		//proxyServletHolder.setAsyncSupported(true);
-		proxyServletHolder.setInitParameter("maxThreads", "256"); //$NON-NLS-1$ //$NON-NLS-2$
-		context.addServlet(proxyServletHolder, "/*");
 		setHandler(context);
-		if (enableScriptInjection) {
-			context.addFilter(new FilterHolder(new LiveReloadScriptInjectionFilter(liveReloadPort)), "/*", null);
-		}
+		final ServletHolder proxyServletHolder = new ServletHolder(new LiveReloadScriptInjectionMiddleManServlet(
+				proxyHost, proxyPort, "/", targetHost, targetPort, "/", liveReloadPort, enableScriptInjection));
+		proxyServletHolder.setInitParameter("maxThreads", "256"); //$NON-NLS-1$ //$NON-NLS-2$
+		context.addServlet(proxyServletHolder, "/*"); //$NON-NLS-1$ 
 	}
 
 	/**

@@ -36,6 +36,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jetty.server.NetworkConnector;
+import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -403,8 +404,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		//in decimal number of OCTETs, sent to the recipient or, in the case of the HEAD
 		//method, the size of the entity-body that would have been sent had the request
 		//been a GET.
-		assertThat(rawResponseBody.length).isEqualTo(257);
-		assertThat(method.getResponseHeader("Content-Length").getValue()).isEqualTo("257");
+		assertThat(rawResponseBody.length).isEqualTo(238);
+		assertThat(method.getResponseHeader("Content-Length").getValue()).isEqualTo("238");
 	}
 
 	@Test
@@ -850,6 +851,8 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	@Test(timeout=60*10000)
 	public void shouldForwardRequestOnProxiedServerWithScriptInjectionAndCustomCharset() throws Exception {
 		// pre-condition
+		Log.getRootLogger().setDebugEnabled(true);
+		
 		createHttpPreviewServer();
 		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);

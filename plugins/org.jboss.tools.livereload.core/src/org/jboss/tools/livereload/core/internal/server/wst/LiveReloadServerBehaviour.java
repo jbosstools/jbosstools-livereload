@@ -134,7 +134,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			}
 			final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
 			final boolean enableScriptInjection = isScriptInjectionEnabled();
-			this.liveReloadServer = new LiveReloadServer(server.getName(), server.getHost(), this.websocketPort, true, allowRemoteConnections,
+			this.liveReloadServer = new LiveReloadServer(server.getName(), server.getHost(), this.websocketPort, allowRemoteConnections,
 					enableScriptInjection);
 			this.liveReloadServerRunnable = JettyServerRunner.start(liveReloadServer);
 			if(!this.liveReloadServerRunnable.isSuccessfullyStarted()) { 

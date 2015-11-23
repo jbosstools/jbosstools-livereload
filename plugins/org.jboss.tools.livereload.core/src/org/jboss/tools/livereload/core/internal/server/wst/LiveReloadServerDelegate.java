@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.wst.server.core.IModule;
 import org.eclipse.wst.server.core.model.ServerDelegate;
-import org.jboss.ide.eclipse.as.core.server.IDeployableServer;
 import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
 
 /**
@@ -30,17 +29,9 @@ import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
  */
 public class LiveReloadServerDelegate extends ServerDelegate {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.wst.server.core.model.ServerDelegate#setDefaults(org.eclipse
-	 * .core.runtime.IProgressMonitor)
-	 */
 	@Override
 	public void setDefaults(IProgressMonitor monitor) {
 		super.setDefaults(monitor);
-		setAttribute(IDeployableServer.SERVER_MODE, LiveReloadLaunchConfiguration.LIVERELOAD_MODE);
 		// configure the websocket port if it hasn't been done before (could
 		// be initialized during tests)
 		if (getAttribute(LiveReloadLaunchConfiguration.WEBSOCKET_PORT, -1) == -1) {

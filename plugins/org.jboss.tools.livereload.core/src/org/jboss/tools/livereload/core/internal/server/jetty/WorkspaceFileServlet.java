@@ -36,6 +36,8 @@ public class WorkspaceFileServlet extends HttpServlet {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = 163695311668462503L;
+	
+	public static final String BASE_PATH = "basePath";
 
 	@Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
@@ -45,7 +47,13 @@ public class WorkspaceFileServlet extends HttpServlet {
 		if (requestURI == null) {
 			httpServletResponse.setStatus(400);
 		} else {
-			final IResource resource = ResourceUtils.retrieveResource(requestURI);
+			final String baseURI = getInitParameter(BASE_PATH);
+			if(baseURI != null && !requestURI.startsWith(baseURI)) {
+				Logger.debug("Unknown location: {} (invalid base path)", requestURI);
+				httpServletResponse.setStatus(404);
+			}
+			final String resourceURI = baseURI != null ? requestURI.substring(baseURI.length()) : requestURI;
+			final IResource resource = ResourceUtils.retrieveResource(resourceURI);
 			if (resource != null && resource.getType() == IResource.FILE) {
 				try {
 					final IFile workspaceFile = (IFile) resource;
@@ -59,7 +67,6 @@ public class WorkspaceFileServlet extends HttpServlet {
 						guessedContentType = guessedContentType.concat("; charset=").concat(charset.name());
 					}
 					httpServletResponse.setContentType(guessedContentType);
-					// httpServletResponse.setContentType("text/javascript");
 				} catch (CoreException e) {
 					Logger.error("Error occurred while returning content at location: " + requestURI, e);
 					httpServletResponse.setStatus(500);
