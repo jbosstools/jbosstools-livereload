@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.wst.server.core.IServer;
@@ -40,7 +41,12 @@ public class OpenInExternalDeviceWebBrowserViaQRCodeCommandHandler extends Abstr
 
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		final IServerModule appModule = retrieveServerModuleFromSelectedElement(HandlerUtil.getCurrentSelection(event));
+		final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
+		final IServerModule appModule = retrieveServerModuleFromSelectedElement(currentSelection);
+		if(appModule == null) {
+			Logger.warn("Unable to retrieve the server module for the current selection: " + currentSelection);
+			return null;
+		}
 		try {
 			final Pair<IServer, Boolean> result = OpenInWebBrowserViaLiveReloadUtils.getLiveReloadServer(true, true);
 			if (result != null) {

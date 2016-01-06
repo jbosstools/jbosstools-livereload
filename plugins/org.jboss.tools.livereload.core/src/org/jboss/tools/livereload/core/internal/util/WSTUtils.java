@@ -220,8 +220,9 @@ public class WSTUtils {
 			}
 		}
 		// default assumption for unknown specific server type...
-		Logger.debug("Assuming that server '" + server.getName() + "' is running on port 8080. LiveReload may not work as expected if it is not the case.");
-		return 8080;
+		final int port = server.getAttribute("port", 8080);
+		Logger.debug("Assuming that server '{}' is running on port {}. LiveReload may not work as expected if it is not the case.", server.getName(), port);
+		return port;
 	}
 
 	/**
