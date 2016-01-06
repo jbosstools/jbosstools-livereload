@@ -942,8 +942,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 	public void shouldReuseSameProxyPortAfterLiveReloadServerRestart() throws Exception {
 		// pre-condition
 		createHttpPreviewServer();
-		//startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
-		startServer(httpPreviewServer, 30, TimeUnit.SECONDS);
+		startServer(httpPreviewServer, 10, TimeUnit.SECONDS);
 		createAndLaunchLiveReloadServer(true);
 		assertThat(liveReloadServerBehaviour.getProxyServers().keySet()).contains(httpPreviewServer);
 		// operation
@@ -954,8 +953,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 		// operation
 		connectFrom(client);
 		// operation: restart the LiveReload Server
-		//liveReloadServer.restart(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-		WSTUtils.restart(liveReloadServer, 30, TimeUnit.SECONDS);
+		WSTUtils.restart(liveReloadServer, 10, TimeUnit.SECONDS);
 		// verification
 		assertThat(liveReloadServerBehaviour.getLiveReloadServer().getNumberOfConnectedClients()).isEqualTo(0);
 		final int newProxyPort = connector.getPort();

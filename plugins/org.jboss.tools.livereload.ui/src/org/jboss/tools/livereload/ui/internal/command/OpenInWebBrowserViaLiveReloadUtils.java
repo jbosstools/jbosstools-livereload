@@ -16,6 +16,7 @@ import java.net.URL;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -61,9 +62,10 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 		if (selection instanceof IStructuredSelection) {
 			final Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
 			if (selectedObject instanceof IServerModule) {
-				final IServerModule selectedModule = (IServerModule) selectedObject;
-				return selectedModule;
-			}
+				return (IServerModule) selectedObject;
+			} else if (selectedObject instanceof IAdaptable) {
+				return ((IAdaptable) selectedObject).getAdapter(IServerModule.class);
+			} 
 		}
 		return null;
 	}
