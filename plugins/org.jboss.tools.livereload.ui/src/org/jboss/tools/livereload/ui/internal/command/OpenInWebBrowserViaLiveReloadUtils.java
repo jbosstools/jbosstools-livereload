@@ -177,7 +177,13 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 			} else {
 				final String moduleName = (module != null && module.getModule().length > 0)
 						? module.getModule()[0].getName() : "unknown";
-				MessageDialog.openError(Display.getDefault().getActiveShell(), "LiveReload", "Unable to open the selected module '" + moduleName + "' in an external browser.");
+				Display.getDefault().syncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						MessageDialog.openError(Display.getDefault().getActiveShell(), "LiveReload", "Unable to open the selected module '" + moduleName + "' in an external browser.");
+					}
+				});
 			}
 		} catch (MalformedURLException | PartInitException e) {
 			Logger.error("Failed to Open in Web Browser via LiveReload", e);

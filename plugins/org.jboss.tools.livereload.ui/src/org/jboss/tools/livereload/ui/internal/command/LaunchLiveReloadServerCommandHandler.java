@@ -19,8 +19,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -39,7 +41,13 @@ public class LaunchLiveReloadServerCommandHandler extends AbstractHandler {
 		final Object target = getTarget(event);
 		// skip if no target
 		if (target == null) {
-			Logger.warn("No valid target to open in the Web browser could be found.");
+			Display.getDefault().syncExec(new Runnable() {
+				
+				@Override
+				public void run() {
+					MessageDialog.openError(Display.getDefault().getActiveShell(), "LiveReload", "Current selection cannot be opened in the Web browser.");
+				}
+			});
 			return null;
 		}
 		try {
