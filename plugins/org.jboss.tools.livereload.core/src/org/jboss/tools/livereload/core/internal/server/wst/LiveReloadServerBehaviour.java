@@ -146,6 +146,8 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 				addServerLifeCycleListener();
 				// set the server status to "Started"
 				setServerStarted();
+				// count the usage if server started successfully
+				JBossLiveReloadCoreActivator.getDefault().countLiveReloadServerStart();
 			}
 		} catch (TimeoutException e) {
 			setServerStopped();

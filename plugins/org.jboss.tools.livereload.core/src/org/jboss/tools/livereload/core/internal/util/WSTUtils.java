@@ -44,6 +44,7 @@ import org.eclipse.wst.server.core.ServerEvent;
 import org.eclipse.wst.server.core.ServerPort;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
+import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
@@ -293,6 +294,10 @@ public class WSTUtils {
 		swc.setAttribute(LiveReloadLaunchConfiguration.ENABLE_PROXY_SERVER, true);
 		swc.setAttribute(LiveReloadLaunchConfiguration.ENABLE_SCRIPT_INJECTION, injectScript);
 		swc.setAttribute(LiveReloadLaunchConfiguration.ALLOW_REMOTE_CONNECTIONS, allowRemoteConnections);
+		
+		// count the usage 
+		JBossLiveReloadCoreActivator.getDefault().countLiveReloadServerCreation();
+
 		return swc.save(true, new NullProgressMonitor());
 	}
 

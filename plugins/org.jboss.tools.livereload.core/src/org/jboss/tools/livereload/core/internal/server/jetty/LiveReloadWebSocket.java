@@ -14,6 +14,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.wst.server.core.IServer;
+import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientConnectedEvent;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientDisconnectedEvent;
@@ -178,16 +179,22 @@ public class LiveReloadWebSocket implements Subscriber {
 				if (fallbackMode) {
 					final String command = ReloadCommandGenerator.generateReloadCommand(browserLocation);
 					sendMessage(command);
+					// count the usage of 'reload' command sent to the clients 
+					JBossLiveReloadCoreActivator.getDefault().countLiveReloadMessageSentToClient();
 				} else {
 					WorkspaceResourceChangedEvent event = (WorkspaceResourceChangedEvent) e;
 					List<String> commands = ReloadCommandGenerator.generateReloadCommands(event.getChangedResources());
 					for (String command : commands) {
 						sendMessage(command);
+						// count the usage of 'reload' command sent to the clients 
+						JBossLiveReloadCoreActivator.getDefault().countLiveReloadMessageSentToClient();
 					}
 				}
 			} else if (e instanceof ServerResourcePublishedEvent) {
 				final String command = ReloadCommandGenerator.generateReloadCommand(browserLocation);
 				sendMessage(command);
+				// count the usage of 'reload' command sent to the clients 
+				JBossLiveReloadCoreActivator.getDefault().countLiveReloadMessageSentToClient();
 			} else {
 				Logger.debug("Ignoring event " + e);
 			}
