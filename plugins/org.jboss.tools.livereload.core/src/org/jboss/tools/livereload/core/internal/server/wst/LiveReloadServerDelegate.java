@@ -30,13 +30,6 @@ import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
  */
 public class LiveReloadServerDelegate extends ServerDelegate {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.wst.server.core.model.ServerDelegate#setDefaults(org.eclipse
-	 * .core.runtime.IProgressMonitor)
-	 */
 	@Override
 	public void setDefaults(IProgressMonitor monitor) {
 		super.setDefaults(monitor);
