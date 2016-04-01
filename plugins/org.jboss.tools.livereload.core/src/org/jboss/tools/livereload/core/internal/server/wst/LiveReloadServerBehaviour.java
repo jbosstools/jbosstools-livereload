@@ -137,7 +137,7 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 			this.liveReloadServer = new LiveReloadServer(server.getName(), server.getHost(), this.websocketPort, true, allowRemoteConnections,
 					enableScriptInjection);
 			this.liveReloadServerRunnable = JettyServerRunner.start(liveReloadServer);
-			if(!this.liveReloadServerRunnable.isSuccessfullyStarted()) { 
+			if(liveReloadServerRunnable == null || !this.liveReloadServerRunnable.isSuccessfullyStarted()) { 
 				setServerStopped();
 			} else {
 				// listen to file changes in the workspace
@@ -325,25 +325,28 @@ public class LiveReloadServerBehaviour extends ServerBehaviourDelegate implement
 		}
 		// create a new proxy
 		else {
-			final int targetPort = WSTUtils.getWebPort(startedServer);
-			if (targetPort != -1) {
-				try {
-					// now, let's init and start the embedded jetty proxy server
-					// from the
-					// server attributes
-					final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
-					final boolean enableScriptInjection = isScriptInjectionEnabled();
-					final String proxyHost = getProxyHost();
-					final int proxyPort = getProxyPort(startedServer);
-					final LiveReloadProxyServer proxyServer = new LiveReloadProxyServer(proxyHost, proxyPort, startedServer.getHost(), targetPort,
-							websocketPort, allowRemoteConnections, enableScriptInjection);
-					proxyServers.put(startedServer, proxyServer);
-					final JettyServerRunner proxyRunner = JettyServerRunner.start(proxyServer);
-					proxyRunners.put(startedServer, proxyRunner);
-				} catch (Exception e) {
-					Logger.error("Failed to create or start LiveReload proxy for server " + startedServer.getName(), e);
+			try {
+				final int targetPort = WSTUtils.getWebPort(startedServer);
+				if (targetPort == -1) {
+					return;
 				}
-
+				final String targetHost = WSTUtils.getWebHost(startedServer);
+				// now, let's init and start the embedded jetty proxy server
+				// from the
+				// server attributes
+				final boolean allowRemoteConnections = isRemoteConnectionsAllowed();
+				final boolean enableScriptInjection = isScriptInjectionEnabled();
+				final String proxyHost = getProxyHost();
+				final int proxyPort = getProxyPort(startedServer);
+				final LiveReloadProxyServer proxyServer = new LiveReloadProxyServer(proxyHost, proxyPort, targetHost, targetPort,
+						websocketPort, allowRemoteConnections, enableScriptInjection);
+				proxyServers.put(startedServer, proxyServer);
+				final JettyServerRunner proxyRunner = JettyServerRunner.start(proxyServer);
+				if(proxyRunner != null) {
+					proxyRunners.put(startedServer, proxyRunner);
+				}
+			} catch (Exception e) {
+				Logger.error("Failed to create or start LiveReload proxy for server " + startedServer.getName(), e);
 			}
 		}
 	}
