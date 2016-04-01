@@ -44,6 +44,8 @@ public class JettyServerRunner implements Runnable {
 
 	/**
 	 * Starts the server
+	 * @param liveReloadServer the {@link Server} to start
+	 * @return the corresponding {@link JettyServerRunner} if the server started, <code>null</code> otherwise.
 	 * 
 	 * @throws TimeoutException
 	 */
@@ -57,7 +59,7 @@ public class JettyServerRunner implements Runnable {
 			public boolean isComplete() {
 				// task is complete if server started or if the runner status is not OK (ie, an error occurred) 
 				final boolean started = runner.isStarted();
-				final boolean statusOk = runner.status != null && !runner.status.isOK();
+				final boolean statusOk = runner.isStatusOk();
 				return started || statusOk;
 			}
 		};
@@ -69,10 +71,18 @@ public class JettyServerRunner implements Runnable {
 			stop(runner);
 			throw new TimeoutException("Failed to start " + liveReloadServer + " within expected time (reason: timeout)");
 		}
-		Logger.debug("Server {} started (success={})", liveReloadServer, runner.status.isOK());
-		return runner;
+		boolean success = runner.isStatusOk();
+		Logger.debug("Server {} started (success={})", liveReloadServer, success);
+		if(success) {
+			return runner;
+		} 
+		return null;
 	}
 
+	/**
+	 * Stops the given {@link JettyServerRunner} associated with a Jetty {@link Server}
+	 * @param runner the runner to stop
+	 */
 	public static void stop(final JettyServerRunner runner) {
 		if (runner != null) {
 			try {
@@ -162,7 +172,11 @@ public class JettyServerRunner implements Runnable {
 	 * @return
 	 */
 	public boolean isSuccessfullyStarted() {
-		return isStarted() && (status != null && status.isOK());
+		return isStarted() && isStatusOk();
+	}
+
+	protected boolean isStatusOk() {
+		return status != null && status.isOK();
 	}
 	
 	/**

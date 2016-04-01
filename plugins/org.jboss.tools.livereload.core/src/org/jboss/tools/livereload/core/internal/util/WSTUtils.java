@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
+import org.eclipse.wst.server.core.IModule;
 import org.eclipse.wst.server.core.IRuntime;
 import org.eclipse.wst.server.core.IRuntimeType;
 import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
@@ -42,8 +43,12 @@ import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
 import org.eclipse.wst.server.core.ServerEvent;
 import org.eclipse.wst.server.core.ServerPort;
+import org.eclipse.wst.server.core.model.IURLProvider;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
+import org.jboss.ide.eclipse.as.core.server.IDeployableServer;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
+import org.jboss.ide.eclipse.as.core.server.internal.ExtendedServerPropertiesAdapterFactory;
+import org.jboss.ide.eclipse.as.core.server.internal.extendedproperties.ServerExtendedProperties;
 import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
@@ -59,7 +64,8 @@ public class WSTUtils {
 
 	public static final String LIVERELOAD_RUNTIME_TYPE = "org.jboss.tools.livereload.serverTypeRuntime";
 	public static final String LIVERELOAD_SERVER_TYPE = "org.jboss.tools.livereload.serverType";
-	public static final String OPENSHIFT_SERVER_TYPE = "org.jboss.tools.openshift.express.openshift.server.type";
+	public static final String OPENSHIFT_EXPRESS_SERVER_TYPE = "org.jboss.tools.openshift.express.openshift.server.type";
+	public static final String OPENSHIFT_SERVER_TYPE = "org.jboss.tools.openshift.server.type";
 	public static final String HTTP_PREVIEW_SERVER_TYPE = "org.eclipse.wst.server.preview.server";
 	public static final String HTTP_PREVIEW_PORT = "port";
 	public static final String TEST_PREVIEW_SERVER_TYPE = "org.jboss.tools.livereload.test.previewServerType";
@@ -186,11 +192,21 @@ public class WSTUtils {
 	}
 
 	/**
+	 * Retrieves the hostname for the given server
+	 * @param server the server to analyze
+	 * @return the server hostname or <code>null</code> if it could not be determined 
+	 * @throws CoreException if something went wrong
+	 */
+	public static String getWebHost(final IServer server) throws CoreException {
+		return server.getHost();
+	}
+	
+	/**
 	 * Returns the Web Port for the given {@link IServer}, <code>8080</code> if the server is of an unknown type or <code>-1</code> if
 	 * the server is not started or if the server type is unknown.
 	 * 
-	 * @param server
-	 * @return
+	 * @param server the server to analyze
+	 * @return the port on which the server listens
 	 */
 	public static int getWebPort(final IServer server) {
 		// ignore not-started servers and unknown server types
@@ -507,6 +523,53 @@ public class WSTUtils {
 			}
 			return true;
 		}
+	}
+	
+	/**
+	 * Builds the URL for to reach a given {@code module} deployed on a given
+	 * {@code IServer}, passing through a proxy listening on the given
+	 * {@code host}:{@code port}.
+	 * 
+	 * @param host
+	 *            the proxy host
+	 * @param port
+	 *            the proxy port
+	 * @param server
+	 *            the IServer on which the given {@link IModule} is deployed
+	 * @param module
+	 *            the IModule to analyze
+	 * @return the full context for the given {@link IModule} or
+	 *         <code>null</code>
+	 * @throws MalformedURLException
+	 */
+	public static URL getModuleURL(String host, int port, final IServer server, final IModule module) throws MalformedURLException {
+		return new URL("http", host, port, PathBuilder.from("/").path(getContextRoot(server, module)).path("/").build());
+	}
+
+	/**
+	 * Gets the context root for the given {@code module} deployed on the given {@code server}. 
+	 * @param server the {@link IServer} on which the module is deployed
+	 * @param module the {@link IModule} whose context root is to be found
+	 * @return the specific context root known by the {@link IServer} or the module name if no specific logic is involved.
+	 */
+	private static String getContextRoot(final IServer server, final IModule module) {
+		final IURLProvider urlProvider = getURLProvider(server);
+		if(urlProvider != null) {
+			final URL moduleURL = urlProvider.getModuleRootURL(module);
+			if(moduleURL != null) {
+				return moduleURL.getPath();
+			}
+		}
+		return module.getName();
+	}
+	
+	/**
+	 * Gets the {@link IURLProvider} for the given {@code server}. 
+	 * @param server the server to analyze
+	 * @return the associated {@link IURLProvider} or <code>null</code> if none exists.
+	 */
+	private static IURLProvider getURLProvider(final IServer server) {
+		return (IURLProvider) server.loadAdapter(IURLProvider.class, new NullProgressMonitor());
 	}
 
 }

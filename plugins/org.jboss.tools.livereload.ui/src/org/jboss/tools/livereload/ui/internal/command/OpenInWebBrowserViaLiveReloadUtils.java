@@ -185,7 +185,8 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 					}
 				});
 			}
-		} catch (MalformedURLException | PartInitException e) {
+		} catch (MalformedURLException | CoreException e) {
+			MessageDialog.openError(Display.getDefault().getActiveShell(), "LiveReload Error", e.getMessage());
 			Logger.error("Failed to Open in Web Browser via LiveReload", e);
 		}
 	}
@@ -199,15 +200,15 @@ public class OpenInWebBrowserViaLiveReloadUtils {
 		return new URL("http", host, port, location.toString());
 	}
 
-	private static URL computeURL(final IServerModule appModule) throws MalformedURLException {
+	private static URL computeURL(final IServerModule appModule) throws MalformedURLException, CoreException {
 		final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(appModule.getServer());
 		if(liveReloadProxyServer == null) {
 			return null;
 		}
 		final int proxyPort = liveReloadProxyServer.getProxyPort();
 		final String host = liveReloadProxyServer.getProxyHost();
-		final URL url = new URL("http", host, proxyPort, "/" + appModule.getModule()[0].getName());
-		return url;
+		final URL moduleURL = WSTUtils.getModuleURL(host, proxyPort, appModule.getServer(), appModule.getModule()[0]);
+		return moduleURL;
 	}
 
 }
