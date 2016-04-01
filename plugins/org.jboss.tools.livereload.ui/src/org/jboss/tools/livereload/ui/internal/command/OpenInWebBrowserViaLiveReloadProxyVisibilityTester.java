@@ -31,7 +31,7 @@ public class OpenInWebBrowserViaLiveReloadProxyVisibilityTester extends Property
 			return false;
 		}
 		final IServer appServer = appModule.getServer();
-		return appServer != null && !WSTUtils.OPENSHIFT_SERVER_TYPE.equals(appServer.getServerType().getId());
+		return appServer != null && !WSTUtils.OPENSHIFT_EXPRESS_SERVER_TYPE.equals(appServer.getServerType().getId());
 	}
 
 }

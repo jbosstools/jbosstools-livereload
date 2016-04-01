@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.core.runtime.Plugin;
 import org.eclipse.wst.server.core.IServer;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadServer;
 import org.jboss.tools.livereload.core.internal.util.Logger;
@@ -19,7 +19,7 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class JBossLiveReloadCoreActivator extends AbstractUIPlugin {
+public class JBossLiveReloadCoreActivator extends Plugin {
 
 	/** The plug-in ID. */
 	public static final String PLUGIN_ID = "org.jboss.tools.livereload.core"; //$NON-NLS-1$

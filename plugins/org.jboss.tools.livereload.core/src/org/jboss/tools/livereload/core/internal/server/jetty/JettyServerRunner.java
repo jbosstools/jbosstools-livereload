@@ -44,6 +44,8 @@ public class JettyServerRunner implements Runnable {
 
 	/**
 	 * Starts the server
+	 * @param liveReloadServer the {@link Server} to start
+	 * @return the corresponding {@link JettyServerRunner} if the server started, <code>null</code> otherwise.
 	 * 
 	 * @throws TimeoutException
 	 */
@@ -70,9 +72,16 @@ public class JettyServerRunner implements Runnable {
 			throw new TimeoutException("Failed to start " + liveReloadServer + " within expected time (reason: timeout)");
 		}
 		Logger.debug("Server {} started (success={})", liveReloadServer, runner.status.isOK());
-		return runner;
+		if(runner.status.isOK()) {
+			return runner;
+		} 
+		return null;
 	}
 
+	/**
+	 * Stops the given {@link JettyServerRunner} associated with a Jetty {@link Server}
+	 * @param runner the runner to stop
+	 */
 	public static void stop(final JettyServerRunner runner) {
 		if (runner != null) {
 			try {
