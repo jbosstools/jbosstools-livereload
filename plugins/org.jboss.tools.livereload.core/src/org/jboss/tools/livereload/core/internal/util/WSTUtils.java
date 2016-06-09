@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
 import org.eclipse.wst.server.core.IModule;
+import org.eclipse.wst.server.core.IModuleType;
 import org.eclipse.wst.server.core.IRuntime;
 import org.eclipse.wst.server.core.IRuntimeType;
 import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
@@ -45,9 +46,7 @@ import org.eclipse.wst.server.core.ServerEvent;
 import org.eclipse.wst.server.core.ServerPort;
 import org.eclipse.wst.server.core.model.IURLProvider;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
-import org.jboss.ide.eclipse.as.core.server.IDeployableServer;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
-import org.jboss.ide.eclipse.as.core.server.internal.ExtendedServerPropertiesAdapterFactory;
 import org.jboss.ide.eclipse.as.core.server.internal.extendedproperties.ServerExtendedProperties;
 import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
@@ -74,6 +73,7 @@ public class WSTUtils {
 	public static final String JBOSSAS_SERVER_PORT = "org.jboss.ide.as.serverport";
 	public static final String TOMCAT_60_SERVER_TYPE = "org.eclipse.jst.server.tomcat.60";
 	public static final String TOMCAT_70_SERVER_TYPE = "org.eclipse.jst.server.tomcat.70";
+	public static final String EJB_MODULE_TYPE = "jst.ejb";
 
 	/**
 	 * Returns the list of the existing LiveReload servers.
@@ -342,7 +342,7 @@ public class WSTUtils {
 	 * 
 	 * @param appServer
 	 *            the server to check
-	 * @return true if the given server is started, false oherwise.
+	 * @return true if the given server is started, false otherwise.
 	 */
 	public static boolean isServerStarted(final IServer appServer) {
 		return appServer.getServerState() == IServer.STATE_STARTED;
@@ -553,12 +553,9 @@ public class WSTUtils {
 	 * @return the specific context root known by the {@link IServer} or the module name if no specific logic is involved.
 	 */
 	private static String getContextRoot(final IServer server, final IModule module) {
-		final IURLProvider urlProvider = getURLProvider(server);
-		if(urlProvider != null) {
-			final URL moduleURL = urlProvider.getModuleRootURL(module);
-			if(moduleURL != null) {
-				return moduleURL.getPath();
-			}
+		final URL moduleURL = getModuleURL(server, module);
+		if (moduleURL != null) {
+			return moduleURL.getPath();
 		}
 		return module.getName();
 	}
@@ -570,6 +567,40 @@ public class WSTUtils {
 	 */
 	private static IURLProvider getURLProvider(final IServer server) {
 		return (IURLProvider) server.loadAdapter(IURLProvider.class, new NullProgressMonitor());
+	}
+	
+	/**
+	 * Gets the {@link ServerExtendedProperties} for the given {@code server}. 
+	 * @param server the server to analyze
+	 * @return the associated {@link ServerExtendedProperties} or <code>null</code> if none exists.
+	 */
+	private static ServerExtendedProperties getServerExtendedProperties(final IServer server) {
+		return (ServerExtendedProperties) server.loadAdapter(ServerExtendedProperties.class, new NullProgressMonitor());
+	}
+	
+	/**
+	 * Gets the {@link URL} of the deployed {@code module}  deployed on the given {@code server}.
+	 * @param server the {@link IServer} on which the module is deployed
+	 * @param module the {@link IModule} whose context root is to be found
+	 * @return the URL of the {@code module} on the {@code server} or
+	 * 		   {@code null} if it is not a web module
+	 * 					    or if this server does not have a valid configuration
+	 */
+	public static URL getModuleURL(IServer server, IModule module) {
+		ServerExtendedProperties props = getServerExtendedProperties(server);
+		if (props == null || isEjbModule(module)) {
+			return null;
+		}
+		final IURLProvider urlProvider = getURLProvider(server);
+		if (urlProvider != null) {
+			return urlProvider.getModuleRootURL(module);
+		}
+		return null;
+	}
+	
+	private static boolean isEjbModule(IModule module) {
+		IModuleType type = module.getModuleType();
+		return EJB_MODULE_TYPE.equals(type.getId()); //$NON-NLS-1$
 	}
 
 }

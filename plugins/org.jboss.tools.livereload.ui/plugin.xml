@@ -82,9 +82,9 @@
                  <iterate
                        ifEmpty="false"
                        operator="or">
-                    	<adapt
-							type="org.eclipse.wst.server.ui.IServerModule">
-						</adapt>
+                    	<instanceof
+							value="org.eclipse.wst.server.ui.IServerModule">
+						</instanceof>
                  </iterate>
                  <test
                        forcePluginActivation="true"
