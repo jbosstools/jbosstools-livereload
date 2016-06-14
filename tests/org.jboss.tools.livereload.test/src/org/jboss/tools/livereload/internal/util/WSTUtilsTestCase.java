@@ -38,6 +38,7 @@ import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.eclipse.wst.server.core.util.SocketUtil;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
 import org.jboss.ide.eclipse.as.core.server.internal.extendedproperties.ServerExtendedProperties;
+import org.jboss.ide.eclipse.as.core.util.IWTPConstants;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
@@ -252,7 +253,7 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		Mockito.when(server.loadAdapter(Mockito.eq(IURLProvider.class), Mockito.any(IProgressMonitor.class))).thenReturn(deployableServer);
 		Mockito.when(server.loadAdapter(Mockito.eq(ServerExtendedProperties.class), Mockito.any(IProgressMonitor.class))).thenReturn(props);
 		Mockito.when(module.getModuleType()).thenReturn(moduleType);
-		Mockito.when(module.getModuleType().getId()).thenReturn("jst.ejb");
+		Mockito.when(module.getModuleType().getId()).thenReturn(IWTPConstants.FACET_EJB);
 		Mockito.when(deployableServer.getModuleRootURL(module)).thenReturn(new URL("http", "foo", 9090, "/module"));
 		// when
 		final URL moduleURL= WSTUtils.getModuleURL(host, port, server, module);

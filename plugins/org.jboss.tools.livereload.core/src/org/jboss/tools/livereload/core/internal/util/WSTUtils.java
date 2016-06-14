@@ -48,6 +48,7 @@ import org.eclipse.wst.server.core.model.IURLProvider;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
 import org.jboss.ide.eclipse.as.core.server.internal.extendedproperties.ServerExtendedProperties;
+import org.jboss.ide.eclipse.as.core.util.IWTPConstants;
 import org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadLaunchConfiguration;
@@ -73,7 +74,6 @@ public class WSTUtils {
 	public static final String JBOSSAS_SERVER_PORT = "org.jboss.ide.as.serverport";
 	public static final String TOMCAT_60_SERVER_TYPE = "org.eclipse.jst.server.tomcat.60";
 	public static final String TOMCAT_70_SERVER_TYPE = "org.eclipse.jst.server.tomcat.70";
-	public static final String EJB_MODULE_TYPE = "jst.ejb";
 
 	/**
 	 * Returns the list of the existing LiveReload servers.
@@ -600,7 +600,7 @@ public class WSTUtils {
 	
 	private static boolean isEjbModule(IModule module) {
 		IModuleType type = module.getModuleType();
-		return EJB_MODULE_TYPE.equals(type.getId()); //$NON-NLS-1$
+		return IWTPConstants.FACET_EJB.equals(type.getId()); //$NON-NLS-1$
 	}
 
 }
