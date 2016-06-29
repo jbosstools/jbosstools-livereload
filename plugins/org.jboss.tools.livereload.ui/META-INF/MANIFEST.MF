@@ -28,3 +28,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/core-2.2.jar,
  .
+Export-Package: org.jboss.tools.livereload.ui.internal.command;x-friends:="org.jboss.tools.livereload.test"

@@ -37,6 +37,7 @@ public class OpenInWebBrowserViaLiveReloadProxyEnablementTester extends Property
 		final IServer appServer = appModule.getServer();
 		IModule[] modules = appModule.getModule();
 		return appServer != null
+				&& appServer.getModuleState(appModule.getModule()) == IServer.STATE_STARTED
 				&& WSTUtils.isServerStarted(appServer)
 				&& WSTUtils.getModuleURL(appServer, modules[modules.length - 1]) != null;
 	}
