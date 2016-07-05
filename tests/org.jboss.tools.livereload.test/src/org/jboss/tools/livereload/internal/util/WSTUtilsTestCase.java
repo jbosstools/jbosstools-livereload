@@ -240,8 +240,6 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldGetModuleContext() throws MalformedURLException {
 		// given
-		final String host = "hostname";
-		final int port = 8080;
 		final IServer server = Mockito.mock(IServer.class);
 		final IModule module = Mockito.mock(IModule.class);
 		final IServerType serverType = Mockito.mock(IServerType.class);
@@ -253,12 +251,12 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		Mockito.when(server.loadAdapter(Mockito.eq(IURLProvider.class), Mockito.any(IProgressMonitor.class))).thenReturn(deployableServer);
 		Mockito.when(server.loadAdapter(Mockito.eq(ServerExtendedProperties.class), Mockito.any(IProgressMonitor.class))).thenReturn(props);
 		Mockito.when(module.getModuleType()).thenReturn(moduleType);
-		Mockito.when(module.getModuleType().getId()).thenReturn(IWTPConstants.FACET_EJB);
-		Mockito.when(deployableServer.getModuleRootURL(module)).thenReturn(new URL("http", "foo", 9090, "/module"));
+		Mockito.when(module.getModuleType().getId()).thenReturn(IWTPConstants.FACET_WEB);
+		Mockito.when(deployableServer.getModuleRootURL(module)).thenReturn(new URL("http", "hostname", 8080, "/module"));
 		// when
-		final URL moduleURL= WSTUtils.getModuleURL(host, port, server, module);
+		final URL moduleURL= WSTUtils.getModuleURL(server, module);
 		// then
-		assertThat(moduleURL.toExternalForm()).isEqualTo("http://hostname:8080/module/");
+		assertThat(moduleURL.toExternalForm()).isEqualTo("http://hostname:8080/module");
 	}
 	
 	@Test
