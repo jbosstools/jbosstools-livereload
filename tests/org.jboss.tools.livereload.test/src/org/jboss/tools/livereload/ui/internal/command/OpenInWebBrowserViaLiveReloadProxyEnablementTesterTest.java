@@ -62,8 +62,20 @@ public class OpenInWebBrowserViaLiveReloadProxyEnablementTesterTest {
 	}
 
 	@Test
-	public void liveReloadEnabled() throws MalformedURLException {	
+	public void liveReloadEnabledWhenModuleIsStarted() throws MalformedURLException {	
 		Mockito.when(server.getModuleState(Mockito.any(IModule[].class))).thenReturn(IServer.STATE_STARTED);
+		Mockito.when(server.getServerState()).thenReturn(IServer.STATE_STARTED);
+		Mockito.when(deployableServer.getModuleRootURL(module)).thenReturn(new URL("http", "foo", 9090, "/module"));
+		Mockito.when(module.getModuleType().getId()).thenReturn(IWTPConstants.FACET_WEB);
+		
+		OpenInWebBrowserViaLiveReloadProxyEnablementTester tester = new OpenInWebBrowserViaLiveReloadProxyEnablementTester();
+		IServerModule serverModule = new ModuleServer(server, new IModule[] {module});
+		assertTrue(tester.test(new StructuredSelection(serverModule), "", null, null));
+	}
+	
+	@Test
+	public void liveReloadEnabledWhenModuleIsInUnknownState() throws MalformedURLException {	
+		Mockito.when(server.getModuleState(Mockito.any(IModule[].class))).thenReturn(IServer.STATE_UNKNOWN);
 		Mockito.when(server.getServerState()).thenReturn(IServer.STATE_STARTED);
 		Mockito.when(deployableServer.getModuleRootURL(module)).thenReturn(new URL("http", "foo", 9090, "/module"));
 		Mockito.when(module.getModuleType().getId()).thenReturn(IWTPConstants.FACET_WEB);
