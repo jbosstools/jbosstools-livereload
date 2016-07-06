@@ -600,6 +600,9 @@ public class WSTUtils {
 	
 	private static boolean isEjbModule(IModule module) {
 		IModuleType type = module.getModuleType();
+		if (type == null) {
+			return false;
+		}
 		return IWTPConstants.FACET_EJB.equals(type.getId()); //$NON-NLS-1$
 	}
 
