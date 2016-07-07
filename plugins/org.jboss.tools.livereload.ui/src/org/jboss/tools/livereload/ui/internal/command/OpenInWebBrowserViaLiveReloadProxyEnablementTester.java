@@ -14,6 +14,7 @@ package org.jboss.tools.livereload.ui.internal.command;
 import static org.jboss.tools.livereload.ui.internal.command.OpenInWebBrowserViaLiveReloadUtils.retrieveServerModuleFromSelectedElement;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.wst.server.core.IModule;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.ui.IServerModule;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
@@ -34,7 +35,17 @@ public class OpenInWebBrowserViaLiveReloadProxyEnablementTester extends Property
 			return false;
 		}
 		final IServer appServer = appModule.getServer();
-		return appServer != null && WSTUtils.isServerStarted(appServer);
+		IModule[] modules = appModule.getModule();
+		return appServer != null
+				&& isModuleStartedOrUnknown(appServer, modules)
+				&& WSTUtils.isServerStarted(appServer)
+				&& WSTUtils.getModuleURL(appServer, modules[modules.length - 1]) != null;
+	}
+	
+	private boolean isModuleStartedOrUnknown(IServer appServer, IModule[] modules) {
+		int moduleState = appServer.getModuleState(modules);
+		return moduleState == IServer.STATE_STARTED
+				|| moduleState == IServer.STATE_UNKNOWN;
 	}
 
 }

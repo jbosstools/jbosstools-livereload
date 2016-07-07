@@ -12,9 +12,7 @@
 package org.jboss.tools.livereload.internal.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,9 +24,9 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
 import org.eclipse.wst.server.core.IModule;
+import org.eclipse.wst.server.core.IModuleType;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerType;
 import org.eclipse.wst.server.core.ServerCore;
@@ -37,7 +35,8 @@ import org.eclipse.wst.server.core.model.IURLProvider;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.eclipse.wst.server.core.util.SocketUtil;
 import org.jboss.ide.eclipse.as.core.server.IJBossServer;
-import org.jboss.ide.eclipse.as.core.server.internal.IExtendedPropertiesProvider;
+import org.jboss.ide.eclipse.as.core.server.internal.extendedproperties.ServerExtendedProperties;
+import org.jboss.ide.eclipse.as.core.util.IWTPConstants;
 import org.jboss.tools.livereload.core.internal.server.jetty.LiveReloadProxyServer;
 import org.jboss.tools.livereload.core.internal.server.wst.LiveReloadServerBehaviour;
 import org.jboss.tools.livereload.core.internal.util.WSTUtils;
@@ -45,7 +44,6 @@ import org.jboss.tools.livereload.internal.AbstractCommonTestCase;
 import org.jboss.tools.livereload.test.previewserver.PreviewServerFactory;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 /**
  * @author xcoulon
  * 
@@ -239,20 +237,23 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	@Test
 	public void shouldGetModuleContext() throws MalformedURLException {
 		// given
-		final String host = "hostname";
-		final int port = 8080;
-		final IServer server = Mockito.mock(IServer.class);
-		final IModule module = Mockito.mock(IModule.class);
-		final IServerType serverType = Mockito.mock(IServerType.class);
-		final IURLProvider deployableServer = Mockito.mock(IURLProvider.class, Mockito.RETURNS_DEEP_STUBS);
-		Mockito.when(server.getServerType()).thenReturn(serverType);
-		Mockito.when(serverType.getId()).thenReturn("mock!");
-		Mockito.when(server.loadAdapter(Mockito.any(Class.class), Mockito.any(IProgressMonitor.class))).thenReturn(deployableServer);
-		Mockito.when(deployableServer.getModuleRootURL(module)).thenReturn(new URL("http", "foo", 9090, "/module"));
+		final IServer server = mock(IServer.class);
+		final IModule module = mock(IModule.class);
+		final IServerType serverType = mock(IServerType.class);
+		final IURLProvider deployableServer = mock(IURLProvider.class, RETURNS_DEEP_STUBS);
+		final ServerExtendedProperties props = mock(ServerExtendedProperties.class);
+		final IModuleType moduleType = mock(IModuleType.class);
+		when(server.getServerType()).thenReturn(serverType);
+		when(serverType.getId()).thenReturn("mock!");
+		when(server.loadAdapter(eq(IURLProvider.class), any(IProgressMonitor.class))).thenReturn(deployableServer);
+		when(server.loadAdapter(eq(ServerExtendedProperties.class), any(IProgressMonitor.class))).thenReturn(props);
+		when(module.getModuleType()).thenReturn(moduleType);
+		when(module.getModuleType().getId()).thenReturn(IWTPConstants.FACET_WEB);
+		when(deployableServer.getModuleRootURL(module)).thenReturn(new URL("http", "hostname", 8080, "/module"));
 		// when
-		final URL moduleURL= WSTUtils.getModuleURL(host, port, server, module);
+		final URL moduleURL= WSTUtils.getModuleURL(server, module);
 		// then
-		assertThat(moduleURL.toExternalForm()).isEqualTo("http://hostname:8080/module/");
+		assertThat(moduleURL.toExternalForm()).isEqualTo("http://hostname:8080/module");
 	}
 	
 	@Test
@@ -260,14 +261,13 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 		// given
 		final String host = "hostname";
 		final int port = 8080;
-		final IServer server = Mockito.mock(IServer.class);
-		final IModule module = Mockito.mock(IModule.class);
-		Mockito.when(server.loadAdapter(Mockito.any(Class.class), Mockito.any(IProgressMonitor.class))).thenReturn(null);
-		Mockito.when(module.getName()).thenReturn("module");
+		final IServer server = mock(IServer.class);
+		final IModule module = mock(IModule.class);
+		when(server.loadAdapter(any(Class.class), any(IProgressMonitor.class))).thenReturn(null);
+		when(module.getName()).thenReturn("module");
 		// when
 		final URL moduleURL= WSTUtils.getModuleURL(host, port, server, module);
 		// then
 		assertThat(moduleURL.toExternalForm()).isEqualTo("http://hostname:8080/module/");
 	}
-	
 }
