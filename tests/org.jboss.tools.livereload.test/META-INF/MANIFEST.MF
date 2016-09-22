@@ -31,7 +31,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.wst.server.preview.adapter;bundle-version="1.1.101",
  org.eclipse.wst.common.project.facet.core;bundle-version="1.4.300",
  org.eclipse.wst.common.modulecore;bundle-version="1.2.300",
- javax.servlet;bundle-version="3.1.0",
  org.eclipse.jst.server.tomcat.core;bundle-version="1.1.403",
  org.eclipse.wst.web,
  org.slf4j.api;bundle-version="1.6.4",
@@ -46,3 +45,6 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
+Import-Package: javax.servlet;version="3.1.0",
+ javax.servlet.annotation;version="3.1.0",
+ javax.servlet.http;version="3.1.0"

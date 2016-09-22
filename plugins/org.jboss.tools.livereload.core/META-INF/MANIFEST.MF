@@ -12,7 +12,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.wst.common.modulecore;bundle-version="1.2.200",
  org.eclipse.jdt.core;bundle-version="3.8.2",
  org.eclipse.wst.server.core;bundle-version="1.4.0",
- javax.servlet;bundle-version="3.1.0",
  org.eclipse.jetty.servlets;bundle-version="[9.3.9,9.4)",
  org.eclipse.jetty.client;bundle-version="[9.3.9,9.4)",
  org.eclipse.jetty.util;bundle-version="[9.3.9,9.4)",
@@ -46,3 +45,6 @@ Export-Package: org.jboss.tools.livereload.core.internal;x-friends:="org.jboss.t
  org.jboss.tools.livereload.core.internal.server.wst;x-friends:="org.jboss.tools.livereload.test,org.jboss.tools.livereload.ui",
  org.jboss.tools.livereload.core.internal.service;x-friends:="org.jboss.tools.livereload.test",
  org.jboss.tools.livereload.core.internal.util;x-friends:="org.jboss.tools.livereload.test,org.jboss.tools.livereload.ui"
+Import-Package: javax.servlet;version="3.1.0",
+ javax.servlet.annotation;version="3.1.0",
+ javax.servlet.http;version="3.1.0"
