@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.wst.server.core.IServer;
@@ -158,15 +159,17 @@ public abstract class AbstractCommonTestCase {
 	 * @param timeout
 	 * @param unit
 	 * @return 
+	 * @return 
 	 * @throws CoreException
 	 * @throws TimeoutException
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	public static void startServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
+	public static IStatus startServer(final IServer server, final int timeout, final TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException, CoreException {
 		final Job job = WSTUtils.startOrRestartServer(server, timeout, unit);
 		job.schedule();
 		job.join();
+		return job.getResult();
 	}
 }

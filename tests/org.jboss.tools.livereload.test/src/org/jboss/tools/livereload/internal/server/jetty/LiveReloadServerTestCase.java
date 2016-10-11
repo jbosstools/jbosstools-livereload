@@ -488,7 +488,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 	@Test
 	public void shouldNotInjectLiveReloadScriptInCssFile() throws Exception {
-		createAndLaunchLiveReloadServer(false);
+		createAndLaunchLiveReloadServer(true);
 		final String scriptContent = new StringBuilder(
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
 				.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();
@@ -506,7 +506,7 @@ public class LiveReloadServerTestCase extends AbstractCommonTestCase {
 
 	@Test
 	public void shouldNotInjectLiveReloadScriptInAsciidoctorFile() throws Exception {
-		createAndLaunchLiveReloadServer(false);
+		createAndLaunchLiveReloadServer(true);
 		final String scriptContent = new StringBuilder(
 				"<script>document.write('<script src=\"http://' + location.host.split(':')[0]+ ':")
 		.append(liveReloadServerPort).append("/livereload.js\"></'+ 'script>')</script>").toString();

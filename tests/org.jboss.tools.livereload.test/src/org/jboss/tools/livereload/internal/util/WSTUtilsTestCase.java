@@ -12,7 +12,11 @@
 package org.jboss.tools.livereload.internal.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,6 +28,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jst.server.tomcat.core.internal.TomcatServerBehaviour;
 import org.eclipse.wst.server.core.IModule;
 import org.eclipse.wst.server.core.IModuleType;
@@ -199,9 +204,11 @@ public class WSTUtilsTestCase extends AbstractCommonTestCase {
 	public void shouldFindLiveReloadServerForPreviewServer() throws CoreException, InterruptedException, ExecutionException, TimeoutException {
 		// pre-condition
 		final IServer previewServer = PreviewServerFactory.createServer(project);
-		startServer(previewServer, 30, TimeUnit.SECONDS);
+		final IStatus previewServerStartStatus = startServer(previewServer, 30, TimeUnit.SECONDS);
+		assertThat(previewServerStartStatus.isOK()).isEqualTo(true);
 		final IServer liveReloadServer = WSTUtils.createLiveReloadServer(SocketUtil.findUnusedPort(50000, 60000), false, false);
-		startServer(liveReloadServer, 30, TimeUnit.SECONDS);
+		final IStatus liveReloadServerStartStatus = startServer(liveReloadServer, 30, TimeUnit.SECONDS);
+		assertThat(liveReloadServerStartStatus.isOK()).isEqualTo(true);
 		// operation
 		final LiveReloadProxyServer liveReloadProxyServer = WSTUtils.findLiveReloadProxyServer(previewServer);
 		// verification
