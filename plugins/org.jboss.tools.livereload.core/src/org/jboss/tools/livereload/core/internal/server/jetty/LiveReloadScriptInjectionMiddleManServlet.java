@@ -83,10 +83,10 @@ public class LiveReloadScriptInjectionMiddleManServlet extends AsyncMiddleManSer
 	@Override
 	protected ContentTransformer newServerResponseContentTransformer(final HttpServletRequest clientRequest,
 			final HttpServletResponse proxyResponse, final Response serverResponse) {
-		final String acceptedContentTypes = clientRequest.getHeader("Accept");
+		String contentType = proxyResponse.getContentType();
 		if (enableScriptInjection && HttpStatus.isSuccess(serverResponse.getStatus())
 				&& !"/livereload".equals(clientRequest.getRequestURI())
-				&& HttpUtils.isHtmlContentType(acceptedContentTypes)) {
+				&& HttpUtils.isHtmlContentType(contentType)){
 			return new ScriptInjectionContentTransformer(serverResponse);
 		}
 		// will return ContentTransformer.IDENTITY to keep server response unchanged.
