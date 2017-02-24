@@ -9,6 +9,7 @@
 	</parent>
 	<groupId>org.jboss.tools.livereload</groupId>
 	<artifactId>livereload.site</artifactId>
+	<version>1.5.0-SNAPSHOT</version>
 	<name>livereload.site</name>
 	
 	<packaging>eclipse-repository</packaging>
