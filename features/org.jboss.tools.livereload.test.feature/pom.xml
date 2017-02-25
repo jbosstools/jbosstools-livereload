@@ -8,5 +8,6 @@
 	</parent>
 	<groupId>org.jboss.tools.livereload.features</groupId>
 	<artifactId>org.jboss.tools.livereload.test.feature</artifactId>
+	<version>1.4.4-SNAPSHOT</version>
 	<packaging>eclipse-feature</packaging>
 </project>
