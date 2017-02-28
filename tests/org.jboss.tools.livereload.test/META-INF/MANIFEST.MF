@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JBoss Tools LiveReload Test
 Bundle-SymbolicName: org.jboss.tools.livereload.test;singleton:=true
-Bundle-Version: 1.4.3.qualifier
+Bundle-Version: 1.5.0.qualifier
 Bundle-Activator: org.jboss.tools.livereload.internal.LiveReloadTestActivator
 Bundle-Vendor: JBoss by Red Hat
 Require-Bundle: org.eclipse.ui,
@@ -13,17 +13,17 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.wst.server.core;bundle-version="1.5.0",
  org.eclipse.ui.ide;bundle-version="3.9.0",
  org.eclipse.debug.core;bundle-version="3.8.0",
- org.eclipse.jetty.client;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.security;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.util;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.server;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.servlet;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.websocket.api;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.websocket.server;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.websocket.servlet;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.websocket.common;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.websocket.client;bundle-version="[9.3.9,9.4)",
- org.eclipse.jetty.io;bundle-version="[9.3.9,9.4)",
+ org.eclipse.jetty.client;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.security;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.util;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.server;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.servlet;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.websocket.api;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.websocket.server;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.websocket.servlet;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.websocket.common;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.websocket.client;bundle-version="[9.4.0,9.4.1)",
+ org.eclipse.jetty.io;bundle-version="[9.4.0,9.4.1)",
  org.jboss.ide.eclipse.as.core;bundle-version="2.4.100",
  org.apache.commons.httpclient;bundle-version="3.1.0",
  org.apache.commons.io;bundle-version="2.0.1",
