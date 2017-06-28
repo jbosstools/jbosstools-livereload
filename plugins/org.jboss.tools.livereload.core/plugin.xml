@@ -19,14 +19,6 @@
       </serverType>
    </extension>
    <extension
-         point="org.eclipse.wst.server.ui.serverImages">
-      <image
-            icon="icons/livereload_server.png"
-            id="org.jboss.tools.livereload.serverImage"
-            typeIds="org.jboss.tools.livereload.serverTypeRuntime, org.jboss.tools.livereload.serverType">
-      </image>
-   </extension>
-   <extension
          point="org.eclipse.wst.server.core.runtimeTypes">
       <runtimeType
             description="LiveReload Server"
