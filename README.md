@@ -6,12 +6,13 @@ JBoss Tools LiveReload plugin support for having edits done
 in eclipse to be automatically reloaded in browsers that has
 livereload.js or LiveReload plugin installed.
 
+**NOTE: This project is deprecated, and will likely be removed from JBoss Tools at some point in the future.**
+
 It will also provide an optional proxy mode that will automatically inject
 script at the bottom on the return html pages, so that livereload.js
 is activated without having to install a browser extension nor
 edit the pages/templates in the application.
 
-NOTE: This project is deprecated, and will likely be removed from JBoss Tools at some point in the future.
 
 ## Contribute fixes and features
 
