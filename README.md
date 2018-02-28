@@ -2,9 +2,7 @@
 
 # Summary
 
-JBoss Tools LiveReload plugin support for having edits done
-in eclipse to be automatically reloaded in browsers that has
-livereload.js or LiveReload plugin installed.
+LiveReload plugin provides a way for edits done in Eclipse to be automatically reloaded in browsers with the livereload.js or LiveReload plugin enabled.
 
 **NOTE: This project is deprecated, and will likely be removed from JBoss Tools at some point in the future.**
 
