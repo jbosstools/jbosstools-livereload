@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JBoss Tools LiveReload Core
 Bundle-SymbolicName: org.jboss.tools.livereload.core;singleton:=true
-Bundle-Version: 1.5.1.qualifier
+Bundle-Version: 1.5.100.qualifier
 Bundle-Activator: org.jboss.tools.livereload.core.internal.JBossLiveReloadCoreActivator
 Bundle-Vendor: JBoss by Red Hat
 Require-Bundle: org.eclipse.core.runtime,

@@ -10,7 +10,7 @@
 	<groupId>org.jboss.tools</groupId>
 	<artifactId>livereload</artifactId>
 	<name>jbosstools-livereload</name>
-	<version>1.5.1-SNAPSHOT</version>
+	<version>1.5.100-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<properties>
 		<tycho.scmUrl>scm:git:https://github.com/jbosstools/jbosstools-livereload.git</tycho.scmUrl>
