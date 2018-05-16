@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.jboss.tools.livereload</groupId>
 		<artifactId>tests</artifactId>
-		<version>1.5.2-SNAPSHOT</version>
+		<version>1.5.1-SNAPSHOT</version>
 	</parent>
 	<groupId>org.jboss.tools.livereload.tests</groupId>
 	<artifactId>org.jboss.tools.livereload.test</artifactId>
