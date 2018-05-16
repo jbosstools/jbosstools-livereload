@@ -10,6 +10,5 @@
 	</parent>
 	<groupId>org.jboss.tools.livereload.features</groupId>
 	<artifactId>org.jboss.tools.livereload.feature</artifactId>
-	<version>1.5.2-SNAPSHOT</version>
 	<packaging>eclipse-feature</packaging>
 </project>
