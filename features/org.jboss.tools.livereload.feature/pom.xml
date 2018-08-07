@@ -11,4 +11,5 @@
 	<groupId>org.jboss.tools.livereload.features</groupId>
 	<artifactId>org.jboss.tools.livereload.feature</artifactId>
 	<packaging>eclipse-feature</packaging>
+<version>1.5.101-SNAPSHOT</version>
 </project>
