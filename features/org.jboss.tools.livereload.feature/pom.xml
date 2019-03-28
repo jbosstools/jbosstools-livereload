@@ -6,10 +6,9 @@
 	<parent>
 		<groupId>org.jboss.tools.livereload</groupId>
 		<artifactId>features</artifactId>
-		<version>1.5.100-SNAPSHOT</version>
+		<version>1.5.101-SNAPSHOT</version>
 	</parent>
 	<groupId>org.jboss.tools.livereload.features</groupId>
 	<artifactId>org.jboss.tools.livereload.feature</artifactId>
 	<packaging>eclipse-feature</packaging>
-<version>1.5.101-SNAPSHOT</version>
 </project>
