@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        java: ["11"]
+        java: ["11", "17"]
       fail-fast: false
 
     steps:
@@ -54,7 +54,7 @@ jobs:
     - name: Archiving test artifacts
       uses: actions/upload-artifact@v2
       with: 
-        name: ${{ matrix.os }}-test-reports
+        name: ${{ matrix.os }}-${{ matrix.java }}-test-reports
         path: |
           *tests/*/target/surefire-reports/
           */*tests/*/target/surefire-reports/
