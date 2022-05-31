@@ -33,15 +33,6 @@
 					<excludes>
 						<exclude>**/Abstract*.class</exclude>
 					</excludes>
-					<dependency-resolution>
-         <extraRequirements>
-            <requirement>
-               <type>eclipse-bundle</type>
-               <id>javax.servlet</id>
-               <versionRange>3.1.0</versionRange>
-            </requirement>
-         </extraRequirements>
-      </dependency-resolution>
 				</configuration>
 			</plugin>
 		</plugins>
