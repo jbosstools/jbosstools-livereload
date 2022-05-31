@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.jboss.tools</groupId>
 		<artifactId>parent</artifactId>
-		<version>4.23.0.Final-SNAPSHOT</version>
+		<version>4.24.0.AM1-SNAPSHOT</version>
 	</parent>
 	<groupId>org.jboss.tools</groupId>
 	<artifactId>livereload</artifactId>
 	<name>jbosstools-livereload</name>
-	<version>1.5.300-SNAPSHOT</version>
+	<version>1.5.400-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<properties>
 		<tycho.scmUrl>scm:git:https://github.com/jbosstools/jbosstools-livereload.git</tycho.scmUrl>

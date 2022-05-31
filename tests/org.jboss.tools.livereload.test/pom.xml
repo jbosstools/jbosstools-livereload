@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.jboss.tools.livereload</groupId>
 		<artifactId>tests</artifactId>
-		<version>1.5.300-SNAPSHOT</version>
+		<version>1.5.400-SNAPSHOT</version>
 	</parent>
 	<groupId>org.jboss.tools.livereload.tests</groupId>
 	<artifactId>org.jboss.tools.livereload.test</artifactId>
@@ -27,26 +27,21 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tychoVersion}</version>
 				<configuration>
-					<useUIHarness>false</useUIHarness>
-					<useUIThread>false</useUIThread>
-					
-					<!-- TODO: add new profile to permit running against JBDS product/application 
-						for JBDS tests, against Eclipse SDK for JBT -->
-					<product>org.eclipse.platform.ide</product>
-					<application>org.eclipse.ui.ide.workbench</application>
-					<dependencies>
-						<dependency>
-							<type>p2-installable-unit</type>
-							<artifactId>org.eclipse.platform</artifactId>
-							<version>0.0.0</version>
-						</dependency>
-					</dependencies>
 					<includes>
 						<include>**/*TestCase.class</include>
 					</includes>
 					<excludes>
 						<exclude>**/Abstract*.class</exclude>
 					</excludes>
+					<dependency-resolution>
+         <extraRequirements>
+            <requirement>
+               <type>eclipse-bundle</type>
+               <id>javax.servlet</id>
+               <versionRange>3.1.0</versionRange>
+            </requirement>
+         </extraRequirements>
+      </dependency-resolution>
 				</configuration>
 			</plugin>
 		</plugins>

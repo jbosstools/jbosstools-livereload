@@ -11,19 +11,20 @@
 
 package org.jboss.tools.livereload.core.internal.server.jetty;
 
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+import org.eclipse.jetty.websocket.server.JettyWebSocketCreator;
+
+import org.eclipse.jetty.websocket.server.JettyServerUpgradeRequest;
+import org.eclipse.jetty.websocket.server.JettyServerUpgradeResponse;
 
 /**
  * @author xcoulon
  *
  */
-public class LiveReloadWebSocketCreator implements WebSocketCreator {
+public class LiveReloadWebSocketCreator implements JettyWebSocketCreator {
 
 	@Override
-	public Object createWebSocket(final ServletUpgradeRequest request, final ServletUpgradeResponse response) {
-		return new LiveReloadWebSocket(request.getRemoteAddress());
+	public Object createWebSocket(final JettyServerUpgradeRequest request, final JettyServerUpgradeResponse response) {
+		return new LiveReloadWebSocket(request.getHost());
 	}
 
 }

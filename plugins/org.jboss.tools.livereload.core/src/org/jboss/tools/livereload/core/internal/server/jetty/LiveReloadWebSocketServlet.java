@@ -17,9 +17,8 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
-import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.eclipse.jetty.websocket.server.JettyWebSocketServlet;
+import org.eclipse.jetty.websocket.server.JettyWebSocketServletFactory;
 
 /**
  * This Servlet allows for WebSocket connections.
@@ -28,7 +27,7 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
  * 
  */
 @WebServlet(name="Livereload WebSocker Servlet", urlPatterns={"/livereload"})
-public class LiveReloadWebSocketServlet extends WebSocketServlet {
+public class LiveReloadWebSocketServlet extends JettyWebSocketServlet {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = 2515781694370015615L;
@@ -41,7 +40,7 @@ public class LiveReloadWebSocketServlet extends WebSocketServlet {
 		// see http://stackoverflow.com/questions/29099699/osgi-bundle-in-felix-classnotfoundexception-for-jetty-class-loaded-by-name
 		final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 		// Find the classloader used by the bundle providing jetty
-		final ClassLoader jettyClassLoader = WebSocketServerFactory.class.getClassLoader();
+		final ClassLoader jettyClassLoader = JettyWebSocketServletFactory.class.getClassLoader();
 		// Set the classloader
 		Thread.currentThread().setContextClassLoader(jettyClassLoader);
 		super.init();
@@ -50,7 +49,7 @@ public class LiveReloadWebSocketServlet extends WebSocketServlet {
 	}
 	
 	@Override
-	public void configure(final WebSocketServletFactory factory) {
+	public void configure(final JettyWebSocketServletFactory factory) {
         factory.setCreator(new LiveReloadWebSocketCreator());
 	}
 	
