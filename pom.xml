@@ -7,7 +7,6 @@
 		<artifactId>parent</artifactId>
 		<version>4.24.0.AM1-SNAPSHOT</version>
 	</parent>
-	<groupId>org.jboss.tools</groupId>
 	<artifactId>livereload</artifactId>
 	<name>jbosstools-livereload</name>
 	<version>1.5.400-SNAPSHOT</version>
