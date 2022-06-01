@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JBoss Tools LiveReload Test
 Bundle-SymbolicName: org.jboss.tools.livereload.test;singleton:=true
-Bundle-Version: 1.5.300.qualifier
+Bundle-Version: 1.5.400.qualifier
 Bundle-Activator: org.jboss.tools.livereload.internal.LiveReloadTestActivator
 Bundle-Vendor: Red Hat
 Require-Bundle: org.eclipse.ui,
@@ -13,17 +13,17 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.wst.server.core;bundle-version="1.5.0",
  org.eclipse.ui.ide;bundle-version="3.9.0",
  org.eclipse.debug.core;bundle-version="3.8.0",
- org.eclipse.jetty.client;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.security;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.util;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.server;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.servlet;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.websocket.api;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.websocket.server;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.websocket.servlet;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.websocket.common;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.websocket.client;bundle-version="[9.4.0,9.5.0)",
- org.eclipse.jetty.io;bundle-version="[9.4.0,9.5.0)",
+ org.eclipse.jetty.client;bundle-version="10.0.9",
+ org.eclipse.jetty.security;bundle-version="10.0.9",
+ org.eclipse.jetty.util;bundle-version="10.0.9",
+ org.eclipse.jetty.server;bundle-version="10.0.9",
+ org.eclipse.jetty.servlet;bundle-version="10.0.9",
+ org.eclipse.jetty.websocket.api;bundle-version="10.0.9",
+ org.eclipse.jetty.websocket.server;bundle-version="10.0.9",
+ org.eclipse.jetty.websocket.servlet;bundle-version="10.0.9",
+ org.eclipse.jetty.websocket.common;bundle-version="10.0.9",
+ org.eclipse.jetty.websocket.client;bundle-version="10.0.9",
+ org.eclipse.jetty.io;bundle-version="10.0.9",
  org.jboss.ide.eclipse.as.core;bundle-version="2.4.100",
  org.apache.commons.httpclient;bundle-version="3.1.0",
  org.apache.commons.io;bundle-version="2.0.1",
@@ -40,11 +40,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.wst.server.ui;bundle-version="1.5.304",
  org.eclipse.core.expressions;bundle-version="3.5.100",
  org.mockito;bundle-version="2.23.0",
- org.assertj;bundle-version="3.20.2"
+ assertj-core;bundle-version="3.22.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
-Import-Package: javax.servlet;version="3.1.0",
- javax.servlet.annotation;version="3.1.0",
- javax.servlet.http;version="3.1.0",
+Import-Package: javax.servlet;version="4.0.0",
+ javax.servlet.http;version="4.0.0",
  org.slf4j;version="1.7.2"
