@@ -17,6 +17,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.jboss.tools.livereload.core.internal.service.EventService;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientConnectedEvent;
 import org.jboss.tools.livereload.core.internal.service.LiveReloadClientConnectionFilter;
@@ -91,6 +92,7 @@ public class LiveReloadServer extends Server implements Subscriber {
 				websocketConnector.getHost(), websocketPort, "/", websocketConnector.getHost(), websocketPort,
 				servlet.getInitParameter(WorkspaceFileServlet.BASE_PATH), websocketPort, enableScriptInjection);
 		context.addServlet(new ServletHolder(middleManServlet), "/");
+		JettyWebSocketServletContainerInitializer.configure(context, null);
 		setHandler(context);
 		EventService.getInstance().subscribe(this, new LiveReloadClientConnectionFilter());
 	}
