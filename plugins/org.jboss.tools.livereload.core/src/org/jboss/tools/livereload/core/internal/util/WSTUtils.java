@@ -297,11 +297,12 @@ public class WSTUtils {
 	 */
 	public static IServer createLiveReloadServer(final String serverName, final String hostname, final int websocketPort, 
 			final boolean injectScript, final boolean allowRemoteConnections) throws CoreException {
+		NullProgressMonitor monitor = new NullProgressMonitor();
 		IRuntimeType rt = ServerCore.findRuntimeType(LIVERELOAD_RUNTIME_TYPE);
-		IRuntimeWorkingCopy rwc = rt.createRuntime(null, null);
-		IRuntime runtime = rwc.save(true, null);
+		IRuntimeWorkingCopy rwc = rt.createRuntime(null, monitor);
+		IRuntime runtime = rwc.save(true, monitor);
 		IServerType st = ServerCore.findServerType(LIVERELOAD_SERVER_TYPE);
-		IServerWorkingCopy swc = (IServerWorkingCopy) st.createServer(serverName, null, null);
+		IServerWorkingCopy swc = st.createServer(serverName, null, monitor);
 		swc.setServerConfiguration(null);
 		swc.setName(serverName);
 		swc.setHost(hostname);
@@ -314,7 +315,7 @@ public class WSTUtils {
 		// count the usage 
 		JBossLiveReloadCoreActivator.getDefault().countLiveReloadServerCreation();
 
-		return swc.save(true, new NullProgressMonitor());
+		return swc.save(true, monitor);
 	}
 
 	/**

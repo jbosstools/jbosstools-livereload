@@ -21,6 +21,7 @@
    <extension
          point="org.eclipse.wst.server.core.runtimeTypes">
       <runtimeType
+            class="org.jboss.ide.eclipse.as.core.server.internal.DeployableServerRuntime"
             description="LiveReload Server"
             id="org.jboss.tools.livereload.serverTypeRuntime"
             name="LiveReload Server">
